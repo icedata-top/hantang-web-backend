@@ -1,6 +1,6 @@
 package api;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -153,7 +153,7 @@ public class Wbi {
     public String addWbiParam(String url) throws IOException {
         // 计算当前时间戳
         int wts = (int) (System.currentTimeMillis() / 1000L);
-        wts = 1727799448;
+//        wts = 1727799448;
 
         // 提取url的?后面的部分
         String param = url.contains("?") ? url.substring(url.indexOf("?") + 1) : url;
