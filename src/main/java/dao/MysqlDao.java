@@ -1,7 +1,8 @@
 package dao;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import api.BilibiliApi;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -12,7 +13,7 @@ public class MysqlDao {
     private static final String URL_LOCAL;
     private static final String USER_LOCAL;
     private static final String PASSWORD_LOCAL;
-    private static final Logger logger = LogManager.getLogger(MysqlDao.class);
+    private static final Logger logger = LoggerFactory.getLogger(MysqlDao.class);
 
     static {
         try {
