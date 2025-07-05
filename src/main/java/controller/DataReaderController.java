@@ -47,14 +47,8 @@ public class DataReaderController extends BaseController  {
      * }
      */
     private void getMetricAchievedTime(Context context) {
-        // 1. 解析请求体
         MetricAchievedTimeRequest request = context.bodyAsClass(MetricAchievedTimeRequest.class);
-
-        // 2. TODO: 这里是实际业务逻辑，查询数据库或其他服务
-        // 模拟返回一个固定时间
         String achievedTime = dataReaderService.getMetricAchievedTime(request);
-
-        // 3. 返回结果
         MetricAchievedTimeResponse response = new MetricAchievedTimeResponse(
                 request.videoIdentifier(),
                 request.metric(),
@@ -77,29 +71,7 @@ public class DataReaderController extends BaseController  {
      */
     private void getVideoMetrics(Context context) {
         VideoMetricsRequest request = context.bodyAsClass(VideoMetricsRequest.class);
-        // TODO: 实际逻辑调用 Service，这里是 MOCK
-        List<VideoMetricsResponse.MetricDataPoint> dataPoints = List.of(
-                new VideoMetricsResponse.MetricDataPoint(
-                        "2025-06-25",
-                        Map.of("view", 1200, "favorite", 100, "like", 30),
-                        Map.of("view", 0, "favorite", 0, "like", 0)
-                ),
-                new VideoMetricsResponse.MetricDataPoint(
-                        "2025-06-26",
-                        Map.of("view", 1500, "favorite", 120, "like", 40),
-                        Map.of("view", 300, "favorite", 20, "like", 10)
-                ),
-                new VideoMetricsResponse.MetricDataPoint(
-                        "2025-06-27",
-                        Map.of("view", 1800, "favorite", 150, "like", 50),
-                        Map.of("view", 300, "favorite", 30, "like", 10)
-                ),
-                new VideoMetricsResponse.MetricDataPoint(
-                        "2025-06-28",
-                        Map.of("view", 2000, "favorite", 180, "like", 60),
-                        Map.of("view", 200, "favorite", 30, "like", 10)
-                )
-        );
+        List<VideoMetricsResponse.MetricDataPoint> dataPoints = dataReaderService.getVideoMetrics(request);
         VideoMetricsResponse response = new VideoMetricsResponse(
                 request.videoIdentifier(),
                 request.startTime(),

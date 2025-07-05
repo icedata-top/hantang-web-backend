@@ -2,10 +2,17 @@ package service;
 
 import dao.DataReaderDao;
 import dos.data.reader.MetricAchievedTimeRequest;
+import dos.data.reader.VideoMetricsRequest;
+import dos.data.reader.VideoMetricsResponse;
+import enums.Granularity;
+import enums.Metric;
 import utils.BilibiliUtils;
+import utils.IsoTimeUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
 
 public class DataReaderService {
     private final DataReaderDao dataReaderDao;
@@ -57,10 +64,50 @@ public class DataReaderService {
      * 查询某个视频的某项指标在什么时候达成指定数值
      */
     public String getMetricAchievedTime(MetricAchievedTimeRequest request) {
+        long aid = videoIdentifierToAid(request.videoIdentifier());
+        Metric metric = Metric.fromString(request.metric());
+        int target = request.target();
         return LocalDateTime.now()
                 .minusDays(10)  // 假设 10 天前达成
                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
     }
 
+    /**
+     * 查询某个视频在时间段内，按粒度统计多项指标
+     */
+    public List<VideoMetricsResponse.MetricDataPoint> getVideoMetrics(VideoMetricsRequest request) {
+        long aid = videoIdentifierToAid(request.videoIdentifier());
+        List<Metric> metricList = request.metrics().stream().map(Metric::fromString).toList();
+        Granularity granularity = Granularity.fromString(request.granularity());
+        if (Granularity.DAY.equals(granularity)) {
+            String startDate = IsoTimeUtils.toDateString(request.startTime());
+            String endDate = IsoTimeUtils.toDateString(request.endTime());
+        } else {
+            int startUnixTimestamp = IsoTimeUtils.toUnixTimestamp(request.startTime());
+            int endUnixTimestamp = IsoTimeUtils.toUnixTimestamp(request.endTime());
+        }
 
+        return List.of(
+                new VideoMetricsResponse.MetricDataPoint(
+                        "2025-06-25",
+                        Map.of("view", 1200, "favorite", 100, "like", 30),
+                        Map.of("view", 0, "favorite", 0, "like", 0)
+                ),
+                new VideoMetricsResponse.MetricDataPoint(
+                        "2025-06-26",
+                        Map.of("view", 1500, "favorite", 120, "like", 40),
+                        Map.of("view", 300, "favorite", 20, "like", 10)
+                ),
+                new VideoMetricsResponse.MetricDataPoint(
+                        "2025-06-27",
+                        Map.of("view", 1800, "favorite", 150, "like", 50),
+                        Map.of("view", 300, "favorite", 30, "like", 10)
+                ),
+                new VideoMetricsResponse.MetricDataPoint(
+                        "2025-06-28",
+                        Map.of("view", 2000, "favorite", 180, "like", 60),
+                        Map.of("view", 200, "favorite", 30, "like", 10)
+                )
+        );
+    }
 }
