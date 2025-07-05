@@ -1,6 +1,5 @@
-package dao;
+package dao.foundation;
 
-import api.BilibiliApi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

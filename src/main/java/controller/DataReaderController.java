@@ -6,6 +6,7 @@ import dos.data.reader.VideoMetricsRequest;
 import dos.data.reader.VideoMetricsResponse;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
+import service.DataReaderService;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -16,6 +17,13 @@ import java.util.Map;
  * 数据读取 Controller
  */
 public class DataReaderController extends BaseController  {
+    private final DataReaderService dataReaderService;
+
+    public DataReaderController() {
+        // 不是 Spring Boot 框架，不能自动装填，只能手动。
+        this.dataReaderService = new DataReaderService();
+    }
+
     @Override
     public void registerRoutes(Javalin app) {
         app.get("/hello-world", this::getHelloWorld);
@@ -44,9 +52,7 @@ public class DataReaderController extends BaseController  {
 
         // 2. TODO: 这里是实际业务逻辑，查询数据库或其他服务
         // 模拟返回一个固定时间
-        String achievedTime = LocalDateTime.now()
-                .minusDays(10)  // 假设 10 天前达成
-                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        String achievedTime = dataReaderService.getMetricAchievedTime(request);
 
         // 3. 返回结果
         MetricAchievedTimeResponse response = new MetricAchievedTimeResponse(
