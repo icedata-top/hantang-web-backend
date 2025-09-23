@@ -80,3 +80,55 @@ public record ResponseDTO<T>(
 ) 
 ```
 
+# 契约
+
+## 说明
+
+### 视频识别码 (videoIdentifier)
+- **说明**：用于唯一标识一个视频。系统将按以下优先级尝试匹配：AV号 > BV号 > 视频名称。
+- **格式**：字符串类型。
+
+### 枚举定义
+
+#### 时间粒度 (granularity)
+指定数据聚合的时间维度。
+```json
+["MINUTE", "HOUR", "DAY", "WEEK", "MONTH"]
+```
+
+#### 指标类型 (metrics)
+定义需要查询的数据指标。
+```json
+["view", "favorite", "like", "reply", "danmaku", "share", "coin"]
+```
+
+## 接口1：查询视频时间序列数据
+### 描述
+根据指定的时间范围、粒度和指标，查询视频的历史数据序列。
+
+### 请求
+POST `/hantang/video-time-series`
+
+```json
+{
+    "videoIdentifier": "BV1Ab421k7EQ",
+    "startTime": "2025-06-23",
+    "endTime": "2025-06-28",
+    "granularity": "DAY",
+    "metrics": ["view", "like", "favorite"]
+}
+```
+
+## 接口2：查询指标达成时间
+### 描述
+查询指定视频的某个数据指标达到目标数值的预估时间或历史达成时间点。
+
+### 请求
+POST `/hantang/metric-achieved-time`
+```json
+{
+    "videoIdentifier": "霜雪千年",
+    "metric": "view", 
+    "target": 3000000
+}
+```

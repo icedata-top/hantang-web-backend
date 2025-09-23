@@ -8,10 +8,7 @@ import io.javalin.Javalin;
 import io.javalin.http.Context;
 import service.DataReaderService;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 数据读取 Controller
@@ -28,7 +25,7 @@ public class DataReaderController extends BaseController  {
     public void registerRoutes(Javalin app) {
         app.get("/hello-world", this::getHelloWorld);
         app.post("/hantang/metric-achieved-time", this::getMetricAchievedTime);
-        app.post("/hantang/video-metrics", this::getVideoMetrics);
+        app.post("/hantang/video-time-series", this::getVideoTimeSeries);
     }
 
     /**
@@ -59,7 +56,7 @@ public class DataReaderController extends BaseController  {
     }
 
     /**
-     * 查询某个视频在时间段内，按粒度统计多项指标
+     * 查询某个视频在时间段内，按粒度统计多项指标的时间序列
      * MOCK Request:
      * {
      *   "videoIdentifier": "霜雪千年",
@@ -69,7 +66,7 @@ public class DataReaderController extends BaseController  {
      *   "metrics": ["view", "favorite", "like"]
      * }
      */
-    private void getVideoMetrics(Context context) {
+    private void getVideoTimeSeries(Context context) {
         VideoMetricsRequest request = context.bodyAsClass(VideoMetricsRequest.class);
         List<VideoMetricsResponse.MetricDataPoint> dataPoints = dataReaderService.getVideoMetrics(request);
         VideoMetricsResponse response = new VideoMetricsResponse(
