@@ -44,15 +44,19 @@ public class DataReaderController extends BaseController  {
      * }
      */
     private void getMetricAchievedTime(Context context) {
-        MetricAchievedTimeRequest request = context.bodyAsClass(MetricAchievedTimeRequest.class);
-        String achievedTime = dataReaderService.getMetricAchievedTime(request);
-        MetricAchievedTimeResponse response = new MetricAchievedTimeResponse(
-                request.videoIdentifier(),
-                request.metric(),
-                request.target(),
-                achievedTime
-        );
-        context.json(ResponseDTO.success(response));
+        try {
+            MetricAchievedTimeRequest request = context.bodyAsClass(MetricAchievedTimeRequest.class);
+            String achievedTime = dataReaderService.getMetricAchievedTime(request);
+            MetricAchievedTimeResponse response = new MetricAchievedTimeResponse(
+                    request.videoIdentifier(),
+                    request.metric(),
+                    request.target(),
+                    achievedTime
+            );
+            context.json(ResponseDTO.success(response));
+        } catch (Exception e) {
+            context.json(ResponseDTO.error(500, e.getMessage()));
+        }
     }
 
     /**
@@ -67,15 +71,19 @@ public class DataReaderController extends BaseController  {
      * }
      */
     private void getVideoTimeSeries(Context context) {
-        VideoMetricsRequest request = context.bodyAsClass(VideoMetricsRequest.class);
-        List<VideoMetricsResponse.MetricDataPoint> dataPoints = dataReaderService.getVideoMetrics(request);
-        VideoMetricsResponse response = new VideoMetricsResponse(
-                request.videoIdentifier(),
-                request.startTime(),
-                request.endTime(),
-                request.granularity(),
-                dataPoints
-        );
-        context.json(ResponseDTO.success(response));
+        try {
+            VideoMetricsRequest request = context.bodyAsClass(VideoMetricsRequest.class);
+            List<VideoMetricsResponse.MetricDataPoint> dataPoints = dataReaderService.getVideoMetrics(request);
+            VideoMetricsResponse response = new VideoMetricsResponse(
+                    request.videoIdentifier(),
+                    request.startTime(),
+                    request.endTime(),
+                    request.granularity(),
+                    dataPoints
+            );
+            context.json(ResponseDTO.success(response));
+        } catch (Exception e) {
+            context.json(ResponseDTO.error(500, e.getMessage()));
+        }
     }
 }

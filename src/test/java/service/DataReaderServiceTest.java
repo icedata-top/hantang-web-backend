@@ -1,27 +1,30 @@
 package service;
 
-class DataReaderServiceTest {
-    public static void main(String[] args) {
-        DataReaderService dataReaderService = new DataReaderService();
 
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class DataReaderServiceTest {
+
+    private final DataReaderService dataReaderService = new DataReaderService();
+    private static final long EXPECTED_AID = 6009789L;
+
+    @Test
+    void testVideoIdentifierToAidWithAllCases() throws Exception {
+        // 测试用例数组：包含各种标识符类型
         String[] testCases = {
-                "170001",       // 纯数字
-                "av170001",     // 小写av
-                "AV170001",     // 大写AV
-                "BV17x411w7KC"  // BV号
+                "6009789",       // 纯数字
+                "av6009789",     // 小写av
+                "AV6009789",     // 大写AV
+                "BV1Qs411k7Qv",  // BV号
+                "世末歌者"       // 视频名称
         };
 
+        // 循环测试每个用例
         for (String identifier : testCases) {
             long aid = dataReaderService.videoIdentifierToAid(identifier);
-            System.out.printf("输入: %-12s 解析AID: %d%n", identifier, aid);
+            assertEquals(EXPECTED_AID, aid,
+                    String.format("标识符 '%s' 解析结果不正确", identifier));
         }
-
-        // 你也可以断言一下
-        assert dataReaderService.videoIdentifierToAid("170001") == 170001L : "纯数字失败";
-        assert dataReaderService.videoIdentifierToAid("av170001") == 170001L : "av小写失败";
-        assert dataReaderService.videoIdentifierToAid("AV170001") == 170001L : "AV大写失败";
-        assert dataReaderService.videoIdentifierToAid("BV17x411w7KC") == 170001L : "BV号失败";
-
-        System.out.println("✅ 所有测试通过！");
     }
 }

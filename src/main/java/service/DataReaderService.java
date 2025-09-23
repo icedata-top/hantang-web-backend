@@ -6,9 +6,11 @@ import dos.data.reader.VideoMetricsRequest;
 import dos.data.reader.VideoMetricsResponse;
 import enums.Granularity;
 import enums.Metric;
+import exceptions.InvalidVideoIdentifierException;
 import utils.BilibiliUtils;
 import utils.IsoTimeUtils;
 
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -26,7 +28,8 @@ public class DataReaderService {
      * @param videoIdentifier 前端传入的视频标识符，可能是 av123456 / BV1xxx / 视频名等
      * @return BV 号或纯数字（如果是 AV），否则需要从数据库查询
      */
-    protected long videoIdentifierToAid(String videoIdentifier) {
+    protected long videoIdentifierToAid(String videoIdentifier)
+    throws InvalidVideoIdentifierException, SQLException{
         if (videoIdentifier == null || videoIdentifier.isBlank()) {
             throw new IllegalArgumentException("videoIdentifier cannot be null or blank");
         }
@@ -63,7 +66,8 @@ public class DataReaderService {
     /**
      * 查询某个视频的某项指标在什么时候达成指定数值
      */
-    public String getMetricAchievedTime(MetricAchievedTimeRequest request) {
+    public String getMetricAchievedTime(MetricAchievedTimeRequest request)
+            throws InvalidVideoIdentifierException, SQLException {
         long aid = videoIdentifierToAid(request.videoIdentifier());
         Metric metric = Metric.fromString(request.metric());
         int target = request.target();
@@ -75,7 +79,8 @@ public class DataReaderService {
     /**
      * 查询某个视频在时间段内，按粒度统计多项指标
      */
-    public List<VideoMetricsResponse.MetricDataPoint> getVideoMetrics(VideoMetricsRequest request) {
+    public List<VideoMetricsResponse.MetricDataPoint> getVideoMetrics(VideoMetricsRequest request)
+            throws InvalidVideoIdentifierException, SQLException {
         long aid = videoIdentifierToAid(request.videoIdentifier());
         List<Metric> metricList = request.metrics().stream().map(Metric::fromString).toList();
         Granularity granularity = Granularity.fromString(request.granularity());
