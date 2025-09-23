@@ -58,5 +58,13 @@
             <artifactId>javalin</artifactId>
             <version>6.7.0</version>
         </dependency>
+
+        <!-- 单元测试 -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.9.2</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
