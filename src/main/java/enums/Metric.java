@@ -1,13 +1,25 @@
 package enums;
 
 public enum Metric {
-    COIN,
-    FAVORITE,
-    DANMAKU,
-    VIEW,
-    REPLY,
-    SHARE,
-    LIKE;
+    COIN("coin"),
+    FAVORITE("favorite"),
+    DANMAKU("danmaku"),
+    VIEW("view"),
+    REPLY("reply"),
+    SHARE("share"),
+    LIKE("like");
+
+    private final String field;
+
+    // 构造方法，初始化数据库字段名
+    Metric(String field) {
+        this.field = field;
+    }
+
+    // 获取数据库字段名的方法
+    public String getField() {
+        return field;
+    }
 
     public static Metric fromString(String s) {
         if (s == null) {

@@ -5,6 +5,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
 public class IsoTimeUtils {
+    // 定义线程安全的日期格式化器
+    private static final DateTimeFormatter formatter =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     /**
      * 将 ISO 8601 日期时间字符串解析为秒级 UNIX 时间戳
@@ -58,5 +61,19 @@ public class IsoTimeUtils {
                 return localDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
             }
         }
+    }
+
+    /**
+     * 将秒级 UNIX 时间戳转换为指定格式的日期时间字符串
+     * @param timestamp 秒级时间戳（int）
+     * @return 格式化后的日期时间字符串
+     */
+    public static String formatTimestamp(int timestamp) {
+        // 将秒级时间戳转换为 Instant，再转换为系统默认时区的 LocalDateTime
+        LocalDateTime dateTime = LocalDateTime.ofInstant(
+                Instant.ofEpochSecond(timestamp),
+                ZoneId.systemDefault()
+        );
+        return dateTime.format(formatter);
     }
 }

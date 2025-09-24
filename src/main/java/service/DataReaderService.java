@@ -7,6 +7,7 @@ import dos.data.reader.VideoMetricsResponse;
 import enums.Granularity;
 import enums.Metric;
 import exceptions.InvalidVideoIdentifierException;
+import org.apache.commons.collections.MapUtils;
 import utils.BilibiliUtils;
 import utils.IsoTimeUtils;
 
@@ -71,9 +72,37 @@ public class DataReaderService {
         long aid = videoIdentifierToAid(request.videoIdentifier());
         Metric metric = Metric.fromString(request.metric());
         int target = request.target();
-        return LocalDateTime.now()
-                .minusDays(10)  // 假设 10 天前达成
-                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        if (target < 1 || aid < 1) {
+            throw new IllegalArgumentException("Target or aid is illegal. target: " + target + ", aid: " + aid);
+        }
+
+        // 从 DAO 层查询数据
+        Map<String, Integer> achievedData = dataReaderDao.getMetricAchievedTime(aid, metric, target, true);
+        Map<String, Integer> lastData = dataReaderDao.getMetricAchievedTime(aid, metric, target, false);
+
+        boolean achievedTimeExist = MapUtils.getIntValue(achievedData, "timestamp", -1) != -1;
+        boolean lastTimeExist = MapUtils.getIntValue(lastData, "timestamp", -1) != -1;
+        if (!achievedTimeExist) {
+            if (!lastTimeExist) {
+                return String.format("数据库中没有该视频的数据. aid: %d.", aid); // 没有达成时间，也没有最新时间
+            } else {
+                String lastTime = IsoTimeUtils.formatTimestamp(lastData.get("timestamp"));
+                return String.format("该视频至今没有达成目标数据. aid: %d, target value: %d, latest record value: %d, latest record time: %s",
+                        aid, target, lastData.get("value"), lastTime); // 未达成
+            }
+        } else {
+            int achieveValue = achievedData.get("value");
+            String achieveTime = IsoTimeUtils.formatTimestamp(achievedData.get("timestamp"));
+            if (!lastTimeExist) {
+                return String.format("在开始记录该视频时，该视频就已经达成目标数据. aid: %d, target: %d, first record value: %d, first record time: %s",
+                        aid, target, achieveValue, achieveTime);
+            } else {
+                int lastValue = lastData.get("value");
+                String lastTime = IsoTimeUtils.formatTimestamp(lastData.get("timestamp"));
+                return String.format("该视频达成目标数据. aid: %d, target: %d, achieved record value: %d, achieved record time: %s, before record value: %d, before record time: %s",
+                        aid, target, achieveValue, achieveTime, lastValue, lastTime);
+            }
+        }
     }
 
     /**
