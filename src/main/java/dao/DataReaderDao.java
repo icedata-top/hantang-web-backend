@@ -9,6 +9,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class DataReaderDao {
@@ -72,5 +75,59 @@ public class DataReaderDao {
             // 没有找到符合条件的记录
             return Map.of("timestamp", -1, "value", -1);
         }
+    }
+
+    /**
+     * 按天查询某个视频在时间段内各个指标数据
+     * @param aid 视频的 AV 号
+     * @param metricList 指标列表
+     * @param startDate 开始日期（含）
+     * @param endDate 结束日期（含）
+     * @return UNIX时间戳和指标 的列表
+     */
+    public List<Map<String, Integer>> getVideoMetricsByDay(long aid, List<Metric> metricList, String startDate, String endDate) throws SQLException {
+        List<String> metricNameList = metricList.stream().map(Metric::getField).toList();
+        String fieldsString = String.join(", ", metricNameList);
+        String sql = String.format("""
+                SELECT unix_timestamp(record_date) AS time, %s\s
+                FROM hantang.video_daily\s
+                WHERE aid = ?
+                  AND record_date BETWEEN ? AND ?
+                ORDER BY record_date\s
+                LIMIT 100;
+                """, fieldsString);
+        Connection connection = mysqlDao.getConnection();
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        // 设置参数
+        preparedStatement.setLong(1, aid);
+        preparedStatement.setString(2, startDate);
+        preparedStatement.setString(3, endDate);
+        // 执行查询
+        ResultSet resultSet = preparedStatement.executeQuery();
+        List<Map<String, Integer>> rowList = new ArrayList<>();
+        while (resultSet.next()) {
+            int time = resultSet.getInt("time");
+            Map<String, Integer> row = new HashMap<>();
+            row.put("timestamp", time);
+            for (String metricField : metricNameList) {
+                row.put(metricField, resultSet.getInt(metricField));
+            }
+            rowList.add(row);
+        }
+        return rowList;
+    }
+
+    /**
+     * 按分钟查询某个视频在时间段内各个指标数据
+     * @param aid 视频的 AV 号
+     * @param metricList 指标列表
+     * @param startUnixTimestamp 开始时间戳（含）
+     * @param endUnixTimestamp 结束时间戳（含）
+     * @return UNIX时间戳和指标 的列表
+     */
+    public List<Map<String, Integer>> getVideoMetricsByMinute(long aid, List<Metric> metricList, int startUnixTimestamp, int endUnixTimestamp) {
+        List<Map<String, Integer>> rowList = new ArrayList<>();
+
+        return rowList;
     }
 }

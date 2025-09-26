@@ -7,8 +7,10 @@ import dos.data.reader.VideoMetricsResponse;
 import enums.Granularity;
 import enums.Metric;
 import exceptions.InvalidVideoIdentifierException;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import utils.BilibiliUtils;
+import utils.DeltaCalculator;
 import utils.IsoTimeUtils;
 
 import java.sql.SQLException;
@@ -110,38 +112,25 @@ public class DataReaderService {
      */
     public List<VideoMetricsResponse.MetricDataPoint> getVideoMetrics(VideoMetricsRequest request)
             throws InvalidVideoIdentifierException, SQLException {
+        // 读取请求
         long aid = videoIdentifierToAid(request.videoIdentifier());
         List<Metric> metricList = request.metrics().stream().map(Metric::fromString).toList();
         Granularity granularity = Granularity.fromString(request.granularity());
+        if (CollectionUtils.isEmpty(metricList)) {
+            throw new IllegalArgumentException("指标数组不能为空");
+        }
+        // 按日和按分钟不同，从DAO层读取数据
+        List<Map<String, Integer>> data;
         if (Granularity.DAY.equals(granularity)) {
             String startDate = IsoTimeUtils.toDateString(request.startTime());
             String endDate = IsoTimeUtils.toDateString(request.endTime());
+            data = dataReaderDao.getVideoMetricsByDay(aid, metricList, startDate, endDate);
         } else {
             int startUnixTimestamp = IsoTimeUtils.toUnixTimestamp(request.startTime());
             int endUnixTimestamp = IsoTimeUtils.toUnixTimestamp(request.endTime());
+            data = dataReaderDao.getVideoMetricsByMinute(aid, metricList, startUnixTimestamp, endUnixTimestamp);
         }
 
-        return List.of(
-                new VideoMetricsResponse.MetricDataPoint(
-                        "2025-06-25",
-                        Map.of("view", 1200, "favorite", 100, "like", 30),
-                        Map.of("view", 0, "favorite", 0, "like", 0)
-                ),
-                new VideoMetricsResponse.MetricDataPoint(
-                        "2025-06-26",
-                        Map.of("view", 1500, "favorite", 120, "like", 40),
-                        Map.of("view", 300, "favorite", 20, "like", 10)
-                ),
-                new VideoMetricsResponse.MetricDataPoint(
-                        "2025-06-27",
-                        Map.of("view", 1800, "favorite", 150, "like", 50),
-                        Map.of("view", 300, "favorite", 30, "like", 10)
-                ),
-                new VideoMetricsResponse.MetricDataPoint(
-                        "2025-06-28",
-                        Map.of("view", 2000, "favorite", 180, "like", 60),
-                        Map.of("view", 200, "favorite", 30, "like", 10)
-                )
-        );
+        return new DeltaCalculator(data, metricList).calc();
     }
 }
