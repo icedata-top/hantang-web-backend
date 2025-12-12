@@ -86,7 +86,10 @@ public class DataReaderDao {
      * @return UNIX时间戳和指标 的列表
      */
     public List<Map<String, Integer>> getVideoMetricsByDay(long aid, List<Metric> metricList, String startDate, String endDate) throws SQLException {
-        List<String> metricNameList = metricList.stream().map(Metric::getField).toList();
+        List<String> metricNameList = metricList.stream()
+                .map(Metric::getField) // 获取原始字段名
+                .map(field -> "`" + field + "`") // 给字段名添加反引号
+                .toList();
         String fieldsString = String.join(", ", metricNameList);
         String sql = String.format("""
                 SELECT unix_timestamp(record_date) AS time, %s\s
@@ -110,7 +113,8 @@ public class DataReaderDao {
             Map<String, Integer> row = new HashMap<>();
             row.put("timestamp", time);
             for (String metricField : metricNameList) {
-                row.put(metricField, resultSet.getInt(metricField));
+                String normalMetricField = StringUtils.remove(metricField, '`');
+                row.put(normalMetricField, resultSet.getInt(normalMetricField));
             }
             rowList.add(row);
         }
