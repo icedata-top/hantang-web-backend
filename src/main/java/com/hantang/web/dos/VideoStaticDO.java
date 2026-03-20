@@ -1,4 +1,4 @@
-package dos;
+package com.hantang.web.dos;
 
 public record VideoStaticDO(
     long aid,

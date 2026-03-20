@@ -1,4 +1,4 @@
-package dos;
+package com.hantang.web.dos;
 
 /**
  * B站分区，例如typeId=31的分区是“翻唱”区。

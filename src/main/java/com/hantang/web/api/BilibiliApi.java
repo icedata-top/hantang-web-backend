@@ -1,7 +1,7 @@
-package api;
+package com.hantang.web.api;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,7 +13,7 @@ import java.net.URL;
 import java.util.Random;
 
 public class BilibiliApi {
-    private static final Logger logger = LogManager.getLogger(BilibiliApi.class);
+    private static final Logger logger = LoggerFactory.getLogger(BilibiliApi.class);
 
     private static final String[] USER_AGENTS = {
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0",
