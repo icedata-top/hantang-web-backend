@@ -16,6 +16,7 @@ import java.util.List;
 public class DataReaderController extends BaseController  {
     private final DataReaderService dataReaderService;
 
+    // 构造函数
     public DataReaderController() {
         // 不是 Spring Boot 框架，不能自动装填，只能手动。
         this.dataReaderService = new DataReaderService();
