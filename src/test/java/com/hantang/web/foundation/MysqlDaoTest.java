@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import static org.junit.jupiter.api.Assertions.*;
 
+@Deprecated
 class MysqlDaoTest {
 
     @Test
