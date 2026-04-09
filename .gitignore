@@ -1,2 +1,8 @@
 # MySQL DB properties
 config.secret.properties
+
+# Maven build outputs
+target/
+
+# macOS metadata
+.DS_Store
