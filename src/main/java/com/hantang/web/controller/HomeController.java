@@ -9,7 +9,7 @@ import io.javalin.http.Context;
 public class HomeController extends BaseController {
     @Override
     public void registerRoutes(Javalin app) {
-        app.get("/home/indicator", this::getHomeIndicator);
+        app.post("/home/indicator", this::getHomeIndicator);
     }
 
     private void getHomeIndicator(Context context) {
