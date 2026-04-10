@@ -6,6 +6,7 @@ import com.hantang.web.dos.overview.OverviewPartitionSubmissionsResponse;
 import com.hantang.web.dos.overview.OverviewRequest;
 import com.hantang.web.dos.overview.OverviewTrendResponse;
 import com.hantang.web.dos.overview.OverviewViewHistogramResponse;
+import com.hantang.web.service.OverviewService;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 
@@ -13,6 +14,12 @@ import java.util.List;
 import java.util.Map;
 
 public class OverviewController extends BaseController {
+    private final OverviewService overviewService;
+
+    public OverviewController() {
+        this.overviewService = new OverviewService();
+    }
+
     @Override
     public void registerRoutes(Javalin app) {
         app.post("/overview/get-indicators", this::getIndicators);
@@ -23,15 +30,8 @@ public class OverviewController extends BaseController {
 
     private void getIndicators(Context context) {
         try {
-            context.bodyAsClass(OverviewRequest.class);
-            OverviewIndicatorsResponse response = new OverviewIndicatorsResponse(
-                    List.of(
-                            new OverviewIndicatorsResponse.Indicator("newVideoCount", 1435L, 0.15, 0.11),
-                            new OverviewIndicatorsResponse.Indicator("activeUserCount", 107L, -0.05, -0.03),
-                            new OverviewIndicatorsResponse.Indicator("view", 1274561L, 0.012, 0.008),
-                            new OverviewIndicatorsResponse.Indicator("favorite", 109143L, -0.011, 0.015)
-                    )
-            );
+            OverviewRequest request = context.bodyAsClass(OverviewRequest.class);
+            OverviewIndicatorsResponse response = overviewService.getIndicators(request);
             context.json(ResponseDTO.success(response));
         } catch (Exception e) {
             context.json(ResponseDTO.error(500, e.getMessage()));

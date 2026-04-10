@@ -76,4 +76,26 @@ public class IsoTimeUtils {
         );
         return dateTime.format(formatter);
     }
+
+    /**
+     * {@code yyyy-MM-dd}：该日 00:00:00（{@link ZoneId#systemDefault()}）对应的 Unix 秒。
+     */
+    public static long dateOnlyToStartOfDayEpochSeconds(String yyyyMmDd) {
+        if (yyyyMmDd == null || yyyyMmDd.isBlank()) {
+            throw new IllegalArgumentException("date string cannot be null or blank");
+        }
+        LocalDate d = LocalDate.parse(yyyyMmDd.trim(), DateTimeFormatter.ISO_LOCAL_DATE);
+        return d.atStartOfDay(ZoneId.systemDefault()).toEpochSecond();
+    }
+
+    /**
+     * {@code yyyy-MM-dd}：该日最后一秒（含）对应的 Unix 秒，即次日 00:00:00 前一秒。
+     */
+    public static long dateOnlyToEndOfDayEpochSecondsInclusive(String yyyyMmDd) {
+        if (yyyyMmDd == null || yyyyMmDd.isBlank()) {
+            throw new IllegalArgumentException("date string cannot be null or blank");
+        }
+        LocalDate d = LocalDate.parse(yyyyMmDd.trim(), DateTimeFormatter.ISO_LOCAL_DATE);
+        return d.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toEpochSecond() - 1;
+    }
 }
