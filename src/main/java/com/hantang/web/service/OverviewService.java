@@ -6,7 +6,12 @@ import com.hantang.web.dos.overview.OverviewRequest;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+
+import com.hantang.web.dos.overview.OverviewTrendResponse;
 
 public class OverviewService {
     private final OverviewDao overviewDao;
@@ -102,5 +107,41 @@ public class OverviewService {
             long viewDelta,
             long favoriteDelta
     ) {
+    }
+
+    public OverviewTrendResponse getTrend(OverviewRequest request) {
+        if (request == null || request.getStartDate() == null || request.getEndDate() == null) {
+            throw new IllegalArgumentException("OverviewRequest 及 startDate、endDate 不能为空");
+        }
+        String trendType = "newVideo";
+        if (request.getAddtionalParams() != null) {
+            String raw = request.getAddtionalParams().get("trendType");
+            if (raw != null && !raw.isBlank()) {
+                trendType = raw.trim();
+            }
+        }
+
+        List<Map<String, Object>> trendRows = overviewDao.getTrend(request, trendType);
+        List<OverviewTrendResponse.TrendRow> rows = new ArrayList<>();
+        for (Map<String, Object> row : trendRows) {
+            Object dateObj = row.get("date");
+            if (dateObj == null) {
+                continue;
+            }
+            Map<String, Long> indicators = new LinkedHashMap<>();
+            for (Map.Entry<String, Object> entry : row.entrySet()) {
+                if ("date".equals(entry.getKey())) {
+                    continue;
+                }
+                Object value = entry.getValue();
+                if (value instanceof Number n) {
+                    indicators.put(entry.getKey(), n.longValue());
+                } else if (value instanceof String s) {
+                    indicators.put(entry.getKey(), Long.parseLong(s));
+                }
+            }
+            rows.add(new OverviewTrendResponse.TrendRow(dateObj.toString(), indicators));
+        }
+        return new OverviewTrendResponse(rows);
     }
 }

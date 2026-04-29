@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -61,6 +62,75 @@ public class OverviewDao {
         }
         Map<String, Object> row = rows.get(0);
         return new DailyViewFavoriteSums(toLong(row.get("view_count")), toLong(row.get("favorite_count")));
+    }
+
+    public List<Map<String, Object>> getTrend(OverviewRequest request, String trendType) {
+        if (request == null || request.getStartDate() == null || request.getEndDate() == null) {
+            throw new IllegalArgumentException("OverviewRequest 及 startDate、endDate 不能为空");
+        }
+
+        String type = trendType == null ? "" : trendType.trim();
+        if (type.isEmpty() || "newVideo".equals(type)) {
+            return queryDailyCountTrend(request, "COUNT(*)::bigint", "newVideoCount");
+        }
+        if ("activeUser".equals(type)) {
+            return queryDailyCountTrend(request, "COUNT(DISTINCT user_id)::bigint", "activeUserCount");
+        }
+        if ("videoStats".equals(type)) {
+            // TODO: 中术300 指标口径待补充后实现
+            return buildEmptyDailyTrend(request, "zhongshu300Count");
+        }
+        throw new IllegalArgumentException("未知 trendType: " + trendType);
+    }
+
+    private List<Map<String, Object>> queryDailyCountTrend(
+            OverviewRequest request,
+            String metricSql,
+            String metricKey
+    ) {
+        List<Object> params = new ArrayList<>();
+        String filter = buildFilterSql(request, params);
+        String sql = "SELECT to_timestamp(pubdate)::date AS d, " + metricSql + " AS c "
+                + "FROM hantang_dynamic.processed_videos "
+                + "WHERE 1=1 " + filter
+                + "GROUP BY d ORDER BY d";
+
+        List<Map<String, Object>> rows = postgreDao.queryList(sql, params);
+        Map<LocalDate, Long> byDate = new LinkedHashMap<>();
+        for (Map<String, Object> row : rows) {
+            Object dateObj = row.get("d");
+            if (dateObj == null) {
+                continue;
+            }
+            LocalDate date = LocalDate.parse(dateObj.toString());
+            byDate.put(date, toLong(row.get("c")));
+        }
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        LocalDate cursor = request.getStartDate();
+        LocalDate end = request.getEndDate();
+        while (!cursor.isAfter(end)) {
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("date", cursor.format(DateTimeFormatter.ISO_LOCAL_DATE));
+            item.put(metricKey, byDate.getOrDefault(cursor, 0L));
+            result.add(item);
+            cursor = cursor.plusDays(1);
+        }
+        return result;
+    }
+
+    private List<Map<String, Object>> buildEmptyDailyTrend(OverviewRequest request, String metricKey) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        LocalDate cursor = request.getStartDate();
+        LocalDate end = request.getEndDate();
+        while (!cursor.isAfter(end)) {
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("date", cursor.format(DateTimeFormatter.ISO_LOCAL_DATE));
+            item.put(metricKey, 0L);
+            result.add(item);
+            cursor = cursor.plusDays(1);
+        }
+        return result;
     }
 
     /** 同 {@link #sumViewAndFavoriteForRecordDate(String)}，入参为日历日。 */

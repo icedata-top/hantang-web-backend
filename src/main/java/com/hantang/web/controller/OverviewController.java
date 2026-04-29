@@ -40,25 +40,8 @@ public class OverviewController extends BaseController {
 
     private void getTrend(Context context) {
         try {
-            context.bodyAsClass(OverviewRequest.class);
-            OverviewTrendResponse response = new OverviewTrendResponse(
-                    List.of(
-                            new OverviewTrendResponse.TrendRow(
-                                    "2026-04-01",
-                                    Map.of(
-                                            "newVideoCount", 118L,
-                                            "activeUserCount", 92L,
-                                            "view", 920000L,
-                                            "favorite", 88500L,
-                                            "like", 12100L,
-                                            "coin", 8200L,
-                                            "share", 2100L,
-                                            "reply", 5100L,
-                                            "danmaku", 1580L
-                                    )
-                            )
-                    )
-            );
+            OverviewRequest request = context.bodyAsClass(OverviewRequest.class);
+            OverviewTrendResponse response = overviewService.getTrend(request);
             context.json(ResponseDTO.success(response));
         } catch (Exception e) {
             context.json(ResponseDTO.error(500, e.getMessage()));
