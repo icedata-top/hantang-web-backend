@@ -92,6 +92,12 @@
             <artifactId>jackson-databind</artifactId>
             <version>2.19.4</version>
         </dependency>
+        <!-- java.time（LocalDate 等）需显式注册 JavaTimeModule -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>2.19.4</version>
+        </dependency>
         <!-- Postgre SQL DB -->
         <dependency>
             <groupId>org.postgresql</groupId>
