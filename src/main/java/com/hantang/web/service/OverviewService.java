@@ -2,6 +2,7 @@ package com.hantang.web.service;
 
 import com.hantang.web.dao.OverviewDao;
 import com.hantang.web.dos.overview.OverviewIndicatorsResponse;
+import com.hantang.web.dos.overview.OverviewPartitionSubmissionsResponse;
 import com.hantang.web.dos.overview.OverviewRequest;
 
 import java.time.LocalDate;
@@ -143,5 +144,35 @@ public class OverviewService {
             rows.add(new OverviewTrendResponse.TrendRow(dateObj.toString(), indicators));
         }
         return new OverviewTrendResponse(rows);
+    }
+
+    public OverviewPartitionSubmissionsResponse getPartitionSubmissions(OverviewRequest request) {
+        if (request == null || request.getEndDate() == null) {
+            throw new IllegalArgumentException("OverviewRequest 及 endDate 不能为空");
+        }
+        String scope = "all";
+        if (request.getAddtionalParams() != null) {
+            String raw = request.getAddtionalParams().get("scope");
+            if (raw != null && !raw.isBlank()) {
+                scope = raw.trim();
+            }
+        }
+        List<Map<String, Object>> rows = overviewDao.getPartitionSubmissions(request, scope);
+        List<OverviewPartitionSubmissionsResponse.PartitionSubmissionRow> resultRows = new ArrayList<>();
+        for (Map<String, Object> row : rows) {
+            Object typeIdObj = row.get("type_id");
+            if (!(typeIdObj instanceof Number typeIdNum)) {
+                continue;
+            }
+            long count = 0L;
+            Object countObj = row.get("cnt");
+            if (countObj instanceof Number countNum) {
+                count = countNum.longValue();
+            } else if (countObj instanceof String countStr) {
+                count = Long.parseLong(countStr);
+            }
+            resultRows.add(new OverviewPartitionSubmissionsResponse.PartitionSubmissionRow(typeIdNum.intValue(), count));
+        }
+        return new OverviewPartitionSubmissionsResponse(resultRows);
     }
 }

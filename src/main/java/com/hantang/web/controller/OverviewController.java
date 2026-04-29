@@ -11,7 +11,6 @@ import io.javalin.Javalin;
 import io.javalin.http.Context;
 
 import java.util.List;
-import java.util.Map;
 
 public class OverviewController extends BaseController {
     private final OverviewService overviewService;
@@ -51,23 +50,7 @@ public class OverviewController extends BaseController {
     private void getPartitionSubmissions(Context context) {
         try {
             OverviewRequest request = context.bodyAsClass(OverviewRequest.class);
-            String scope = request.getAddtionalParams() == null ? null : request.getAddtionalParams().get("scope");
-            OverviewPartitionSubmissionsResponse response;
-            if ("new".equals(scope)) {
-                response = new OverviewPartitionSubmissionsResponse(
-                        List.of(
-                                new OverviewPartitionSubmissionsResponse.PartitionSubmissionRow(30, 58L),
-                                new OverviewPartitionSubmissionsResponse.PartitionSubmissionRow(21, 44L)
-                        )
-                );
-            } else {
-                response = new OverviewPartitionSubmissionsResponse(
-                        List.of(
-                                new OverviewPartitionSubmissionsResponse.PartitionSubmissionRow(30, 469L),
-                                new OverviewPartitionSubmissionsResponse.PartitionSubmissionRow(21, 418L)
-                        )
-                );
-            }
+            OverviewPartitionSubmissionsResponse response = overviewService.getPartitionSubmissions(request);
             context.json(ResponseDTO.success(response));
         } catch (Exception e) {
             context.json(ResponseDTO.error(500, e.getMessage()));

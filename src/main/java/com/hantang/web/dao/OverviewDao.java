@@ -83,6 +83,33 @@ public class OverviewDao {
         throw new IllegalArgumentException("未知 trendType: " + trendType);
     }
 
+    public List<Map<String, Object>> getPartitionSubmissions(OverviewRequest request, String scope) {
+        if (request == null || request.getEndDate() == null) {
+            throw new IllegalArgumentException("OverviewRequest 及 endDate 不能为空");
+        }
+        String normalizedScope = scope == null ? "all" : scope.trim();
+        List<Object> params = new ArrayList<>();
+        String filter;
+        if ("new".equals(normalizedScope)) {
+            if (request.getStartDate() == null) {
+                throw new IllegalArgumentException("scope=new 时 startDate 不能为空");
+            }
+            filter = buildFilterSql(request, params);
+        } else {
+            String endYmd = request.getEndDate().format(DateTimeFormatter.ISO_LOCAL_DATE);
+            long endSec = IsoTimeUtils.dateOnlyToEndOfDayEpochSecondsInclusive(endYmd);
+            params.add(endSec);
+            filter = " AND pubdate <= ? ";
+        }
+        String sql = "SELECT type_id::int AS type_id, COUNT(*)::bigint AS cnt "
+                + "FROM hantang_dynamic.processed_videos "
+                + "WHERE type_id IS NOT NULL "
+                + filter
+                + "GROUP BY type_id "
+                + "ORDER BY cnt DESC";
+        return postgreDao.queryList(sql, params);
+    }
+
     private List<Map<String, Object>> queryDailyCountTrend(
             OverviewRequest request,
             String metricSql,
