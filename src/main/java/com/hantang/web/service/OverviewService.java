@@ -4,6 +4,7 @@ import com.hantang.web.dao.OverviewDao;
 import com.hantang.web.dos.overview.OverviewIndicatorsResponse;
 import com.hantang.web.dos.overview.OverviewPartitionSubmissionsResponse;
 import com.hantang.web.dos.overview.OverviewRequest;
+import com.hantang.web.dos.overview.OverviewViewHistogramResponse;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -174,5 +175,39 @@ public class OverviewService {
             resultRows.add(new OverviewPartitionSubmissionsResponse.PartitionSubmissionRow(typeIdNum.intValue(), count));
         }
         return new OverviewPartitionSubmissionsResponse(resultRows);
+    }
+
+    public OverviewViewHistogramResponse getViewHistogram(OverviewRequest request) {
+        List<Map<String, Object>> rows = overviewDao.getViewHistogram(request);
+        List<OverviewViewHistogramResponse.ViewHistogramRow> resultRows = new ArrayList<>();
+        for (Map<String, Object> row : rows) {
+            Object codeObj = row.get("code");
+            if (!(codeObj instanceof String code)) {
+                continue;
+            }
+            long count = 0L;
+            Object countObj = row.get("cnt");
+            if (countObj instanceof Number countNum) {
+                count = countNum.longValue();
+            } else if (countObj instanceof String countStr) {
+                count = Long.parseLong(countStr);
+            }
+            resultRows.add(new OverviewViewHistogramResponse.ViewHistogramRow(code, histogramLabel(code), count));
+        }
+        return new OverviewViewHistogramResponse(resultRows);
+    }
+
+    private static String histogramLabel(String code) {
+        return switch (code) {
+            case "E01" -> "<0";
+            case "E02" -> "0-10";
+            case "E03" -> "10-100";
+            case "E04" -> "100-1k";
+            case "E05" -> "1k-1w";
+            case "E06" -> "1w-10w";
+            case "E07" -> "10w-100w";
+            case "E08" -> "100w-1000w";
+            default -> "1000w+";
+        };
     }
 }

@@ -10,8 +10,6 @@ import com.hantang.web.service.OverviewService;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 
-import java.util.List;
-
 public class OverviewController extends BaseController {
     private final OverviewService overviewService;
 
@@ -60,23 +58,7 @@ public class OverviewController extends BaseController {
     private void getViewHistogram(Context context) {
         try {
             OverviewRequest request = context.bodyAsClass(OverviewRequest.class);
-            String scope = request.getAddtionalParams() == null ? null : request.getAddtionalParams().get("scope");
-            OverviewViewHistogramResponse response;
-            if ("new".equals(scope)) {
-                response = new OverviewViewHistogramResponse(
-                        List.of(
-                                new OverviewViewHistogramResponse.ViewHistogramRow("E02", "0-10", 8634L),
-                                new OverviewViewHistogramResponse.ViewHistogramRow("E03", "10-100", 2944L)
-                        )
-                );
-            } else {
-                response = new OverviewViewHistogramResponse(
-                        List.of(
-                                new OverviewViewHistogramResponse.ViewHistogramRow("E02", "0-10", 60683L),
-                                new OverviewViewHistogramResponse.ViewHistogramRow("E03", "10-100", 19334L)
-                        )
-                );
-            }
+            OverviewViewHistogramResponse response = overviewService.getViewHistogram(request);
             context.json(ResponseDTO.success(response));
         } catch (Exception e) {
             context.json(ResponseDTO.error(500, e.getMessage()));

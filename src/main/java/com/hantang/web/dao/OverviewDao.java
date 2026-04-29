@@ -110,6 +110,31 @@ public class OverviewDao {
         return postgreDao.queryList(sql, params);
     }
 
+    public List<Map<String, Object>> getViewHistogram(OverviewRequest request) {
+        if (request == null || request.getEndDate() == null) {
+            throw new IllegalArgumentException("OverviewRequest 及 endDate 不能为空");
+        }
+        String endDate = request.getEndDate().format(DateTimeFormatter.ISO_LOCAL_DATE);
+        String sql = "SELECT "
+                + "CASE "
+                + "WHEN \"view\" < 0 THEN 'E01' "
+                + "WHEN \"view\" < 10 THEN 'E02' "
+                + "WHEN \"view\" < 100 THEN 'E03' "
+                + "WHEN \"view\" < 1000 THEN 'E04' "
+                + "WHEN \"view\" < 10000 THEN 'E05' "
+                + "WHEN \"view\" < 100000 THEN 'E06' "
+                + "WHEN \"view\" < 1000000 THEN 'E07' "
+                + "WHEN \"view\" < 10000000 THEN 'E08' "
+                + "ELSE 'E09' "
+                + "END AS code, "
+                + "COUNT(*)::bigint AS cnt "
+                + "FROM hantang_dynamic.video_daily "
+                + "WHERE record_date = ?::date "
+                + "GROUP BY 1 "
+                + "ORDER BY 1";
+        return postgreDao.queryList(sql, List.of(endDate));
+    }
+
     private List<Map<String, Object>> queryDailyCountTrend(
             OverviewRequest request,
             String metricSql,
