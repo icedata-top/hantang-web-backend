@@ -1,6 +1,7 @@
 package com.hantang.web.controller;
 
 import com.hantang.web.dos.common.ResponseDTO;
+import com.hantang.web.dos.overview.OverviewGateCrossingsResponse;
 import com.hantang.web.dos.overview.OverviewIndicatorsResponse;
 import com.hantang.web.dos.overview.OverviewPartitionSubmissionsResponse;
 import com.hantang.web.dos.overview.OverviewRequest;
@@ -25,6 +26,7 @@ public class OverviewController extends BaseController {
         app.post("/overview/get-trend", this::getTrend);
         app.post("/overview/get-partition-submissions", this::getPartitionSubmissions);
         app.post("/overview/get-view-histogram", this::getViewHistogram);
+        app.post("/overview/get-gate-crossings", this::getGateCrossings);
     }
 
     private void getIndicators(Context context) {
@@ -77,6 +79,16 @@ public class OverviewController extends BaseController {
                         )
                 );
             }
+            context.json(ResponseDTO.success(response));
+        } catch (Exception e) {
+            context.json(ResponseDTO.error(500, e.getMessage()));
+        }
+    }
+
+    private void getGateCrossings(Context context) {
+        try {
+            OverviewRequest request = context.bodyAsClass(OverviewRequest.class);
+            OverviewGateCrossingsResponse response = overviewService.getGateCrossings(request);
             context.json(ResponseDTO.success(response));
         } catch (Exception e) {
             context.json(ResponseDTO.error(500, e.getMessage()));
