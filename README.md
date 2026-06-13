@@ -13,6 +13,12 @@ docker run --rm -p 8080:8080 \
   hantang-web-backend:local
 ```
 
+`config.secret.properties` 目前只需要 PostgreSQL 连接配置，不再需要 MySQL 配置。可以从示例文件复制后填写真实值：
+
+```bash
+cp config.secret.properties.example config.secret.properties
+```
+
 ## 📂 项目包结构
 
 ```text
@@ -73,7 +79,7 @@ POST /hantang/video-metrics
 ### ✅ DAO 层
 
 - **与数据源交互**：仅负责 SQL、ORM 或第三方数据源调用。
-- **命名建议**：以 `Dao` 结尾，如 `MysqlDao`。
+- **命名建议**：以 `Dao` 结尾，如 `PostgreDao`。
 - **接口隔离**：不同表/功能独立实现，方便后期更换数据源。
 
 ---

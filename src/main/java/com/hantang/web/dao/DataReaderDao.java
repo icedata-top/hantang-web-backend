@@ -1,13 +1,10 @@
 package com.hantang.web.dao;
 
-import com.hantang.web.dao.foundation.MysqlDao;
+import com.hantang.web.dao.foundation.PostgreDao;
 import com.hantang.web.enums.Metric;
 import com.hantang.web.exceptions.InvalidVideoIdentifierException;
 import org.apache.commons.lang3.StringUtils;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,10 +14,10 @@ import java.util.Map;
 @Deprecated
 public class DataReaderDao {
 
-    MysqlDao mysqlDao;
+    private final PostgreDao postgreDao;
 
     public DataReaderDao() {
-        mysqlDao = new MysqlDao();
+        postgreDao = PostgreDao.getInstance();
     }
 
     /**
@@ -32,18 +29,18 @@ public class DataReaderDao {
         if (StringUtils.isEmpty(videoName)) {
             throw new InvalidVideoIdentifierException("Empty videoName" + videoName);
         }
-        Connection connection = mysqlDao.getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement(
-                "SELECT aid FROM hantang.video_static WHERE title LIKE ? AND priority > 0 ORDER BY priority, pubdate LIMIT 1;"
-        );
-        // 在参数值前后添加%通配符
-        preparedStatement.setString(1, "%" + videoName + "%");
-        ResultSet resultSet = preparedStatement.executeQuery();
-        if (resultSet.next()) {
-            return resultSet.getLong("aid");
-        } else {
-            throw new InvalidVideoIdentifierException("Cannot find in DB for videoName: " + videoName);
+        String sql = """
+                SELECT aid
+                FROM hantang_dynamic.video_static
+                WHERE title ILIKE ? AND priority > 0
+                ORDER BY priority, pubdate
+                LIMIT 1
+                """;
+        List<Map<String, Object>> rows = postgreDao.queryList(sql, List.of("%" + videoName + "%"));
+        if (!rows.isEmpty()) {
+            return toLong(rows.getFirst().get("aid"));
         }
+        throw new InvalidVideoIdentifierException("Cannot find in DB for videoName: " + videoName);
     }
 
     /**
@@ -55,27 +52,30 @@ public class DataReaderDao {
      * @return UNIX时间戳和指标
      */
     public Map<String, Integer> getMetricAchievedTime(long aid, Metric metric, int target, boolean upper) throws SQLException {
-        String filed = metric.getField();
+        String field = quoteMetricField(metric);
         String sqlTemplate = upper ?
-                "SELECT time, %s FROM hantang.video_minute WHERE aid = ? AND %s >= ? ORDER BY view, time LIMIT 1;" :
-                "SELECT time, %s FROM hantang.video_minute WHERE aid = ? AND %s < ? ORDER BY view DESC, time DESC LIMIT 1;";
-        String sql = String.format(sqlTemplate, filed, filed);
-        Connection connection = mysqlDao.getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement(sql);
-        // 设置参数
-        preparedStatement.setLong(1, aid);
-        preparedStatement.setInt(2, target);
-
-        // 执行查询
-        ResultSet resultSet = preparedStatement.executeQuery();
-        if (resultSet.next()) {
-             int time = resultSet.getInt("time");
-             int value = resultSet.getInt(filed);
-             return Map.of("timestamp", time, "value", value);
-        } else {
-            // 没有找到符合条件的记录
-            return Map.of("timestamp", -1, "value", -1);
+                """
+                SELECT EXTRACT(EPOCH FROM "time")::int AS time, %s
+                FROM hantang_dynamic.video_minute
+                WHERE aid = ? AND %s >= ?
+                ORDER BY "view", "time"
+                LIMIT 1
+                """ :
+                """
+                SELECT EXTRACT(EPOCH FROM "time")::int AS time, %s
+                FROM hantang_dynamic.video_minute
+                WHERE aid = ? AND %s < ?
+                ORDER BY "view" DESC, "time" DESC
+                LIMIT 1
+                """;
+        String sql = String.format(sqlTemplate, field, field);
+        List<Map<String, Object>> rows = postgreDao.queryList(sql, List.of(aid, target));
+        if (!rows.isEmpty()) {
+             Map<String, Object> row = rows.getFirst();
+             return Map.of("timestamp", toInt(row.get("time")), "value", toInt(row.get(metric.getField())));
         }
+        // 没有找到符合条件的记录
+        return Map.of("timestamp", -1, "value", -1);
     }
 
     /**
@@ -88,34 +88,25 @@ public class DataReaderDao {
      */
     public List<Map<String, Integer>> getVideoMetricsByDay(long aid, List<Metric> metricList, String startDate, String endDate) throws SQLException {
         List<String> metricNameList = metricList.stream()
-                .map(Metric::getField) // 获取原始字段名
-                .map(field -> "`" + field + "`") // 给字段名添加反引号
+                .map(this::quoteMetricField)
                 .toList();
         String fieldsString = String.join(", ", metricNameList);
         String sql = String.format("""
-                SELECT unix_timestamp(record_date) AS time, %s\s
-                FROM hantang.video_daily\s
+                SELECT EXTRACT(EPOCH FROM record_date::timestamp)::int AS time, %s
+                FROM hantang_dynamic.video_daily
                 WHERE aid = ?
-                  AND record_date BETWEEN ? AND ?
-                ORDER BY record_date\s
-                LIMIT 100;
+                  AND record_date BETWEEN ?::date AND ?::date
+                ORDER BY record_date
+                LIMIT 100
                 """, fieldsString);
-        Connection connection = mysqlDao.getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement(sql);
-        // 设置参数
-        preparedStatement.setLong(1, aid);
-        preparedStatement.setString(2, startDate);
-        preparedStatement.setString(3, endDate);
-        // 执行查询
-        ResultSet resultSet = preparedStatement.executeQuery();
+        List<Map<String, Object>> rows = postgreDao.queryList(sql, List.of(aid, startDate, endDate));
         List<Map<String, Integer>> rowList = new ArrayList<>();
-        while (resultSet.next()) {
-            int time = resultSet.getInt("time");
+        for (Map<String, Object> dbRow : rows) {
             Map<String, Integer> row = new HashMap<>();
-            row.put("timestamp", time);
-            for (String metricField : metricNameList) {
-                String normalMetricField = StringUtils.remove(metricField, '`');
-                row.put(normalMetricField, resultSet.getInt(normalMetricField));
+            row.put("timestamp", toInt(dbRow.get("time")));
+            for (Metric metric : metricList) {
+                String metricField = metric.getField();
+                row.put(metricField, toInt(dbRow.get(metricField)));
             }
             rowList.add(row);
         }
@@ -134,5 +125,29 @@ public class DataReaderDao {
         List<Map<String, Integer>> rowList = new ArrayList<>();
 
         return rowList;
+    }
+
+    private String quoteMetricField(Metric metric) {
+        return "\"" + metric.getField() + "\"";
+    }
+
+    private int toInt(Object o) {
+        if (o == null) {
+            return 0;
+        }
+        if (o instanceof Number n) {
+            return n.intValue();
+        }
+        return Integer.parseInt(o.toString());
+    }
+
+    private long toLong(Object o) {
+        if (o == null) {
+            return 0L;
+        }
+        if (o instanceof Number n) {
+            return n.longValue();
+        }
+        return Long.parseLong(o.toString());
     }
 }
