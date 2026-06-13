@@ -13,14 +13,10 @@ docker run --rm -p 8080:8080 \
   hantang-web-backend:local
 ```
 
-`config.secret.properties` 目前只需要 PostgreSQL 连接配置，不再需要 MySQL 配置：
+`config.secret.properties` 目前只需要 PostgreSQL 连接配置，不再需要 MySQL 配置。可以从示例文件复制后填写真实值：
 
-```properties
-db.postgre_host=127.0.0.1
-db.postgre_port=5432
-db.postgre_database=hantang
-db.postgre_user=postgres
-db.postgre_password=your-password
+```bash
+cp config.secret.properties.example config.secret.properties
 ```
 
 ## 📂 项目包结构
