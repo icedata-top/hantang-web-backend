@@ -1,4 +1,4 @@
-# MySQL DB properties
+# Local DB properties
 config.secret.properties
 
 # Maven build outputs
