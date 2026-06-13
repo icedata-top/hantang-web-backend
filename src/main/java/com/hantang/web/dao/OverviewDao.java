@@ -110,6 +110,37 @@ public class OverviewDao {
         return postgreDao.queryList(sql, params);
     }
 
+    public GateCrossingQueryResult getGateCrossings(OverviewRequest request, Long aid, int page, int pageSize) {
+        if (request == null || request.getStartDate() == null || request.getEndDate() == null) {
+            throw new IllegalArgumentException("OverviewRequest 及 startDate、endDate 不能为空");
+        }
+        if (endBeforeStart(request)) {
+            throw new IllegalArgumentException("endDate 不能早于 startDate");
+        }
+
+        List<Object> filterParams = new ArrayList<>();
+        String filter = buildGateCrossingFilterSql(request, aid, filterParams);
+
+        String countSql = "SELECT COUNT(*)::bigint AS total "
+                + "FROM hantang_dynamic.video_collection_gate_crossings "
+                + "WHERE 1=1 "
+                + filter;
+        List<Map<String, Object>> countRows = postgreDao.queryList(countSql, filterParams);
+        long total = countRows.isEmpty() ? 0L : toLong(countRows.get(0).get("total"));
+
+        List<Object> rowParams = new ArrayList<>(filterParams);
+        rowParams.add(pageSize);
+        rowParams.add((long) (page - 1) * pageSize);
+        String rowsSql = "SELECT id, aid, gate_value, previous_view, current_view, crossed_at, created_at "
+                + "FROM hantang_dynamic.video_collection_gate_crossings "
+                + "WHERE 1=1 "
+                + filter
+                + "ORDER BY crossed_at DESC, id DESC "
+                + "LIMIT ? OFFSET ?";
+        List<Map<String, Object>> rows = postgreDao.queryList(rowsSql, rowParams);
+        return new GateCrossingQueryResult(rows, total);
+    }
+
     private List<Map<String, Object>> queryDailyCountTrend(
             OverviewRequest request,
             String metricSql,
@@ -178,7 +209,7 @@ public class OverviewDao {
         }
         LocalDate start = request.getStartDate();
         LocalDate end = request.getEndDate();
-        if (end.isBefore(start)) {
+        if (endBeforeStart(request)) {
             throw new IllegalArgumentException("endDate 不能早于 startDate");
         }
         String startYmd = start.format(DateTimeFormatter.ISO_LOCAL_DATE);
@@ -188,6 +219,24 @@ public class OverviewDao {
         params.add(startSec);
         params.add(endSec);
         return " AND pubdate BETWEEN ? AND ? ";
+    }
+
+    private static String buildGateCrossingFilterSql(OverviewRequest request, Long aid, List<Object> params) {
+        LocalDate start = request.getStartDate();
+        LocalDate endExclusive = request.getEndDate().plusDays(1);
+        params.add(start.format(DateTimeFormatter.ISO_LOCAL_DATE));
+        params.add(endExclusive.format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        StringBuilder filter = new StringBuilder(" AND crossed_at >= ?::date AND crossed_at < ?::date ");
+        if (aid != null) {
+            filter.append("AND aid = ? ");
+            params.add(aid);
+        }
+        return filter.toString();
+    }
+
+    private static boolean endBeforeStart(OverviewRequest request) {
+        return request.getEndDate().isBefore(request.getStartDate());
     }
 
     private static long toLong(Object o) {
@@ -205,5 +254,8 @@ public class OverviewDao {
 
     /** 某日 {@code video_daily} 播放量、收藏量总和 */
     public record DailyViewFavoriteSums(long viewSum, long favoriteSum) {
+    }
+
+    public record GateCrossingQueryResult(List<Map<String, Object>> rows, long total) {
     }
 }

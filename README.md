@@ -2,6 +2,17 @@
 
 本项目基于 Javalin 构建，采用简洁的分层结构，方便后期维护和扩展。
 
+## Docker 运行
+
+镜像不会打包 `config.secret.properties`。运行容器时需要把运行环境的数据库配置文件挂载到 `/app/config.secret.properties`：
+
+```bash
+docker build -t hantang-web-backend:local .
+docker run --rm -p 8080:8080 \
+  -v /path/to/config.secret.properties:/app/config.secret.properties:ro \
+  hantang-web-backend:local
+```
+
 ## 📂 项目包结构
 
 ```text

@@ -1,11 +1,17 @@
 package com.hantang.web.service;
 
 import com.hantang.web.dao.OverviewDao;
+import com.hantang.web.dos.overview.OverviewGateCrossingsResponse;
 import com.hantang.web.dos.overview.OverviewIndicatorsResponse;
 import com.hantang.web.dos.overview.OverviewPartitionSubmissionsResponse;
 import com.hantang.web.dos.overview.OverviewRequest;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -15,6 +21,10 @@ import java.util.Map;
 import com.hantang.web.dos.overview.OverviewTrendResponse;
 
 public class OverviewService {
+    private static final int DEFAULT_GATE_CROSSING_PAGE = 1;
+    private static final int DEFAULT_GATE_CROSSING_PAGE_SIZE = 20;
+    private static final int MAX_GATE_CROSSING_PAGE_SIZE = 100;
+
     private final OverviewDao overviewDao;
 
     public OverviewService() {
@@ -174,5 +184,100 @@ public class OverviewService {
             resultRows.add(new OverviewPartitionSubmissionsResponse.PartitionSubmissionRow(typeIdNum.intValue(), count));
         }
         return new OverviewPartitionSubmissionsResponse(resultRows);
+    }
+
+    public OverviewGateCrossingsResponse getGateCrossings(OverviewRequest request) {
+        if (request == null || request.getStartDate() == null || request.getEndDate() == null) {
+            throw new IllegalArgumentException("OverviewRequest 及 startDate、endDate 不能为空");
+        }
+        if (request.getEndDate().isBefore(request.getStartDate())) {
+            throw new IllegalArgumentException("endDate 不能早于 startDate");
+        }
+
+        Map<String, String> params = request.getAddtionalParams();
+        Long aid = parseOptionalPositiveLong(params == null ? null : params.get("aid"), "aid");
+        int page = parsePositiveInt(params == null ? null : params.get("page"), DEFAULT_GATE_CROSSING_PAGE, "page");
+        int pageSize = parsePositiveInt(
+                params == null ? null : params.get("pageSize"),
+                DEFAULT_GATE_CROSSING_PAGE_SIZE,
+                "pageSize"
+        );
+        if (pageSize > MAX_GATE_CROSSING_PAGE_SIZE) {
+            pageSize = MAX_GATE_CROSSING_PAGE_SIZE;
+        }
+
+        OverviewDao.GateCrossingQueryResult result = overviewDao.getGateCrossings(request, aid, page, pageSize);
+        List<OverviewGateCrossingsResponse.GateCrossingRow> rows = new ArrayList<>();
+        for (Map<String, Object> row : result.rows()) {
+            rows.add(new OverviewGateCrossingsResponse.GateCrossingRow(
+                    toNullableLong(row.get("id")),
+                    toNullableLong(row.get("aid")),
+                    toNullableLong(row.get("gate_value")),
+                    toNullableLong(row.get("previous_view")),
+                    toNullableLong(row.get("current_view")),
+                    toIsoString(row.get("crossed_at")),
+                    toIsoString(row.get("created_at"))
+            ));
+        }
+        return new OverviewGateCrossingsResponse(rows, result.total(), page, pageSize);
+    }
+
+    private static int parsePositiveInt(String raw, int defaultValue, String fieldName) {
+        if (raw == null || raw.isBlank()) {
+            return defaultValue;
+        }
+        try {
+            int value = Integer.parseInt(raw.trim());
+            if (value <= 0) {
+                throw new IllegalArgumentException(fieldName + " 必须大于 0");
+            }
+            return value;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(fieldName + " 必须为整数: " + raw, e);
+        }
+    }
+
+    private static Long parseOptionalPositiveLong(String raw, String fieldName) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        try {
+            long value = Long.parseLong(raw.trim());
+            if (value <= 0L) {
+                throw new IllegalArgumentException(fieldName + " 必须大于 0");
+            }
+            return value;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(fieldName + " 必须为整数: " + raw, e);
+        }
+    }
+
+    private static Long toNullableLong(Object o) {
+        if (o == null) {
+            return null;
+        }
+        if (o instanceof Number n) {
+            return n.longValue();
+        }
+        return Long.parseLong(o.toString());
+    }
+
+    private static String toIsoString(Object o) {
+        if (o == null) {
+            return null;
+        }
+        if (o instanceof OffsetDateTime odt) {
+            return odt.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+        }
+        if (o instanceof Timestamp timestamp) {
+            return timestamp.toInstant().toString();
+        }
+        if (o instanceof Instant instant) {
+            return instant.toString();
+        }
+        if (o instanceof LocalDateTime ldt) {
+            return ldt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        }
+        return o.toString();
     }
 }
