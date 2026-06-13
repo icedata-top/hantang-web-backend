@@ -10,6 +10,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
+@Deprecated
 public class MysqlDao {
 
     private static final String URL_LOCAL;

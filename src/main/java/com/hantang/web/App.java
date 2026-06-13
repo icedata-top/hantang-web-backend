@@ -2,6 +2,8 @@ package com.hantang.web;
 
 import com.hantang.web.controller.BaseController;
 import com.hantang.web.controller.DataReaderController;
+import com.hantang.web.controller.HomeController;
+import com.hantang.web.controller.OverviewController;
 import io.javalin.Javalin;
 
 public class App {
@@ -11,6 +13,8 @@ public class App {
     public static void main(String[] args) {
         Javalin app = Javalin.create(config -> {
             config.http.defaultContentType = "application/json";
+            // 允许前后端联调跨域（开发环境）
+            config.bundledPlugins.enableCors(cors -> cors.addRule(it -> it.anyHost()));
         });
         registerAllController(app);
         app.start(8080);
@@ -22,7 +26,9 @@ public class App {
      */
     private static void registerAllController(Javalin app) {
         BaseController[] controllers = {
-                new DataReaderController()
+                new DataReaderController(),
+                new HomeController(),
+                new OverviewController()
         };
 
         for (BaseController controller : controllers) {
