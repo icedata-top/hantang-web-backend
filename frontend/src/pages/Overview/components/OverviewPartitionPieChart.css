@@ -1,0 +1,109 @@
+.overview-panel--partition .ant-card-head {
+  border-bottom: none !important;
+  min-height: 48px;
+}
+
+.overview-panel--partition .ant-card-head-title {
+  font-size: 15px;
+  font-weight: 600;
+  padding: 12px 0 4px;
+  color: var(--text) !important;
+}
+
+.overview-panel--partition .ant-card-body {
+  padding-top: 8px;
+}
+
+.overview-partition-pie-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.overview-partition-pie-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin-bottom: 8px;
+}
+
+.overview-partition-pie-toolbar-hint {
+  flex: 1;
+  min-width: 0;
+}
+
+.overview-partition-pie-segmented {
+  flex-shrink: 0;
+  margin-bottom: 0 !important;
+}
+
+.overview-partition-pie-segmented.ant-segmented {
+  background: rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--border);
+  padding: 2px;
+}
+
+.overview-partition-pie-segmented .ant-segmented-item {
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.overview-partition-pie-segmented .ant-segmented-item:hover:not(.ant-segmented-item-selected) {
+  color: rgba(0, 0, 0, 0.78);
+}
+
+.overview-partition-pie-segmented .ant-segmented-item-selected {
+  background: #ffffff !important;
+  color: var(--theme-primary) !important;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+}
+
+[data-theme='dark'] .overview-partition-pie-segmented.ant-segmented {
+  background: var(--card-bg);
+  border-color: #343840;
+}
+
+[data-theme='dark'] .overview-partition-pie-segmented .ant-segmented-item {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+[data-theme='dark'] .overview-partition-pie-segmented .ant-segmented-item-selected {
+  background: #343840 !important;
+  color: var(--theme-primary) !important;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme='dark'] .overview-partition-pie-segmented .ant-segmented-item:hover {
+  color: var(--text);
+}
+
+.overview-partition-pie-host {
+  width: 100%;
+  min-height: 320px;
+  height: 400px;
+  background: transparent;
+}
+
+.overview-partition-pie-host canvas {
+  background: transparent !important;
+}
+
+.overview-partition-pie-empty {
+  min-height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px 16px;
+  border-radius: 6px;
+  border: 1px dashed var(--border);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+[data-theme='dark'] .overview-partition-pie-empty {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: #343840;
+}

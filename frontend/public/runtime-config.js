@@ -1,0 +1,1 @@
+window.__ICEDATA_RUNTIME_CONFIG__ = window.__ICEDATA_RUNTIME_CONFIG__ || {};

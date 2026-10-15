@@ -1,0 +1,17 @@
+:80 {
+	root * /srv
+	encode zstd gzip
+
+	handle_path /api/* {
+		reverse_proxy {$ICEDATA_API_UPSTREAM:http://icedata-backend:8080}
+	}
+
+	handle /runtime-config.js {
+		file_server
+	}
+
+	handle {
+		try_files {path} /index.html
+		file_server
+	}
+}

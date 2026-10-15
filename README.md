@@ -1,6 +1,79 @@
-# 项目结构说明
+# 汉唐 Web
 
-本项目基于 Javalin 构建，采用简洁的分层结构，方便后期维护和扩展。
+本仓库同时包含前端和后端。两边独立构建、独立启动，互不打包进对方的产物。
+
+## 目录
+
+| 路径 | 说明 |
+|------|------|
+| `frontend/` | 前端 |
+| `src/` | 后端源码 |
+| `sql/` | 数据库 DDL |
+| `doc/todo/`、`doc/design/`、`doc/rule/` | 待办、设计、约定 |
+
+## 技术栈
+
+### 前端
+
+目录：`frontend/`。细节见 `frontend/README.md`。
+
+- React 18、Vite 5、Ant Design、React Router、i18next、VChart
+- 包管理使用 npm，锁文件是 `frontend/package-lock.json`
+- 开发服务器端口 `5173`
+
+### 后端
+
+目录：仓库根目录，源码在 `src/main/java`。
+
+- Java 21、Maven、Javalin 6
+- MySQL、PostgreSQL（HikariCP）
+- 入口类 `com.hantang.web.App`，监听 `8080`
+- 数据库连接读取仓库根目录的 `config.secret.properties`。该文件已在 `.gitignore` 中，不提交
+
+## 启动
+
+前后端各开一个终端。
+
+### 前端
+
+```sh
+cd frontend
+npm install
+npm run dev
+```
+
+浏览器访问 `http://localhost:5173/`。未设置环境变量时前端使用 `MOCK`，不请求后端。需要连本机后端时：
+
+```sh
+VITE_APP_ENV=DEV npm run dev
+```
+
+生产打包：
+
+```sh
+npm run build
+```
+
+产物在 `frontend/dist/`，该目录不提交。
+
+### 后端
+
+在仓库根目录准备好 `config.secret.properties`，然后运行主类 `com.hantang.web.App`。
+
+用 Maven 打包后启动：
+
+```sh
+mvn package
+java -jar target/hantang-web-backend-1.0-SNAPSHOT.jar
+```
+
+接口在 `http://localhost:8080/`。开发环境已允许跨域，前端可以从 `5173` 访问后端。
+
+---
+
+# 后端结构说明
+
+后端基于 Javalin，采用分层结构。
 
 ## 📂 项目包结构
 
@@ -14,7 +87,7 @@ src/main/java
 │ └── data.reader # 与“数据读取”功能相关的请求/响应体
 ├── mapper # JSON序列化/反序列化等映射器封装
 ├── service # 服务层（可选）：编写核心业务逻辑，解耦控制器和DAO
-└── Main # 应用入口
+└── App # 应用入口 com.hantang.web.App
 ```
 
 

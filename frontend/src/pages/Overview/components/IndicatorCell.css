@@ -1,0 +1,85 @@
+/* 无 Card/边框；两列网格；在父级正方形区域内垂直居中 */
+.indicator-cell {
+  display: grid;
+  grid-template-columns: 2.35em minmax(0, 1fr);
+  align-items: baseline;
+  align-content: center;
+  column-gap: 10px;
+  row-gap: 6px;
+  padding: 4px 2px 2px;
+  min-width: 0;
+  width: 100%;
+  max-height: 100%;
+}
+
+.indicator-cell-title {
+  grid-column: 1 / -1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  opacity: 0.82;
+  line-height: 1.35;
+  text-align: left;
+  letter-spacing: 0.01em;
+}
+
+.indicator-cell-main-row {
+  grid-column: 2;
+  justify-self: end;
+  margin-top: 4px;
+  margin-bottom: 10px;
+  padding: 6px 0 8px;
+  min-height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.indicator-cell-main {
+  display: inline-block;
+}
+
+.indicator-cell-main .ant-statistic-content {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.25;
+  font-variant-numeric: tabular-nums;
+}
+
+.indicator-cell-main .ant-statistic-content-value {
+  color: inherit;
+}
+
+.indicator-cell-label {
+  font-size: 12px;
+  color: var(--text);
+  opacity: 0.52;
+  text-align: left;
+  line-height: 1.35;
+}
+
+.indicator-cell-num {
+  grid-column: 2;
+  justify-self: end;
+  text-align: right;
+  min-width: 0;
+}
+
+.indicator-cell-num .ant-statistic {
+  display: inline-block;
+}
+
+.indicator-cell-rate .ant-statistic-content {
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.indicator-cell-rate .ant-statistic-content-prefix {
+  margin-inline-end: 3px;
+}
+
+.indicator-cell-rate .ant-statistic-content-prefix .anticon {
+  font-size: 12px;
+  vertical-align: 0.05em;
+}

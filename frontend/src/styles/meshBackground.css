@@ -1,0 +1,78 @@
+/*
+ * 弥散背景（首页 / 关于 / UniSeek 等）：独立背景层做轻微视差平移，前景不动。
+ * 由 html[data-mesh='on'] 开启；--mesh-nx/ny ∈ [-1, 1]。
+ */
+html[data-mesh='on'] {
+  --mesh-nx: 0;
+  --mesh-ny: 0;
+}
+
+html[data-mesh='on'] body {
+  background: #f4f4f4;
+}
+
+html[data-mesh='on']::before {
+  content: '';
+  position: fixed;
+  inset: -12%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 68% 52% at 8% 12%, rgba(67, 139, 237, 0.34), transparent 56%),
+    radial-gradient(ellipse 58% 46% at 78% 8%, rgba(118, 175, 242, 0.4), transparent 52%),
+    radial-gradient(ellipse 42% 38% at 42% 28%, rgba(186, 230, 253, 0.18), transparent 58%),
+    radial-gradient(ellipse 48% 36% at 92% 36%, rgba(56, 189, 198, 0.12), transparent 55%),
+    radial-gradient(ellipse 55% 40% at 18% 48%, rgba(147, 197, 253, 0.1), transparent 60%),
+    linear-gradient(
+      180deg,
+      #eef3fa 0%,
+      #f2f5f9 28%,
+      #f4f4f4 58%,
+      #f4f4f4 100%
+    );
+  transform: translate3d(
+    calc(var(--mesh-nx) * -56px),
+    calc(var(--mesh-ny) * -40px),
+    0
+  );
+  will-change: transform;
+}
+
+html[data-mesh='on'][data-theme='dark'] body {
+  background: #1e1f22;
+}
+
+html[data-mesh='on'][data-theme='dark']::before {
+  background:
+    radial-gradient(ellipse 68% 52% at 8% 12%, rgba(67, 139, 237, 0.28), transparent 56%),
+    radial-gradient(ellipse 58% 46% at 78% 8%, rgba(118, 175, 242, 0.2), transparent 52%),
+    radial-gradient(ellipse 42% 38% at 42% 28%, rgba(30, 64, 120, 0.2), transparent 58%),
+    radial-gradient(ellipse 48% 36% at 92% 36%, rgba(45, 160, 170, 0.08), transparent 55%),
+    radial-gradient(ellipse 55% 40% at 18% 48%, rgba(59, 130, 246, 0.08), transparent 60%),
+    linear-gradient(
+      180deg,
+      #1a1c22 0%,
+      #1c1e24 28%,
+      #1e1f22 58%,
+      #1e1f22 100%
+    );
+}
+
+/* 导航外层透明，卡片半透明毛玻璃浮在背景上 */
+html[data-mesh='on'] .icedata-navbar-wrap {
+  background: transparent;
+}
+
+html[data-mesh='on'] .icedata-navbar-card {
+  background: color-mix(in srgb, var(--navbar-bg) 42%, transparent) !important;
+  backdrop-filter: blur(14px) saturate(1.25);
+  -webkit-backdrop-filter: blur(14px) saturate(1.25);
+}
+
+html[data-mesh='on'] .icedata-navbar-card:hover {
+  background: color-mix(in srgb, var(--bg-hover) 55%, transparent) !important;
+}
+
+html[data-mesh='on'][data-theme='dark'] .icedata-navbar-wrap {
+  background: transparent;
+}

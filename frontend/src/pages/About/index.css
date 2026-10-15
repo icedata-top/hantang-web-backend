@@ -1,0 +1,185 @@
+.about-page {
+  position: relative;
+  color: var(--text);
+  padding-bottom: 64px;
+}
+
+.about-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.about-hero {
+  padding: 12px 20px 28px;
+}
+
+.about-hero-inner {
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.about-hero-figure {
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.about-illustration {
+  display: block;
+  width: 100%;
+  max-width: min(92vw, 520px);
+  height: auto;
+}
+
+.about-content {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.about-section {
+  margin-bottom: 36px;
+}
+
+.about-stack .about-section:last-child {
+  margin-bottom: 0;
+}
+
+.about-eyebrow {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text);
+  opacity: 0.55;
+  margin-bottom: 14px;
+}
+
+.about-prose {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.about-prose p,
+.about-section-text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.75;
+  font-weight: 400;
+  color: var(--text);
+}
+
+.about-prose strong,
+.about-section-text strong {
+  font-weight: 600;
+}
+
+.about-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 找到我们：横向三列，无卡片背景 */
+.about-contact-row {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px 40px;
+  justify-content: flex-start;
+}
+
+.about-contact-row > li {
+  flex: 1 1 140px;
+  min-width: 0;
+  max-width: 220px;
+}
+
+.about-contact-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+  padding: 0;
+  border: none;
+  background: none;
+  transition: opacity 0.2s ease;
+}
+
+a.about-contact-item:hover {
+  opacity: 0.75;
+}
+
+a.about-contact-item:hover .about-contact-meta {
+  text-decoration: underline;
+}
+
+.about-contact-item-static {
+  cursor: default;
+}
+
+/* 图标：随正文单色（浅底近黑 / 深底近白），加大尺寸 */
+.about-contact-icon {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  font-size: 36px;
+  line-height: 1;
+  color: var(--text);
+}
+
+.about-contact-icon .anticon {
+  color: inherit;
+}
+
+.about-contact-label {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--text);
+}
+
+.about-contact-meta {
+  font-size: 14px;
+  line-height: 1.45;
+  font-weight: 500;
+  color: var(--text);
+  opacity: 0.85;
+  word-break: break-all;
+}
+
+.about-contact-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text);
+  opacity: 0.9;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+@media (max-width: 520px) {
+  .about-contact-row {
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .about-contact-row > li {
+    max-width: none;
+  }
+}

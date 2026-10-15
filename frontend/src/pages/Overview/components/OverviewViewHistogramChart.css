@@ -1,0 +1,126 @@
+.overview-panel--histogram .ant-card-head {
+  border-bottom: none !important;
+  min-height: 48px;
+}
+
+.overview-panel--histogram .ant-card-head-title {
+  font-size: 15px;
+  font-weight: 600;
+  padding: 12px 0 4px;
+  color: var(--text) !important;
+}
+
+.overview-panel--histogram .ant-card-body {
+  padding-top: 8px;
+}
+
+.overview-view-histogram-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* 一行：左侧备注，右侧 Segmented */
+.overview-view-histogram-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin-bottom: 8px;
+}
+
+.overview-view-histogram-toolbar-hint {
+  flex: 1;
+  min-width: 0;
+  margin: 0 !important;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.overview-view-histogram-toolbar-hint.ant-typography {
+  color: var(--text) !important;
+  opacity: 0.65;
+}
+
+.overview-view-histogram-segmented {
+  flex-shrink: 0;
+  margin-bottom: 0 !important;
+}
+
+/* 浅色：轨道与选中项对比拉开 */
+.overview-view-histogram-segmented.ant-segmented {
+  background: rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--border);
+  padding: 2px;
+}
+
+.overview-view-histogram-segmented .ant-segmented-item {
+  color: rgba(0, 0, 0, 0.55);
+  transition:
+    color 0.2s,
+    background 0.2s;
+}
+
+.overview-view-histogram-segmented .ant-segmented-item:hover:not(.ant-segmented-item-selected) {
+  color: rgba(0, 0, 0, 0.78);
+}
+
+.overview-view-histogram-segmented .ant-segmented-item-selected {
+  background: #ffffff !important;
+  color: var(--theme-primary) !important;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+}
+
+[data-theme='dark'] .overview-view-histogram-segmented .ant-segmented-item-selected {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme='dark'] .overview-view-histogram-segmented.ant-segmented {
+  background: var(--card-bg);
+  border-color: #343840;
+}
+
+[data-theme='dark'] .overview-view-histogram-segmented .ant-segmented-item {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+[data-theme='dark'] .overview-view-histogram-segmented .ant-segmented-item-selected {
+  background: #343840 !important;
+  color: var(--theme-primary) !important;
+  font-weight: 600;
+}
+
+[data-theme='dark'] .overview-view-histogram-segmented .ant-segmented-item:hover {
+  color: var(--text);
+}
+
+.overview-view-histogram-host {
+  width: 100%;
+  min-height: 280px;
+  height: 360px;
+  background: transparent;
+}
+
+.overview-view-histogram-host canvas {
+  background: transparent !important;
+}
+
+.overview-view-histogram-empty {
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px 16px;
+  border-radius: 6px;
+  border: 1px dashed var(--border);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+[data-theme='dark'] .overview-view-histogram-empty {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: #343840;
+}

@@ -1,0 +1,222 @@
+.icedata-navbar-wrap {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 16px 20px 0;
+  /* 与页面主背景一致，避免与 Card 叠加产生偏 #fafafa 的渐变条带 */
+  background: var(--bg);
+}
+
+.icedata-navbar-card {
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  background: var(--navbar-bg) !important;
+  border: 1px solid var(--border) !important;
+  transition:
+    box-shadow 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.icedata-navbar-card:hover {
+  box-shadow: var(--shadow-card-hover);
+  background: var(--bg-hover) !important;
+}
+
+.icedata-navbar-card .ant-card-body {
+  padding: 0 16px;
+  background: transparent !important;
+}
+
+.icedata-navbar-inner {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-height: 56px;
+}
+
+.icedata-navbar-logo-link {
+  flex-shrink: 0;
+  line-height: 0;
+  text-decoration: none;
+}
+
+.icedata-navbar-logo {
+  flex-shrink: 0;
+  height: 30px;
+  width: auto;
+  display: block;
+}
+
+.icedata-navbar-menu-wrap {
+  margin-left: auto;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.icedata-navbar-menu {
+  width: 100%;
+  justify-content: flex-end;
+  border-bottom: none !important;
+  background: transparent !important;
+}
+
+.icedata-navbar-menu.ant-menu-horizontal > .ant-menu-item {
+  color: var(--text);
+  font-weight: 500;
+  background: transparent !important;
+}
+
+.icedata-navbar-menu.ant-menu-horizontal > .ant-menu-item-selected {
+  color: var(--theme-primary) !important;
+  background: transparent !important;
+}
+
+.icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu {
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* SubMenu 标题单独着色，避免 Ant Design 默认 token 在暗色下仍为深色文字 */
+.icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu .ant-menu-submenu-title {
+  color: var(--text) !important;
+}
+
+.icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu .ant-menu-submenu-title .ant-menu-title-content {
+  color: inherit !important;
+}
+
+.icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu .ant-menu-submenu-arrow {
+  color: var(--text);
+}
+
+.icedata-navbar-menu.ant-menu-horizontal > .ant-menu-item::after,
+.icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu::after {
+  border-bottom: 2px solid transparent !important;
+}
+
+.icedata-navbar-menu.ant-menu-horizontal > .ant-menu-item:hover,
+.icedata-navbar-menu.ant-menu-horizontal > .ant-menu-item-active {
+  color: var(--theme-primary) !important;
+  background: transparent !important;
+}
+
+.icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu:hover,
+.icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu-active,
+.icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu-open,
+.icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu-selected {
+  color: var(--theme-primary) !important;
+  background: transparent !important;
+}
+
+.icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu:hover .ant-menu-submenu-title,
+.icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu-active .ant-menu-submenu-title,
+.icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu-open .ant-menu-submenu-title,
+.icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu-selected .ant-menu-submenu-title {
+  color: var(--theme-primary) !important;
+}
+
+.icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu:hover .ant-menu-submenu-title .ant-menu-title-content,
+.icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu-active .ant-menu-submenu-title .ant-menu-title-content,
+.icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu-open .ant-menu-submenu-title .ant-menu-title-content,
+.icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu-selected .ant-menu-submenu-title .ant-menu-title-content {
+  color: var(--theme-primary) !important;
+}
+
+.icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu:hover .ant-menu-submenu-arrow,
+.icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu-open .ant-menu-submenu-arrow,
+.icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu-selected .ant-menu-submenu-arrow {
+  color: var(--theme-primary);
+}
+
+.icedata-navbar-menu.ant-menu-horizontal > .ant-menu-item:hover::after,
+.icedata-navbar-menu.ant-menu-horizontal > .ant-menu-item-selected::after,
+.icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu:hover::after,
+.icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu-open::after,
+.icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu-selected::after {
+  border-bottom-color: var(--theme-primary) !important;
+}
+
+.icedata-theme-toggle {
+  border-radius: 8px;
+  border-color: var(--border);
+  color: var(--text);
+  background: var(--card-bg);
+}
+
+.icedata-lang-toggle {
+  border-radius: 8px;
+  border-color: var(--border);
+  color: var(--text);
+  background: var(--card-bg);
+  font-weight: 700;
+}
+
+.icedata-theme-toggle .anticon {
+  font-size: 16px;
+}
+
+.icedata-theme-toggle:hover,
+.icedata-theme-toggle:focus,
+.icedata-lang-toggle:hover,
+.icedata-lang-toggle:focus {
+  color: var(--theme-primary) !important;
+  border-color: var(--theme-accent) !important;
+}
+
+.icedata-menu-overflow-icon {
+  color: var(--text);
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+[data-theme='dark'] .icedata-navbar-wrap {
+  background: linear-gradient(to bottom, var(--bg), color-mix(in srgb, var(--bg) 88%, transparent));
+}
+
+[data-theme='dark'] .icedata-navbar-card {
+  border-color: #343840 !important;
+}
+
+[data-theme='dark'] .icedata-navbar-menu.ant-menu {
+  color: var(--text);
+}
+
+[data-theme='dark'] .icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu .ant-menu-submenu-title {
+  color: var(--text) !important;
+}
+
+[data-theme='dark'] .icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu .ant-menu-submenu-title .ant-menu-title-content {
+  color: var(--text) !important;
+}
+
+[data-theme='dark'] .icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu .ant-menu-submenu-arrow {
+  color: var(--text);
+}
+
+[data-theme='dark'] .ant-menu-submenu-popup .ant-menu {
+  background: var(--navbar-bg) !important;
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 24px var(--shadow);
+}
+
+[data-theme='dark'] .ant-menu-submenu-popup .ant-menu-item {
+  color: var(--text);
+}
+
+[data-theme='dark'] .ant-menu-submenu-popup .ant-menu-item:hover,
+[data-theme='dark'] .ant-menu-submenu-popup .ant-menu-item-active,
+[data-theme='dark'] .ant-menu-submenu-popup .ant-menu-item-selected {
+  color: var(--theme-primary) !important;
+  background: color-mix(in srgb, var(--theme-accent) 16%, transparent) !important;
+}
+
+[data-theme='dark'] .ant-menu-submenu-popup .ant-menu-item::after {
+  border-bottom: none !important;
+}
+
+[data-theme='dark'] .ant-menu-submenu-popup .ant-menu-item-selected::after {
+  border-bottom: none !important;
+}

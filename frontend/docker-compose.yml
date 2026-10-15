@@ -1,0 +1,36 @@
+services:
+  icedata-web-react:
+    image: ${ICEDATA_WEB_IMAGE:-ghcr.io/icedata-top/icedata-web-react:main}
+    pull_policy: always
+    environment:
+      ICEDATA_API_BASE_URL: /api
+      ICEDATA_API_UPSTREAM: http://icedata-backend:8080
+    ports:
+      - "5173:80"
+    depends_on:
+      - icedata-backend
+    restart: unless-stopped
+
+  icedata-backend:
+    image: ${ICEDATA_BACKEND_IMAGE:-ghcr.io/icedata-top/hantang-web-backend:main}
+    pull_policy: always
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    configs:
+      - source: icedata-backend-config
+        target: /app/config.secret.properties
+    expose:
+      - "8080"
+    restart: unless-stopped
+
+configs:
+  icedata-backend-config:
+    content: |
+      db.url_local=${ICEDATA_DB_URL_LOCAL:?Set ICEDATA_DB_URL_LOCAL}
+      db.user_local=${ICEDATA_DB_USER_LOCAL:?Set ICEDATA_DB_USER_LOCAL}
+      db.password_local=${ICEDATA_DB_PASSWORD_LOCAL:?Set ICEDATA_DB_PASSWORD_LOCAL}
+      db.postgre_host=${ICEDATA_POSTGRE_HOST:?Set ICEDATA_POSTGRE_HOST}
+      db.postgre_port=${ICEDATA_POSTGRE_PORT:-5432}
+      db.postgre_database=${ICEDATA_POSTGRE_DATABASE:?Set ICEDATA_POSTGRE_DATABASE}
+      db.postgre_user=${ICEDATA_POSTGRE_USER:?Set ICEDATA_POSTGRE_USER}
+      db.postgre_password=${ICEDATA_POSTGRE_PASSWORD:?Set ICEDATA_POSTGRE_PASSWORD}
