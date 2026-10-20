@@ -6,8 +6,8 @@ import './IndicatorCell.css';
 const INDICATOR_TITLE = {
   newVideoCount: '新投稿视频数',
   activeUserCount: '活跃创作者数',
-  view: '中术300播放',
-  favorite: '中术300收藏',
+  view: '中术50播放',
+  favorite: '中术50收藏',
 };
 
 /**

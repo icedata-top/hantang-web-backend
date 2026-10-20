@@ -99,7 +99,7 @@ public class OverviewService {
     }
 
     /**
-     * 单个区间只取 4 个值：投稿数、UP 数、播放增量、收藏增量。
+     * 单个区间只取 4 个值：投稿数、UP 数、中术50播放增量、中术50收藏增量。
      * 投稿数和活跃创作者在同一次 processed_videos 扫描里算出，日志里的 processedVideosMs 覆盖这两项。
      */
     private OverviewIndicatorValues computeIndicatorValues(String window, OverviewRequest request) {

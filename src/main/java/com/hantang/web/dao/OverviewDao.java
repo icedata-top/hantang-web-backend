@@ -1,5 +1,6 @@
 package com.hantang.web.dao;
 
+import com.hantang.web.config.Zhongshu50Config;
 import com.hantang.web.dao.foundation.PostgreDao;
 import com.hantang.web.dos.overview.OverviewRequest;
 import com.hantang.web.utils.IsoTimeUtils;
@@ -8,6 +9,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +41,7 @@ public class OverviewDao {
     }
 
     /**
-     * 某一自然日 {@code video_daily} 全表播放、收藏合计（按 {@code record_date} 精确匹配一天）。
+     * 某一自然日 {@code video_daily} 中术50样本的播放、收藏合计。
      *
      * @param recordDateYyyyMmDd {@code yyyy-MM-dd}
      */
@@ -52,11 +54,14 @@ public class OverviewDao {
         } catch (DateTimeParseException e) {
             throw new IllegalArgumentException("recordDate 须为 yyyy-MM-dd: " + recordDateYyyyMmDd, e);
         }
+        List<Object> params = new ArrayList<>();
+        params.add(recordDateYyyyMmDd.trim());
+        String sampleFilter = buildZhongshu50Filter(params);
         String sql = "SELECT COALESCE(SUM(view), 0)::bigint AS view_count, "
                 + "COALESCE(SUM(favorite), 0)::bigint AS favorite_count "
                 + "FROM hantang_dynamic.video_daily "
-                + "WHERE record_date = ?::date";
-        List<Map<String, Object>> rows = postgreDao.queryList(sql, List.of(recordDateYyyyMmDd.trim()));
+                + "WHERE record_date = ?::date" + sampleFilter;
+        List<Map<String, Object>> rows = postgreDao.queryList(sql, params);
         if (rows.isEmpty()) {
             return new DailyViewFavoriteSums(0L, 0L);
         }
@@ -77,8 +82,7 @@ public class OverviewDao {
             return queryDailyCountTrend(request, "COUNT(DISTINCT user_id)::bigint", "activeUserCount");
         }
         if ("videoStats".equals(type)) {
-            // TODO: 中术300 指标口径待补充后实现
-            return buildEmptyDailyTrend(request, "zhongshu300Count");
+            return queryZhongshu50DailyTrend(request);
         }
         throw new IllegalArgumentException("未知 trendType: " + trendType);
     }
@@ -202,18 +206,42 @@ public class OverviewDao {
         return result;
     }
 
-    private List<Map<String, Object>> buildEmptyDailyTrend(OverviewRequest request, String metricKey) {
-        List<Map<String, Object>> result = new ArrayList<>();
-        LocalDate cursor = request.getStartDate();
-        LocalDate end = request.getEndDate();
-        while (!cursor.isAfter(end)) {
-            Map<String, Object> item = new LinkedHashMap<>();
-            item.put("date", cursor.format(DateTimeFormatter.ISO_LOCAL_DATE));
-            item.put(metricKey, 0L);
-            result.add(item);
-            cursor = cursor.plusDays(1);
+    /** 与顶部指标一致：次日快照合计减去当日快照合计。 */
+    private List<Map<String, Object>> queryZhongshu50DailyTrend(OverviewRequest request) {
+        if (endBeforeStart(request)) {
+            throw new IllegalArgumentException("endDate 不能早于 startDate");
         }
-        return result;
+        List<Object> params = new ArrayList<>();
+        params.add(request.getStartDate().toString());
+        params.add(request.getEndDate().plusDays(1).toString());
+        String sampleFilter = buildZhongshu50Filter(params);
+        List<String> metrics = List.of("view", "favorite", "like", "coin", "share", "reply", "danmaku");
+        List<String> sums = new ArrayList<>();
+        List<String> deltas = new ArrayList<>();
+        for (String metric : metrics) {
+            // 指标列来自固定名单，不接受请求参数作为 SQL 标识符。
+            String column = "\"" + metric + "\"";
+            sums.add("COALESCE(SUM(" + column + "), 0)::bigint AS " + column);
+            deltas.add("(COALESCE(end_snapshot." + column + ", 0) - COALESCE(start_snapshot."
+                    + column + ", 0))::bigint AS " + column);
+        }
+        String sql = "WITH daily AS (SELECT record_date, " + String.join(", ", sums)
+                + " FROM hantang_dynamic.video_daily WHERE record_date BETWEEN ?::date AND ?::date"
+                + sampleFilter + " GROUP BY record_date) "
+                + "SELECT day.d::date::text AS date, " + String.join(", ", deltas)
+                + " FROM generate_series(?::date, ?::date, interval '1 day') AS day(d)"
+                + " LEFT JOIN daily start_snapshot ON start_snapshot.record_date = day.d::date"
+                + " LEFT JOIN daily end_snapshot ON end_snapshot.record_date = day.d::date + 1"
+                + " ORDER BY day.d";
+        params.add(request.getStartDate().toString());
+        params.add(request.getEndDate().toString());
+        return postgreDao.queryList(sql, params);
+    }
+
+    private static String buildZhongshu50Filter(List<Object> params) {
+        List<Long> aids = Zhongshu50Config.getAids();
+        params.addAll(aids);
+        return " AND aid IN (" + String.join(", ", Collections.nCopies(aids.size(), "?")) + ") ";
     }
 
     /** 同 {@link #sumViewAndFavoriteForRecordDate(String)}，入参为日历日。 */
@@ -277,7 +305,7 @@ public class OverviewDao {
     public record ProcessedVideoUserCounts(long videoCount, long userCount) {
     }
 
-    /** 某日 {@code video_daily} 播放量、收藏量总和 */
+    /** 某日中术50样本的播放量、收藏量总和 */
     public record DailyViewFavoriteSums(long viewSum, long favoriteSum) {
     }
 

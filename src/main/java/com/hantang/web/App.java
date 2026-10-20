@@ -1,6 +1,7 @@
 package com.hantang.web;
 
 import com.hantang.web.controller.BaseController;
+import com.hantang.web.config.Zhongshu50Config;
 import com.hantang.web.controller.DataReaderController;
 import com.hantang.web.controller.HomeController;
 import com.hantang.web.controller.OverviewController;
@@ -11,6 +12,7 @@ public class App {
      * 主入口
      */
     public static void main(String[] args) {
+        Zhongshu50Config.getAids();
         Javalin app = Javalin.create(config -> {
             config.http.defaultContentType = "application/json";
             // 允许前后端联调跨域（开发环境）

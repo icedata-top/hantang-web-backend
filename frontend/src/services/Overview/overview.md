@@ -26,6 +26,7 @@ public class OverviewRequest {
 
 - **用途**：返回顶部指标卡片的当期值和环比（`dod`），不再计算或返回同比
 - **环比口径**：与紧邻当前区间之前的等长区间比较
+- **样本口径**：`view`、`favorite` 仅统计后端 `config/zhongshu-50.json` 中的 50 个作品，取结束日次日快照合计减去开始日快照合计；新投稿和活跃创作者不受该名单限制。
 - **路径**：`POST /overview/get-indicators`
 
 **响应体**
@@ -47,6 +48,7 @@ public class OverviewRequest {
 
 - **用途**：返回按天趋势数据
 - **路径**：`POST /overview/get-trend`
+- **视频数据趋势**：`addtionalParams.trendType=videoStats` 时，按中术50名单返回每天的播放、收藏、点赞、硬币、分享、评论、弹幕增量（次日快照合计减去当日快照合计）。
 
 **响应体**
 

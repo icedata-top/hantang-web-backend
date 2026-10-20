@@ -46,7 +46,6 @@ export default function Overview() {
   const [loading, setLoading] = useState(false);
   const [payload, setPayload] = useState({
     indicators: [],
-    trend: [],
     viewHistogram: [],
     gateCrossings: [],
     gateCrossingsTotal: 0,
@@ -55,6 +54,14 @@ export default function Overview() {
   const [gateCrossingsPage, setGateCrossingsPage] = useState(1);
   const [histogramScope, setHistogramScope] = useState('all');
   const [trendType, setTrendType] = useState(OVERVIEW_TREND_TYPE.NEW_VIDEO);
+  const [trendResult, setTrendResult] = useState({ key: null, rows: [], loading: false });
+  const trendStartDate = filter?.startDate;
+  const trendEndDate = filter?.endDate;
+  const trendKey = JSON.stringify([trendStartDate, trendEndDate, trendType]);
+  const hasTrendRange = Boolean(trendStartDate && trendEndDate);
+  const trendLoading = hasTrendRange && (trendResult.key !== trendKey || trendResult.loading);
+  const trendRows = hasTrendRange && trendResult.key === trendKey ? trendResult.rows : [];
+
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const isMobile = useIsMobile();
 
@@ -81,23 +88,6 @@ export default function Overview() {
       })
       .finally(() => setLoading(false));
   }, [showApiError]);
-
-  const loadTrend = useCallback(
-    (startDate, endDate, type) => {
-      fetchOverviewTrend(startDate, endDate, type)
-        .then((trendData) => {
-          setPayload((prev) => ({
-            ...prev,
-            trend: trendData?.rows ?? [],
-          }));
-        })
-        .catch((err) => {
-          setPayload((prev) => ({ ...prev, trend: [] }));
-          showApiError(err);
-        });
-    },
-    [showApiError],
-  );
 
   const loadHistogram = useCallback(
     (startDate, endDate, scope) => {
@@ -142,7 +132,6 @@ export default function Overview() {
     } else {
       setPayload({
         indicators: [],
-        trend: [],
         viewHistogram: [],
         gateCrossings: [],
         gateCrossingsTotal: 0,
@@ -151,9 +140,23 @@ export default function Overview() {
   }, [filter, loadIndicators]);
 
   useEffect(() => {
-    if (!filter?.startDate || !filter?.endDate) return;
-    loadTrend(filter.startDate, filter.endDate, trendType);
-  }, [filter, trendType, loadTrend]);
+    if (!trendStartDate || !trendEndDate) return undefined;
+    let cancelled = false;
+    setTrendResult({ key: trendKey, rows: [], loading: true });
+    fetchOverviewTrend(trendStartDate, trendEndDate, trendType)
+      .then((data) => {
+        if (cancelled) return;
+        setTrendResult({ key: trendKey, rows: data?.rows ?? [], loading: false });
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setTrendResult({ key: trendKey, rows: [], loading: false });
+        showApiError(err);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [trendStartDate, trendEndDate, trendType, trendKey, showApiError]);
 
   useEffect(() => {
     if (!filter?.startDate || !filter?.endDate) return;
@@ -251,7 +254,8 @@ export default function Overview() {
           </section>
 
           <OverviewTrendChart
-            trend={payload?.trend ?? []}
+            trend={trendRows}
+            loading={trendLoading}
             activeTab={trendType}
             onTabChange={setTrendType}
           />

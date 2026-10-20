@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { Card, Tabs, Typography } from 'antd';
+import { Card, Spin, Tabs, Typography } from 'antd';
 import VChart from '@visactor/vchart';
 import { useDocThemeDark } from '../../../hooks/useDocThemeDark.js';
 import './OverviewTrendChart.css';
@@ -24,7 +24,7 @@ export const VIDEO_TREND_METRICS = [
 ];
 
 /**
- * 中术300 七条系列固定色板：自蓝起绕回，不含青/绿
+ * 中术50 七条系列固定色板：自蓝起绕回，不含青/绿
  * 顺序对齐 VIDEO_TREND_METRICS
  */
 const VIDEO_STATS_HIGHLIGHT_VARS = [
@@ -37,18 +37,36 @@ const VIDEO_STATS_HIGHLIGHT_VARS = [
   '--highlight-yellow',
 ];
 
-function readVideoStatsPalette() {
-  if (typeof document === 'undefined') return [];
+function readTrendColors() {
   const styles = getComputedStyle(document.documentElement);
-  return VIDEO_STATS_HIGHLIGHT_VARS.map((name) => styles.getPropertyValue(name).trim()).filter(Boolean);
+  return {
+    primary: styles.getPropertyValue('--theme-primary').trim(),
+    videoStats: VIDEO_STATS_HIGHLIGHT_VARS.map((name) => styles.getPropertyValue(name).trim()),
+  };
+}
+
+function areaGradient(color) {
+  return {
+    gradient: 'linear',
+    x0: 0,
+    y0: 0,
+    x1: 0,
+    y1: 1,
+    stops: [
+      { offset: 0, color, opacity: 0.42 },
+      { offset: 0.6, color, opacity: 0.16 },
+      { offset: 1, color, opacity: 0 },
+    ],
+  };
 }
 
 /**
  * @param {string} tab
  * @param {TrendDay[]} trend
- * @param {string[]} [videoStatsColors]
+ * @param {{ primary: string, videoStats: string[] }} colors
  */
-function buildLineSpec(tab, trend, videoStatsColors = []) {
+function buildLineSpec(tab, trend, colors) {
+  const videoStatsColors = colors.videoStats;
   if (!trend?.length) {
     return null;
   }
@@ -62,12 +80,16 @@ function buildLineSpec(tab, trend, videoStatsColors = []) {
     }));
     return {
       ...transparent,
-      type: 'line',
+      type: 'area',
+      stack: false,
+      seriesMark: 'line',
       data: [{ id: 'trend', values }],
       xField: 'date',
       yField: 'value',
+      color: [colors.primary],
       point: { visible: true },
-      line: { style: { lineWidth: 2 } },
+      line: { visible: true, style: { lineWidth: 2 } },
+      area: { style: { fill: areaGradient(colors.primary) } },
       tooltip: { visible: true },
       crosshair: { xField: { visible: true } },
       axes: [
@@ -84,12 +106,16 @@ function buildLineSpec(tab, trend, videoStatsColors = []) {
     }));
     return {
       ...transparent,
-      type: 'line',
+      type: 'area',
+      stack: false,
+      seriesMark: 'line',
       data: [{ id: 'trend', values }],
       xField: 'date',
       yField: 'value',
+      color: [colors.primary],
       point: { visible: true },
-      line: { style: { lineWidth: 2 } },
+      line: { visible: true, style: { lineWidth: 2 } },
+      area: { style: { fill: areaGradient(colors.primary) } },
       tooltip: { visible: true },
       crosshair: { xField: { visible: true } },
       axes: [
@@ -114,14 +140,21 @@ function buildLineSpec(tab, trend, videoStatsColors = []) {
 
   return {
     ...transparent,
-    type: 'line',
+    type: 'area',
+    stack: false,
+    seriesMark: 'line',
     data: [{ id: 'trend', values }],
     xField: 'date',
     yField: 'value',
     seriesField: 'series',
     ...(videoStatsColors.length === VIDEO_TREND_METRICS.length ? { color: videoStatsColors } : {}),
     point: { visible: true },
-    line: { style: { lineWidth: 1.5 } },
+    line: { visible: true, style: { lineWidth: 1.5 } },
+    area: {
+      style: {
+        fill: (datum) => areaGradient(videoStatsColors[VIDEO_TREND_METRICS.findIndex(({ label }) => label === datum.series)]),
+      },
+    },
     tooltip: { visible: true },
     legends: { visible: true, orient: 'bottom', padding: { top: 12 } },
     crosshair: { xField: { visible: true } },
@@ -135,18 +168,19 @@ function buildLineSpec(tab, trend, videoStatsColors = []) {
 /**
  * @param {object} props
  * @param {TrendDay[]} props.trend
+ * @param {boolean} [props.loading=false]
  * @param {string} [props.activeTab]
  * @param {(tab: string) => void} [props.onTabChange]
  */
-export default function OverviewTrendChart({ trend, activeTab = TAB_NEW_VIDEO, onTabChange }) {
+export default function OverviewTrendChart({ trend, loading = false, activeTab = TAB_NEW_VIDEO, onTabChange }) {
   const hostRef = useRef(null);
   const chartRef = useRef(null);
   const isDark = useDocThemeDark();
 
-  const videoStatsColors = useMemo(() => readVideoStatsPalette(), [isDark]);
+  const colors = useMemo(() => readTrendColors(), [isDark]);
   const spec = useMemo(
-    () => buildLineSpec(activeTab, trend, videoStatsColors),
-    [activeTab, trend, videoStatsColors],
+    () => loading ? null : buildLineSpec(activeTab, trend, colors),
+    [activeTab, trend, colors, loading],
   );
 
   useEffect(() => {
@@ -199,7 +233,7 @@ export default function OverviewTrendChart({ trend, activeTab = TAB_NEW_VIDEO, o
     () => [
       { key: TAB_NEW_VIDEO, label: '新投稿视频数' },
       { key: TAB_ACTIVE_USER, label: '活跃创作者数' },
-      { key: TAB_VIDEO_STATS, label: '中术300视频数据' },
+      { key: TAB_VIDEO_STATS, label: '中术50视频数据' },
     ],
     [],
   );
@@ -207,7 +241,7 @@ export default function OverviewTrendChart({ trend, activeTab = TAB_NEW_VIDEO, o
   const empty = !trend?.length;
 
   return (
-    <Card className="overview-panel overview-panel--trend" bordered={false} title="趋势图">
+    <Card className="overview-panel overview-panel--trend" bordered={false} title="数据趋势">
       <div className="overview-trend-card-inner">
         <Tabs
           activeKey={activeTab}
@@ -216,13 +250,22 @@ export default function OverviewTrendChart({ trend, activeTab = TAB_NEW_VIDEO, o
           size="small"
           className="overview-trend-tabs"
         />
-        {empty ? (
-          <div className="overview-trend-chart-empty">
-            <Text type="secondary">暂无趋势数据，请先选择日期范围。</Text>
-          </div>
-        ) : (
-          <div className="overview-trend-chart-host" ref={hostRef} role="img" aria-label="指标趋势折线图" />
-        )}
+        <div className="overview-trend-chart-stage">
+          {loading ? (
+            <div className="overview-trend-chart-loading" role="status" aria-live="polite" aria-busy="true">
+              <div className="overview-trend-chart-loading-content">
+                <Spin />
+                <Text type="secondary">正在加载趋势数据…</Text>
+              </div>
+            </div>
+          ) : empty ? (
+            <div className="overview-trend-chart-empty">
+              <Text type="secondary">暂无趋势数据，请先选择日期范围。</Text>
+            </div>
+          ) : (
+            <div className="overview-trend-chart-host" ref={hostRef} role="img" aria-label="指标趋势折线图" />
+          )}
+        </div>
       </div>
     </Card>
   );
