@@ -38,20 +38,45 @@ public class OverviewService {
         }
         LocalDate start = request.getStartDate();
         LocalDate end = request.getEndDate();
+        long started = System.nanoTime();
+        try {
+            return buildIndicators(request, start, end, started);
+        } catch (RuntimeException e) {
+            System.out.println(
+                    "overview get-indicators 失败 range=" + start + ".." + end
+                            + " elapsedMs=" + elapsedMs(started)
+                            + " error=" + e.getMessage()
+            );
+            throw e;
+        }
+    }
 
-        OverviewIndicatorValues current = computeIndicatorValues(request);
+    private OverviewIndicatorsResponse buildIndicators(
+            OverviewRequest request,
+            LocalDate start,
+            LocalDate end,
+            long started
+    ) {
+        OverviewIndicatorValues current = computeIndicatorValues("current", request);
 
         long spanDays = ChronoUnit.DAYS.between(start, end) + 1;
         LocalDate dodStart = start.minusDays(spanDays);
         LocalDate dodEnd = start.minusDays(1);
         OverviewIndicatorValues dodBase = computeIndicatorValues(
+                "dod",
                 new OverviewRequest(dodStart, dodEnd, request.getAddtionalParams())
         );
 
         LocalDate yoyStart = start.minusYears(1);
         LocalDate yoyEnd = end.minusYears(1);
         OverviewIndicatorValues yoyBase = computeIndicatorValues(
+                "yoy",
                 new OverviewRequest(yoyStart, yoyEnd, request.getAddtionalParams())
+        );
+
+        System.out.println(
+                "overview get-indicators 完成 range=" + start + ".." + end
+                        + " totalMs=" + elapsedMs(started)
         );
 
         return new OverviewIndicatorsResponse(
@@ -86,16 +111,36 @@ public class OverviewService {
 
     /**
      * 单个区间只取 4 个值：投稿数、UP 数、播放增量、收藏增量。
+     * 投稿数和活跃创作者在同一次 processed_videos 扫描里算出，日志里的 processedVideosMs 覆盖这两项。
      */
-    private OverviewIndicatorValues computeIndicatorValues(OverviewRequest request) {
-        OverviewDao.ProcessedVideoUserCounts range = overviewDao.countProcessedVideosAndUsers(request);
-
+    private OverviewIndicatorValues computeIndicatorValues(String window, OverviewRequest request) {
         LocalDate start = request.getStartDate();
         LocalDate end = request.getEndDate();
         LocalDate endPlusOne = end.plusDays(1);
 
+        long processedStarted = System.nanoTime();
+        OverviewDao.ProcessedVideoUserCounts range = overviewDao.countProcessedVideosAndUsers(request);
+        long processedVideosMs = elapsedMs(processedStarted);
+
+        long dailyStartStarted = System.nanoTime();
         OverviewDao.DailyViewFavoriteSums atStart = overviewDao.sumViewAndFavoriteForRecordDate(start);
+        long dailyStartMs = elapsedMs(dailyStartStarted);
+
+        long dailyEndStarted = System.nanoTime();
         OverviewDao.DailyViewFavoriteSums atEndPlusOne = overviewDao.sumViewAndFavoriteForRecordDate(endPlusOne);
+        long dailyEndMs = elapsedMs(dailyEndStarted);
+
+        System.out.println(
+                "overview get-indicators 分段 window=" + window
+                        + " range=" + start + ".." + end
+                        + " processedVideosMs=" + processedVideosMs
+                        + " videoCount=" + range.videoCount()
+                        + " activeUserCount=" + range.userCount()
+                        + " dailyStart=" + start
+                        + " dailyStartMs=" + dailyStartMs
+                        + " dailyEnd=" + endPlusOne
+                        + " dailyEndMs=" + dailyEndMs
+        );
 
         return new OverviewIndicatorValues(
                 range.videoCount(),
@@ -103,6 +148,10 @@ public class OverviewService {
                 atEndPlusOne.viewSum() - atStart.viewSum(),
                 atEndPlusOne.favoriteSum() - atStart.favoriteSum()
         );
+    }
+
+    private static long elapsedMs(long startedNanos) {
+        return (System.nanoTime() - startedNanos) / 1_000_000L;
     }
 
     /** 相对增幅：(current - base) / base；base 为 0 时返回 0。 */
