@@ -3,15 +3,14 @@ import { FilterOutlined } from '@ant-design/icons';
 import { Button, Card, Drawer, Spin, Typography, message } from 'antd';
 import OverviewFilter, { getDefaultOverviewFilter } from './components/OverviewFilter.jsx';
 import OverviewTrendChart from './components/OverviewTrendChart.jsx';
-import OverviewPartitionPieChart from './components/OverviewPartitionPieChart.jsx';
 import OverviewViewHistogramChart from './components/OverviewViewHistogramChart.jsx';
 import OverviewGateCrossingsTable from './components/OverviewGateCrossingsTable.jsx';
 import IndicatorCell from './components/IndicatorCell.jsx';
+import { useMeshParallax } from '../../hooks/useMeshParallax.js';
 import { ApiError } from '../../services/http/client.js';
 import {
   fetchOverviewGateCrossings,
   fetchOverviewIndicators,
-  fetchOverviewPartitionSubmissions,
   fetchOverviewTrend,
   fetchOverviewViewHistogram,
   OVERVIEW_TREND_TYPE,
@@ -41,19 +40,19 @@ function useIsMobile() {
 }
 
 export default function Overview() {
+  useMeshParallax(true);
+
   const [filter, setFilter] = useState(() => getDefaultOverviewFilter());
   const [loading, setLoading] = useState(false);
   const [payload, setPayload] = useState({
     indicators: [],
     trend: [],
-    partitionSubmissions: [],
     viewHistogram: [],
     gateCrossings: [],
     gateCrossingsTotal: 0,
   });
   const [gateCrossingsLoading, setGateCrossingsLoading] = useState(false);
   const [gateCrossingsPage, setGateCrossingsPage] = useState(1);
-  const [partitionScope, setPartitionScope] = useState('all');
   const [histogramScope, setHistogramScope] = useState('all');
   const [trendType, setTrendType] = useState(OVERVIEW_TREND_TYPE.NEW_VIDEO);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
@@ -94,20 +93,6 @@ export default function Overview() {
         })
         .catch((err) => {
           setPayload((prev) => ({ ...prev, trend: [] }));
-          showApiError(err);
-        });
-    },
-    [showApiError],
-  );
-
-  const loadPartition = useCallback(
-    (startDate, endDate, scope) => {
-      fetchOverviewPartitionSubmissions(startDate, endDate, scope)
-        .then((data) => {
-          setPayload((prev) => ({ ...prev, partitionSubmissions: data?.rows ?? [] }));
-        })
-        .catch((err) => {
-          setPayload((prev) => ({ ...prev, partitionSubmissions: [] }));
           showApiError(err);
         });
     },
@@ -158,7 +143,6 @@ export default function Overview() {
       setPayload({
         indicators: [],
         trend: [],
-        partitionSubmissions: [],
         viewHistogram: [],
         gateCrossings: [],
         gateCrossingsTotal: 0,
@@ -170,11 +154,6 @@ export default function Overview() {
     if (!filter?.startDate || !filter?.endDate) return;
     loadTrend(filter.startDate, filter.endDate, trendType);
   }, [filter, trendType, loadTrend]);
-
-  useEffect(() => {
-    if (!filter?.startDate || !filter?.endDate) return;
-    loadPartition(filter.startDate, filter.endDate, partitionScope);
-  }, [filter, partitionScope, loadPartition]);
 
   useEffect(() => {
     if (!filter?.startDate || !filter?.endDate) return;
@@ -253,27 +232,23 @@ export default function Overview() {
         )}
 
         <div className="overview-main-scroll">
-          <Card className="overview-panel overview-panel--metrics" bordered={false} title="指标数值">
-            <section className="overview-metrics" aria-live="polite">
-              <Spin spinning={loading}>
-                {!filter?.startDate || !filter?.endDate ? (
-                  <Text type="secondary">请选择日期范围以查看指标。</Text>
-                ) : payload?.indicators?.length ? (
-                  <div className="overview-meta">
-                    <div className="overview-indicator-grid">
-                      {payload.indicators.map((row) => (
-                        <div key={row.name} className="overview-indicator-item">
-                          <IndicatorCell data={row} precision={1} />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <Text type="secondary">暂无数据</Text>
-                )}
-              </Spin>
-            </section>
-          </Card>
+          <section className="overview-metrics" aria-label="指标数值" aria-live="polite" aria-busy={loading}>
+            <Spin spinning={loading}>
+              {!filter?.startDate || !filter?.endDate ? (
+                <Text type="secondary">请选择日期范围以查看指标。</Text>
+              ) : payload?.indicators?.length ? (
+                <div className="overview-indicator-grid">
+                  {payload.indicators.map((row) => (
+                    <Card key={row.name} className="overview-panel overview-indicator-card" bordered={false}>
+                      <IndicatorCell data={row} precision={1} />
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <Text type="secondary">{loading ? '加载指标中…' : '暂无数据'}</Text>
+              )}
+            </Spin>
+          </section>
 
           <OverviewTrendChart
             trend={payload?.trend ?? []}
@@ -281,11 +256,7 @@ export default function Overview() {
             onTabChange={setTrendType}
           />
 
-          <OverviewPartitionPieChart
-            rows={payload?.partitionSubmissions ?? []}
-            scope={partitionScope}
-            onScopeChange={setPartitionScope}
-          />
+          {/* 分区饼图暂时隐藏，同时停用其请求；组件和 API 保留。 */}
 
           <OverviewViewHistogramChart
             rows={payload?.viewHistogram ?? []}

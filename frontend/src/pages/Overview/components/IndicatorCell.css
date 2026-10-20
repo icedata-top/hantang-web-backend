@@ -1,15 +1,12 @@
-/* 无 Card/边框；两列网格；在父级正方形区域内垂直居中 */
+/* 卡片内紧凑排列：标题、数值、环比。 */
 .indicator-cell {
   display: grid;
   grid-template-columns: 2.35em minmax(0, 1fr);
   align-items: baseline;
-  align-content: center;
   column-gap: 10px;
   row-gap: 6px;
-  padding: 4px 2px 2px;
   min-width: 0;
   width: 100%;
-  max-height: 100%;
 }
 
 .indicator-cell-title {
@@ -24,12 +21,8 @@
 }
 
 .indicator-cell-main-row {
-  grid-column: 2;
-  justify-self: end;
-  margin-top: 4px;
-  margin-bottom: 10px;
-  padding: 6px 0 8px;
-  min-height: 2.5rem;
+  grid-column: 1 / -1;
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: flex-end;

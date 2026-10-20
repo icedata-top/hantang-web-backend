@@ -67,13 +67,6 @@ public class OverviewService {
                 new OverviewRequest(dodStart, dodEnd, request.getAddtionalParams())
         );
 
-        LocalDate yoyStart = start.minusYears(1);
-        LocalDate yoyEnd = end.minusYears(1);
-        OverviewIndicatorValues yoyBase = computeIndicatorValues(
-                "yoy",
-                new OverviewRequest(yoyStart, yoyEnd, request.getAddtionalParams())
-        );
-
         System.out.println(
                 "overview get-indicators 完成 range=" + start + ".." + end
                         + " totalMs=" + elapsedMs(started)
@@ -84,25 +77,21 @@ public class OverviewService {
                         new OverviewIndicatorsResponse.Indicator(
                                 "newVideoCount",
                                 current.submissionCountInRange(),
-                                ratio(current.submissionCountInRange(), yoyBase.submissionCountInRange()),
                                 ratio(current.submissionCountInRange(), dodBase.submissionCountInRange())
                         ),
                         new OverviewIndicatorsResponse.Indicator(
                                 "activeUserCount",
                                 current.distinctUpCountInRange(),
-                                ratio(current.distinctUpCountInRange(), yoyBase.distinctUpCountInRange()),
                                 ratio(current.distinctUpCountInRange(), dodBase.distinctUpCountInRange())
                         ),
                         new OverviewIndicatorsResponse.Indicator(
                                 "view",
                                 current.viewDelta(),
-                                ratio(current.viewDelta(), yoyBase.viewDelta()),
                                 ratio(current.viewDelta(), dodBase.viewDelta())
                         ),
                         new OverviewIndicatorsResponse.Indicator(
                                 "favorite",
                                 current.favoriteDelta(),
-                                ratio(current.favoriteDelta(), yoyBase.favoriteDelta()),
                                 ratio(current.favoriteDelta(), dodBase.favoriteDelta())
                         )
                 )

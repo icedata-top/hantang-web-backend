@@ -24,7 +24,8 @@ public class OverviewRequest {
 
 ## 1) 指标卡片 API
 
-- **用途**：返回顶部指标卡片数据
+- **用途**：返回顶部指标卡片的当期值和环比（`dod`），不再计算或返回同比
+- **环比口径**：与紧邻当前区间之前的等长区间比较
 - **路径**：`POST /overview/get-indicators`
 
 **响应体**
@@ -32,10 +33,10 @@ public class OverviewRequest {
 ```json
 {
   "indicators": [
-    { "name": "newVideoCount", "value": 1435, "yoy": 0.15, "dod": 0.11 },
-    { "name": "activeUserCount", "value": 107, "yoy": -0.05, "dod": -0.03 },
-    { "name": "view", "value": 1274561, "yoy": 0.012, "dod": 0.008 },
-    { "name": "favorite", "value": 109143, "yoy": -0.011, "dod": 0.015 }
+    { "name": "newVideoCount", "value": 1435, "dod": 0.11 },
+    { "name": "activeUserCount", "value": 107, "dod": -0.03 },
+    { "name": "view", "value": 1274561, "dod": 0.008 },
+    { "name": "favorite", "value": 109143, "dod": 0.015 }
   ]
 }
 ```
@@ -75,6 +76,7 @@ public class OverviewRequest {
 ## 3) 分区投稿饼图 API
 
 - **用途**：返回分区投稿量（全部投稿 / 新投稿）
+- **页面状态**：分区饼图暂时隐藏，总览页不发起此请求；API 与图表组件保留
 - **路径**：`POST /overview/get-partition-submissions`
 - **范围参数**：通过 `OverviewRequest.addtionalParams.scope` 区分 `all` / `new`
 

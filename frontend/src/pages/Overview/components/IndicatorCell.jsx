@@ -12,12 +12,12 @@ const INDICATOR_TITLE = {
 
 /**
  * @param {object} props
- * @param {{ name: string, value: number, yoy?: number | null, dod?: number | null }} props.data
- * @param {number} [props.precision=1] 同比/环比百分比显示的小数位
+ * @param {{ name: string, value: number, dod?: number | null }} props.data
+ * @param {number} [props.precision=1] 环比百分比显示的小数位
  * @param {string} [props.title] 覆盖第一行标题
  */
 export default function IndicatorCell({ data, precision = 1, title }) {
-  const { name, value, yoy, dod } = data;
+  const { name, value, dod } = data;
   const displayTitle = title ?? INDICATOR_TITLE[name] ?? name;
 
   return (
@@ -27,15 +27,6 @@ export default function IndicatorCell({ data, precision = 1, title }) {
       <div className="indicator-cell-main-row">
         <Statistic className="indicator-cell-main" value={value} valueStyle={{ color: 'var(--text)' }} />
       </div>
-
-      {yoy != null && (
-        <>
-          <span className="indicator-cell-label">同比</span>
-          <div className="indicator-cell-num">
-            <DeltaRate value={yoy} precision={precision} />
-          </div>
-        </>
-      )}
 
       {dod != null && (
         <>

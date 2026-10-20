@@ -23,7 +23,6 @@ export const OVERVIEW_API_CODE = {
  * @typedef {Object} OverviewIndicator
  * @property {string} name 指标标识，如 newVideoCount、view、favorite
  * @property {number} value 当前值
- * @property {number} [yoy] 同比，可选
  * @property {number} [dod] 环比，可选
  */
 
@@ -92,10 +91,10 @@ export const OVERVIEW_API_CODE = {
  */
 
 const MOCK_INDICATORS_BASE = [
-  { name: 'newVideoCount', value: 1435, yoy: 0.15, dod: 0.11 },
-  { name: 'activeUserCount', value: 107, yoy: -0.05, dod: -0.03 },
-  { name: 'view', value: 1274561, yoy: 0.012, dod: 0.008 },
-  { name: 'favorite', value: 109143, yoy: -0.011, dod: 0.015 },
+  { name: 'newVideoCount', value: 1435, dod: 0.11 },
+  { name: 'activeUserCount', value: 107, dod: -0.03 },
+  { name: 'view', value: 1274561, dod: 0.008 },
+  { name: 'favorite', value: 109143, dod: 0.015 },
 ];
 
 /** 本地日历递增一天，返回 YYYY-MM-DD */

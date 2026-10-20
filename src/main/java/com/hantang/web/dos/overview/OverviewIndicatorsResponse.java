@@ -24,13 +24,11 @@ public class OverviewIndicatorsResponse {
     public static class Indicator {
         private String name;
         private Long value;
-        private Double yoy;
         private Double dod;
 
-        public Indicator(String name, Long value, Double yoy, Double dod) {
+        public Indicator(String name, Long value, Double dod) {
             this.name = name;
             this.value = value;
-            this.yoy = yoy;
             this.dod = dod;
         }
 
@@ -48,14 +46,6 @@ public class OverviewIndicatorsResponse {
 
         public void setValue(Long value) {
             this.value = value;
-        }
-
-        public Double getYoy() {
-            return yoy;
-        }
-
-        public void setYoy(Double yoy) {
-            this.yoy = yoy;
         }
 
         public Double getDod() {
