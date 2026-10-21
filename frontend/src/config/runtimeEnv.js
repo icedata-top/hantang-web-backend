@@ -1,12 +1,12 @@
 /**
  * 全局运行环境配置：
  * - MOCK：前端本地 MOCK 数据
- * - DEV：请求开发环境后端
- * - PROD：请求生产环境后端
+ * - DEV：浏览器直接请求本机后端 http://localhost:8080
+ * - PROD：请求同源 /api，由部署侧反向代理到后端
  *
  * 可通过 Vite 环境变量覆盖（可选）：
  * - VITE_APP_ENV=MOCK|DEV|PROD
- * - VITE_API_BASE_URL=/api
+ * - VITE_API_BASE_URL=http://localhost:8080
  *
  * Docker/Caddy 部署可通过 /runtime-config.js 注入：
  * - window.__ICEDATA_RUNTIME_CONFIG__.apiBaseUrl
@@ -18,15 +18,18 @@ export const APP_ENV = Object.freeze({
   PROD: 'PROD',
 });
 
-/** 默认环境（未配置 VITE_APP_ENV 时生效） */
-const DEFAULT_ENV = APP_ENV.MOCK;
+/** npm run dev 默认连本机后端；生产构建默认走同源 /api */
+const DEFAULT_ENV = import.meta.env.DEV ? APP_ENV.DEV : APP_ENV.PROD;
 
 /** 当前环境：优先取 VITE_APP_ENV，否则使用默认值 */
 export const CURRENT_APP_ENV = normalizeAppEnv(import.meta.env?.VITE_APP_ENV) ?? DEFAULT_ENV;
 
-/** DEV / PROD 的 base url（不含路径） */
+/** 本机 Javalin 地址，与后端启动日志中的 Listening on 一致 */
+const LOCAL_BACKEND_ORIGIN = 'http://localhost:8080';
+
+/** DEV / PROD 的 base url */
 const BASE_URL_BY_ENV = Object.freeze({
-  [APP_ENV.DEV]: '/api',
+  [APP_ENV.DEV]: LOCAL_BACKEND_ORIGIN,
   [APP_ENV.PROD]: '/api',
 });
 

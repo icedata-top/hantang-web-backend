@@ -26,10 +26,11 @@
 
 - `MOCK`
   - 各 `xxx.api.js` 直接返回本地 MOCK 数据，不发起后端请求
-  - 仅需启动前端：`npm run dev`
+  - 启动命令：`VITE_APP_ENV=MOCK npm run dev`
 - `DEV`
-  - 前端会发起真实 HTTP 请求
-  - 默认请求同源 `/api`，容器部署时由 Caddy 转发到后端服务
+  - 浏览器直接请求本机后端 `http://localhost:8080`
+  - `npm run dev` 未设置 `VITE_APP_ENV` 时使用此环境
+  - 需要先在仓库根目录启动后端
 - `PROD`
   - 前端会发起真实 HTTP 请求
   - 默认请求同源 `/api`，容器部署时由 Caddy 转发到后端服务
@@ -65,7 +66,7 @@ ICEDATA_BACKEND_IMAGE=ghcr.io/icedata-top/hantang-web-backend:main
 - `VITE_APP_ENV=DEV`
 - `VITE_APP_ENV=PROD`
 
-未设置时默认使用 `MOCK`。
+`npm run dev` 未设置时默认使用 `DEV`，直接请求 `http://localhost:8080`。`npm run build` 未设置时默认使用 `PROD`。
 
 ## 目录树
 

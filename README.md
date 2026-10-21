@@ -53,10 +53,10 @@ npm install
 npm run dev
 ```
 
-浏览器访问 `http://localhost:5173/`。未设置环境变量时前端使用 `MOCK`，不请求后端。需要连本机后端时：
+浏览器访问 `http://localhost:5173/`。`npm run dev` 默认直接请求本机后端 `http://localhost:8080/`，请先启动后端。只使用前端 MOCK 数据时：
 
 ```sh
-VITE_APP_ENV=DEV npm run dev
+VITE_APP_ENV=MOCK npm run dev
 ```
 
 生产打包：
