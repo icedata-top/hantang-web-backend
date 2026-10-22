@@ -1,6 +1,7 @@
 package com.hantang.web.service;
 
 import com.hantang.web.dao.OverviewDao;
+import com.hantang.web.service.cache.Zhongshu50DailyCache;
 import com.hantang.web.dos.overview.OverviewGateCrossingsResponse;
 import com.hantang.web.dos.overview.OverviewIndicatorsResponse;
 import com.hantang.web.dos.overview.OverviewPartitionSubmissionsResponse;
@@ -27,9 +28,11 @@ public class OverviewService {
     private static final int MAX_GATE_CROSSING_PAGE_SIZE = 100;
 
     private final OverviewDao overviewDao;
+    private final Zhongshu50DailyCache zhongshu50DailyCache;
 
     public OverviewService() {
         this.overviewDao = new OverviewDao();
+        this.zhongshu50DailyCache = new Zhongshu50DailyCache(overviewDao::sumViewAndFavoriteForRecordDate);
     }
 
     public OverviewIndicatorsResponse getIndicators(OverviewRequest request) {
@@ -87,12 +90,12 @@ public class OverviewService {
                         new OverviewIndicatorsResponse.Indicator(
                                 "view",
                                 current.viewDelta(),
-                                ratio(current.viewDelta(), dodBase.viewDelta())
+                                nullableRatio(current.viewDelta(), dodBase.viewDelta())
                         ),
                         new OverviewIndicatorsResponse.Indicator(
                                 "favorite",
                                 current.favoriteDelta(),
-                                ratio(current.favoriteDelta(), dodBase.favoriteDelta())
+                                nullableRatio(current.favoriteDelta(), dodBase.favoriteDelta())
                         )
                 )
         );
@@ -112,11 +115,11 @@ public class OverviewService {
         long processedVideosMs = elapsedMs(processedStarted);
 
         long dailyStartStarted = System.nanoTime();
-        OverviewDao.DailyViewFavoriteSums atStart = overviewDao.sumViewAndFavoriteForRecordDate(start);
+        OverviewDao.DailyViewFavoriteSums atStart = zhongshu50DailyCache.get(start);
         long dailyStartMs = elapsedMs(dailyStartStarted);
 
         long dailyEndStarted = System.nanoTime();
-        OverviewDao.DailyViewFavoriteSums atEndPlusOne = overviewDao.sumViewAndFavoriteForRecordDate(endPlusOne);
+        OverviewDao.DailyViewFavoriteSums atEndPlusOne = zhongshu50DailyCache.get(endPlusOne);
         long dailyEndMs = elapsedMs(dailyEndStarted);
 
         System.out.println(
@@ -134,8 +137,8 @@ public class OverviewService {
         return new OverviewIndicatorValues(
                 range.videoCount(),
                 range.userCount(),
-                atEndPlusOne.viewSum() - atStart.viewSum(),
-                atEndPlusOne.favoriteSum() - atStart.favoriteSum()
+                difference(atEndPlusOne.viewSum(), atStart.viewSum()),
+                difference(atEndPlusOne.favoriteSum(), atStart.favoriteSum())
         );
     }
 
@@ -151,11 +154,21 @@ public class OverviewService {
         return (double) (current - base) / (double) base;
     }
 
+    /** 任一快照缺数据时，不把缺失值当成 0 作差。 */
+    static Long difference(Long end, Long start) {
+        return end == null || start == null ? null : end - start;
+    }
+
+    /** 缺少当期/环比数据，或分母为 0 时，百分比不可计算。 */
+    static Double nullableRatio(Long current, Long base) {
+        return current == null || base == null || base == 0L ? null : ratio(current, base);
+    }
+
     private record OverviewIndicatorValues(
             long submissionCountInRange,
             long distinctUpCountInRange,
-            long viewDelta,
-            long favoriteDelta
+            Long viewDelta,
+            Long favoriteDelta
     ) {
     }
 

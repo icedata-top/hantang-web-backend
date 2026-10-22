@@ -22,8 +22,8 @@ export const OVERVIEW_API_CODE = {
 /**
  * @typedef {Object} OverviewIndicator
  * @property {string} name 指标标识，如 newVideoCount、view、favorite
- * @property {number} value 当前值
- * @property {number} [dod] 环比，可选
+ * @property {number|null} value 当前值；中术50端点快照不完整时为 null
+ * @property {number|null} [dod] 环比；数据不完整或中术50上期增量为 0 时为 null
  */
 
 /**

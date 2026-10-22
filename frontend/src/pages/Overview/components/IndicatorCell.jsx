@@ -12,7 +12,7 @@ const INDICATOR_TITLE = {
 
 /**
  * @param {object} props
- * @param {{ name: string, value: number, dod?: number | null }} props.data
+ * @param {{ name: string, value: number | null, dod?: number | null }} props.data
  * @param {number} [props.precision=1] 环比百分比显示的小数位
  * @param {string} [props.title] 覆盖第一行标题
  */
@@ -25,17 +25,21 @@ export default function IndicatorCell({ data, precision = 1, title }) {
       <div className="indicator-cell-title">{displayTitle}</div>
 
       <div className="indicator-cell-main-row">
-        <Statistic className="indicator-cell-main" value={value} valueStyle={{ color: 'var(--text)' }} />
+        {value == null ? (
+          <span className="indicator-cell-missing">暂缺</span>
+        ) : (
+          <Statistic className="indicator-cell-main" value={value} valueStyle={{ color: 'var(--text)' }} />
+        )}
       </div>
 
-      {dod != null && (
-        <>
-          <span className="indicator-cell-label">环比</span>
-          <div className="indicator-cell-num">
-            <DeltaRate value={dod} precision={precision} />
-          </div>
-        </>
-      )}
+      <span className="indicator-cell-label">环比</span>
+      <div className="indicator-cell-num">
+        {value != null && dod != null ? (
+          <DeltaRate value={dod} precision={precision} />
+        ) : (
+          <span className="indicator-cell-label">暂缺</span>
+        )}
+      </div>
     </div>
   );
 }

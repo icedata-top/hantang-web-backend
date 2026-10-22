@@ -42,6 +42,7 @@ public class OverviewDao {
 
     /**
      * 某一自然日 {@code video_daily} 中术50样本的播放、收藏合计。
+     * 每个指标分别检查 50 个样本及字段是否完整，不完整的指标返回 null。
      *
      * @param recordDateYyyyMmDd {@code yyyy-MM-dd}
      */
@@ -57,16 +58,19 @@ public class OverviewDao {
         List<Object> params = new ArrayList<>();
         params.add(recordDateYyyyMmDd.trim());
         String sampleFilter = buildZhongshu50Filter(params);
-        String sql = "SELECT COALESCE(SUM(view), 0)::bigint AS view_count, "
-                + "COALESCE(SUM(favorite), 0)::bigint AS favorite_count "
+        int sampleCount = Zhongshu50Config.getAids().size();
+        String sql = "SELECT CASE WHEN COUNT(DISTINCT aid) = " + sampleCount
+                + " AND COUNT(view) = " + sampleCount + " THEN SUM(view)::bigint END AS view_count, "
+                + "CASE WHEN COUNT(DISTINCT aid) = " + sampleCount
+                + " AND COUNT(favorite) = " + sampleCount + " THEN SUM(favorite)::bigint END AS favorite_count "
                 + "FROM hantang_dynamic.video_daily "
                 + "WHERE record_date = ?::date" + sampleFilter;
         List<Map<String, Object>> rows = postgreDao.queryList(sql, params);
         if (rows.isEmpty()) {
-            return new DailyViewFavoriteSums(0L, 0L);
+            return new DailyViewFavoriteSums(null, null);
         }
         Map<String, Object> row = rows.get(0);
-        return new DailyViewFavoriteSums(toLong(row.get("view_count")), toLong(row.get("favorite_count")));
+        return new DailyViewFavoriteSums(toNullableLong(row.get("view_count")), toNullableLong(row.get("favorite_count")));
     }
 
     public List<Map<String, Object>> getTrend(OverviewRequest request, String trendType) {
@@ -302,11 +306,15 @@ public class OverviewDao {
         return Long.parseLong(o.toString());
     }
 
+    private static Long toNullableLong(Object o) {
+        return o == null ? null : toLong(o);
+    }
+
     public record ProcessedVideoUserCounts(long videoCount, long userCount) {
     }
 
-    /** 某日中术50样本的播放量、收藏量总和 */
-    public record DailyViewFavoriteSums(long viewSum, long favoriteSum) {
+    /** 某日中术50样本的累计值；某项样本不完整时，该项为 null，真实 0 保留。 */
+    public record DailyViewFavoriteSums(Long viewSum, Long favoriteSum) {
     }
 
     public record GateCrossingQueryResult(List<Map<String, Object>> rows, long total) {
