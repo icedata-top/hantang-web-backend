@@ -185,6 +185,9 @@ public class OverviewService {
         }
 
         List<Map<String, Object>> trendRows = overviewDao.getTrend(request, trendType);
+        if ("videoStats".equals(trendType)) {
+            return buildVideoStatsTrend(request, trendRows);
+        }
         List<OverviewTrendResponse.TrendRow> rows = new ArrayList<>();
         for (Map<String, Object> row : trendRows) {
             Object dateObj = row.get("date");
@@ -204,6 +207,30 @@ public class OverviewService {
                 }
             }
             rows.add(new OverviewTrendResponse.TrendRow(dateObj.toString(), indicators));
+        }
+        return new OverviewTrendResponse(rows);
+    }
+
+    /** 仅相邻自然日的完整快照可作差；按请求日期补齐行，并显式保留每项 null。 */
+    static OverviewTrendResponse buildVideoStatsTrend(
+            OverviewRequest request, List<Map<String, Object>> snapshots
+    ) {
+        Map<LocalDate, Map<String, Object>> byDate = new LinkedHashMap<>();
+        for (Map<String, Object> snapshot : snapshots) {
+            Object date = snapshot.get("date");
+            if (date != null) {
+                byDate.put(LocalDate.parse(date.toString()), snapshot);
+            }
+        }
+        List<OverviewTrendResponse.TrendRow> rows = new ArrayList<>();
+        for (LocalDate date = request.getStartDate(); !date.isAfter(request.getEndDate()); date = date.plusDays(1)) {
+            Map<String, Object> start = byDate.getOrDefault(date, Map.of());
+            Map<String, Object> end = byDate.getOrDefault(date.plusDays(1), Map.of());
+            Map<String, Long> indicators = new LinkedHashMap<>();
+            for (String metric : OverviewDao.ZHONGSHU50_METRICS) {
+                indicators.put(metric, difference(toNullableLong(end.get(metric)), toNullableLong(start.get(metric))));
+            }
+            rows.add(new OverviewTrendResponse.TrendRow(date.toString(), indicators));
         }
         return new OverviewTrendResponse(rows);
     }

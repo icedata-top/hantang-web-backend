@@ -49,7 +49,9 @@ public class OverviewRequest {
 
 - **用途**：返回按天趋势数据
 - **路径**：`POST /overview/get-trend`
+- **投稿与作者 Tab**：前端并发请求 `trendType=newVideo` 和 `trendType=activeUser`，按日期合并后，以蓝色「新投稿视频数」和橙色「活跃作者数」展示两条系列；与中术50 Tab 一样提供可切换的图例。两个 Tab 的图例、数据点及提示标记均使用圆形。
 - **视频数据趋势**：`addtionalParams.trendType=videoStats` 时，按中术50名单返回每天的播放、收藏、点赞、硬币、分享、评论、弹幕增量（次日快照合计减去当日快照合计）。
+- **视频趋势缺失口径**：仍从 `hantang_dynamic.video_daily` 查询累计快照，DAO 按指标检查 50 个样本及字段完整性，Service 逐日作差。D 或 D+1 任一快照缺失或该指标不完整，则 D 日该指标明确返回 `null`；其他完整指标独立计算，真实零值和负增量保留。响应包含请求区间的每个日期；前端保留全部日期与 `null`，缺口断线，不补零或跨日连线。
 
 **响应体**
 

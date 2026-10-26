@@ -6,11 +6,15 @@ import './OverviewTrendChart.css';
 
 const { Text } = Typography;
 
-/** @typedef {{ date: string, indicators: Record<string, number> }} TrendDay */
+/** @typedef {{ date: string, indicators: Record<string, number|null> }} TrendDay */
 
-export const TAB_NEW_VIDEO = 'newVideo';
-export const TAB_ACTIVE_USER = 'activeUser';
+export const TAB_SUBMISSIONS = 'submissions';
 export const TAB_VIDEO_STATS = 'videoStats';
+
+const SUBMISSION_TREND_METRICS = [
+  { key: 'newVideoCount', label: '新投稿视频数' },
+  { key: 'activeUserCount', label: '活跃作者数' },
+];
 
 /** 视频数据 Tab：折线维度（与后端字段一致） */
 export const VIDEO_TREND_METRICS = [
@@ -40,127 +44,67 @@ const VIDEO_STATS_HIGHLIGHT_VARS = [
 function readTrendColors() {
   const styles = getComputedStyle(document.documentElement);
   return {
-    primary: styles.getPropertyValue('--theme-primary').trim(),
+    submissions: ['--highlight-blue', '--highlight-orange'].map((name) => styles.getPropertyValue(name).trim()),
     videoStats: VIDEO_STATS_HIGHLIGHT_VARS.map((name) => styles.getPropertyValue(name).trim()),
-  };
-}
-
-function areaGradient(color) {
-  return {
-    gradient: 'linear',
-    x0: 0,
-    y0: 0,
-    x1: 0,
-    y1: 1,
-    stops: [
-      { offset: 0, color, opacity: 0.42 },
-      { offset: 0.6, color, opacity: 0.16 },
-      { offset: 1, color, opacity: 0 },
-    ],
   };
 }
 
 /**
  * @param {string} tab
  * @param {TrendDay[]} trend
- * @param {{ primary: string, videoStats: string[] }} colors
+ * @param {{ submissions: string[], videoStats: string[] }} colors
  */
 function buildLineSpec(tab, trend, colors) {
-  const videoStatsColors = colors.videoStats;
   if (!trend?.length) {
     return null;
   }
 
   const transparent = { background: 'transparent' };
 
-  if (tab === TAB_NEW_VIDEO) {
-    const values = trend.map((row) => ({
-      date: row.date,
-      value: row.indicators?.newVideoCount ?? 0,
-    }));
-    return {
-      ...transparent,
-      type: 'area',
-      stack: false,
-      seriesMark: 'line',
-      data: [{ id: 'trend', values }],
-      xField: 'date',
-      yField: 'value',
-      color: [colors.primary],
-      point: { visible: true },
-      line: { visible: true, style: { lineWidth: 2 } },
-      area: { style: { fill: areaGradient(colors.primary) } },
-      tooltip: { visible: true },
-      crosshair: { xField: { visible: true } },
-      axes: [
-        { orient: 'bottom', type: 'band' },
-        { orient: 'left', title: { visible: true, text: '新投稿视频数' } },
-      ],
-    };
-  }
-
-  if (tab === TAB_ACTIVE_USER) {
-    const values = trend.map((row) => ({
-      date: row.date,
-      value: row.indicators?.activeUserCount ?? 0,
-    }));
-    return {
-      ...transparent,
-      type: 'area',
-      stack: false,
-      seriesMark: 'line',
-      data: [{ id: 'trend', values }],
-      xField: 'date',
-      yField: 'value',
-      color: [colors.primary],
-      point: { visible: true },
-      line: { visible: true, style: { lineWidth: 2 } },
-      area: { style: { fill: areaGradient(colors.primary) } },
-      tooltip: { visible: true },
-      crosshair: { xField: { visible: true } },
-      axes: [
-        { orient: 'bottom', type: 'band' },
-        { orient: 'left', title: { visible: true, text: '活跃创作者数' } },
-      ],
-    };
-  }
+  const isSubmissions = tab === TAB_SUBMISSIONS;
+  const metrics = isSubmissions ? SUBMISSION_TREND_METRICS : VIDEO_TREND_METRICS;
+  const seriesColors = isSubmissions ? colors.submissions : colors.videoStats;
 
   /** 长表：多折线 */
   const values = [];
   for (const row of trend) {
     const ind = row.indicators ?? {};
-    for (const { key, label } of VIDEO_TREND_METRICS) {
+    for (const { key, label } of metrics) {
       values.push({
         date: row.date,
         series: label,
-        value: ind[key] ?? 0,
+        value: ind[key] ?? (isSubmissions ? 0 : null),
       });
     }
   }
 
   return {
     ...transparent,
-    type: 'area',
+    type: 'line',
+    invalidType: 'break',
     stack: false,
-    seriesMark: 'line',
-    data: [{ id: 'trend', values }],
+    data: [{
+      id: 'trend',
+      values,
+      fields: { date: { type: 'ordinal', domain: trend.map((row) => row.date) } },
+    }],
     xField: 'date',
     yField: 'value',
     seriesField: 'series',
-    ...(videoStatsColors.length === VIDEO_TREND_METRICS.length ? { color: videoStatsColors } : {}),
-    point: { visible: true },
+    color: seriesColors,
+    point: { visible: true, style: { symbolType: 'circle' } },
     line: { visible: true, style: { lineWidth: 1.5 } },
-    area: {
-      style: {
-        fill: (datum) => areaGradient(videoStatsColors[VIDEO_TREND_METRICS.findIndex(({ label }) => label === datum.series)]),
-      },
+    tooltip: { visible: true, style: { shape: { shapeType: 'circle' } } },
+    legends: {
+      visible: true,
+      orient: 'bottom',
+      padding: { top: 12 },
+      item: { shape: { style: { symbolType: 'circle' } } },
     },
-    tooltip: { visible: true },
-    legends: { visible: true, orient: 'bottom', padding: { top: 12 } },
     crosshair: { xField: { visible: true } },
     axes: [
       { orient: 'bottom', type: 'band' },
-      { orient: 'left', title: { visible: true, text: '数值' } },
+      { orient: 'left', title: { visible: true, text: isSubmissions ? '数量' : '数值' } },
     ],
   };
 }
@@ -172,7 +116,7 @@ function buildLineSpec(tab, trend, colors) {
  * @param {string} [props.activeTab]
  * @param {(tab: string) => void} [props.onTabChange]
  */
-export default function OverviewTrendChart({ trend, loading = false, activeTab = TAB_NEW_VIDEO, onTabChange }) {
+export default function OverviewTrendChart({ trend, loading = false, activeTab = TAB_SUBMISSIONS, onTabChange }) {
   const hostRef = useRef(null);
   const chartRef = useRef(null);
   const isDark = useDocThemeDark();
@@ -231,8 +175,7 @@ export default function OverviewTrendChart({ trend, loading = false, activeTab =
 
   const tabItems = useMemo(
     () => [
-      { key: TAB_NEW_VIDEO, label: '新投稿视频数' },
-      { key: TAB_ACTIVE_USER, label: '活跃创作者数' },
+      { key: TAB_SUBMISSIONS, label: '投稿与作者' },
       { key: TAB_VIDEO_STATS, label: '中术50视频数据' },
     ],
     [],

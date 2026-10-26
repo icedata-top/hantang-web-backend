@@ -30,7 +30,7 @@ export const OVERVIEW_API_CODE = {
  * 单日趋势：日期 + 各指标当日值（name 与 OverviewIndicator.name 一致）
  * @typedef {Object} OverviewTrendDay
  * @property {string} date YYYY-MM-DD
- * @property {Record<string, number>} indicators 指标标识 → 数值
+ * @property {Record<string, number|null>} indicators 指标标识 → 数值；视频趋势缺少必要快照时为 null
  */
 
 /**
@@ -371,6 +371,26 @@ export function fetchOverviewTrend(startDate, endDate, trendType = OVERVIEW_TREN
     endDate,
     rows: buildMockTrendForRange(startDate, endDate),
   });
+}
+
+/** 投稿与作者 Tab：并发查询两类趋势，再按日期合并各自的指标。 */
+export async function fetchOverviewSubmissionTrend(startDate, endDate) {
+  const metrics = [
+    { trendType: OVERVIEW_TREND_TYPE.NEW_VIDEO, key: 'newVideoCount' },
+    { trendType: OVERVIEW_TREND_TYPE.ACTIVE_USER, key: 'activeUserCount' },
+  ];
+  const results = await Promise.all(metrics.map(({ trendType }) => fetchOverviewTrend(startDate, endDate, trendType)));
+  const byDate = new Map();
+  results.forEach((data, index) => {
+    const { key } = metrics[index];
+    for (const row of data?.rows ?? []) {
+      if (!byDate.has(row.date)) {
+        byDate.set(row.date, { date: row.date, indicators: {} });
+      }
+      byDate.get(row.date).indicators[key] = row.indicators?.[key] ?? 0;
+    }
+  });
+  return { startDate, endDate, rows: [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date)) };
 }
 
 /**

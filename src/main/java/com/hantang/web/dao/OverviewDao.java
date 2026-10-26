@@ -16,6 +16,9 @@ import java.util.Map;
 
 public class OverviewDao {
 
+    public static final List<String> ZHONGSHU50_METRICS =
+            List.of("view", "favorite", "like", "coin", "share", "reply", "danmaku");
+
     private final PostgreDao postgreDao;
 
     public OverviewDao() {
@@ -86,7 +89,7 @@ public class OverviewDao {
             return queryDailyCountTrend(request, "COUNT(DISTINCT user_id)::bigint", "activeUserCount");
         }
         if ("videoStats".equals(type)) {
-            return queryZhongshu50DailyTrend(request);
+            return queryZhongshu50DailySnapshots(request);
         }
         throw new IllegalArgumentException("未知 trendType: " + trendType);
     }
@@ -210,8 +213,12 @@ public class OverviewDao {
         return result;
     }
 
-    /** 与顶部指标一致：次日快照合计减去当日快照合计。 */
-    private List<Map<String, Object>> queryZhongshu50DailyTrend(OverviewRequest request) {
+    /**
+     * 返回开始日至结束日次日的中术50累计快照，由 Service 逐日作差。
+     * 每项指标独立校验完整样本；缺行、重复行或字段为空时，该项合计为 null。
+     * 整日无记录时不返回该日期，Service 仍会保留相应业务日。
+     */
+    private List<Map<String, Object>> queryZhongshu50DailySnapshots(OverviewRequest request) {
         if (endBeforeStart(request)) {
             throw new IllegalArgumentException("endDate 不能早于 startDate");
         }
@@ -219,26 +226,19 @@ public class OverviewDao {
         params.add(request.getStartDate().toString());
         params.add(request.getEndDate().plusDays(1).toString());
         String sampleFilter = buildZhongshu50Filter(params);
-        List<String> metrics = List.of("view", "favorite", "like", "coin", "share", "reply", "danmaku");
+        int sampleCount = Zhongshu50Config.getAids().size();
         List<String> sums = new ArrayList<>();
-        List<String> deltas = new ArrayList<>();
-        for (String metric : metrics) {
+        for (String metric : ZHONGSHU50_METRICS) {
             // 指标列来自固定名单，不接受请求参数作为 SQL 标识符。
             String column = "\"" + metric + "\"";
-            sums.add("COALESCE(SUM(" + column + "), 0)::bigint AS " + column);
-            deltas.add("(COALESCE(end_snapshot." + column + ", 0) - COALESCE(start_snapshot."
-                    + column + ", 0))::bigint AS " + column);
+            sums.add("CASE WHEN COUNT(*) = " + sampleCount
+                    + " AND COUNT(DISTINCT aid) = " + sampleCount
+                    + " AND COUNT(" + column + ") = " + sampleCount
+                    + " THEN SUM(" + column + ")::bigint END AS " + column);
         }
-        String sql = "WITH daily AS (SELECT record_date, " + String.join(", ", sums)
+        String sql = "SELECT record_date::text AS date, " + String.join(", ", sums)
                 + " FROM hantang_dynamic.video_daily WHERE record_date BETWEEN ?::date AND ?::date"
-                + sampleFilter + " GROUP BY record_date) "
-                + "SELECT day.d::date::text AS date, " + String.join(", ", deltas)
-                + " FROM generate_series(?::date, ?::date, interval '1 day') AS day(d)"
-                + " LEFT JOIN daily start_snapshot ON start_snapshot.record_date = day.d::date"
-                + " LEFT JOIN daily end_snapshot ON end_snapshot.record_date = day.d::date + 1"
-                + " ORDER BY day.d";
-        params.add(request.getStartDate().toString());
-        params.add(request.getEndDate().toString());
+                + sampleFilter + " GROUP BY record_date ORDER BY record_date";
         return postgreDao.queryList(sql, params);
     }
 

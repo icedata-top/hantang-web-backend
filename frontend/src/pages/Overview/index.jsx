@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { FilterOutlined } from '@ant-design/icons';
 import { Button, Card, Drawer, Spin, Typography, message } from 'antd';
 import OverviewFilter, { getDefaultOverviewFilter } from './components/OverviewFilter.jsx';
-import OverviewTrendChart from './components/OverviewTrendChart.jsx';
+import OverviewTrendChart, { TAB_SUBMISSIONS } from './components/OverviewTrendChart.jsx';
 import OverviewViewHistogramChart from './components/OverviewViewHistogramChart.jsx';
 import OverviewGateCrossingsTable from './components/OverviewGateCrossingsTable.jsx';
 import IndicatorCell from './components/IndicatorCell.jsx';
@@ -11,6 +11,7 @@ import { ApiError } from '../../services/http/client.js';
 import {
   fetchOverviewGateCrossings,
   fetchOverviewIndicators,
+  fetchOverviewSubmissionTrend,
   fetchOverviewTrend,
   fetchOverviewViewHistogram,
   OVERVIEW_TREND_TYPE,
@@ -53,7 +54,7 @@ export default function Overview() {
   const [gateCrossingsLoading, setGateCrossingsLoading] = useState(false);
   const [gateCrossingsPage, setGateCrossingsPage] = useState(1);
   const [histogramScope, setHistogramScope] = useState('all');
-  const [trendType, setTrendType] = useState(OVERVIEW_TREND_TYPE.NEW_VIDEO);
+  const [trendType, setTrendType] = useState(TAB_SUBMISSIONS);
   const [trendResult, setTrendResult] = useState({ key: null, rows: [], loading: false });
   const trendStartDate = filter?.startDate;
   const trendEndDate = filter?.endDate;
@@ -143,7 +144,10 @@ export default function Overview() {
     if (!trendStartDate || !trendEndDate) return undefined;
     let cancelled = false;
     setTrendResult({ key: trendKey, rows: [], loading: true });
-    fetchOverviewTrend(trendStartDate, trendEndDate, trendType)
+    const request = trendType === TAB_SUBMISSIONS
+      ? fetchOverviewSubmissionTrend(trendStartDate, trendEndDate)
+      : fetchOverviewTrend(trendStartDate, trendEndDate, OVERVIEW_TREND_TYPE.VIDEO_STATS);
+    request
       .then((data) => {
         if (cancelled) return;
         setTrendResult({ key: trendKey, rows: data?.rows ?? [], loading: false });
