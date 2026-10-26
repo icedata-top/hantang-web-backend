@@ -17,8 +17,9 @@ const SCOPE_NEW = 'new';
 
 /**
  * @param {ViewHistogramRow[]} rows
+ * @param {string} primaryColor
  */
-function buildBarSpec(rows) {
+function buildBarSpec(rows, primaryColor) {
   if (!rows?.length) return null;
 
   const values = [...rows].sort((a, b) => a.code.localeCompare(b.code, 'en'));
@@ -28,6 +29,7 @@ function buildBarSpec(rows) {
     data: [{ id: 'view_hist', values }],
     xField: 'label',
     yField: 'count',
+    color: [primaryColor],
     bar: {
       style: { cornerRadius: 4 },
     },
@@ -54,7 +56,11 @@ export default function OverviewViewHistogramChart({ rows, asOfDate, scope = SCO
 
   const activeRows = rows ?? [];
 
-  const spec = useMemo(() => buildBarSpec(activeRows), [activeRows]);
+  const primaryColor = useMemo(
+    () => getComputedStyle(document.documentElement).getPropertyValue('--theme-primary').trim(),
+    [isDark],
+  );
+  const spec = useMemo(() => buildBarSpec(activeRows, primaryColor), [activeRows, primaryColor]);
 
   useEffect(() => {
     const el = hostRef.current;
@@ -105,7 +111,7 @@ export default function OverviewViewHistogramChart({ rows, asOfDate, scope = SCO
   const empty = !activeRows?.length;
 
   return (
-    <Card className="overview-panel overview-panel--histogram" bordered={false} title="播放量直方图">
+    <Card className="overview-panel overview-section-card overview-panel--histogram" bordered={false} title="播放量直方图">
       <div className="overview-view-histogram-inner">
         <div className="overview-view-histogram-toolbar">
           {asOfDate ? (

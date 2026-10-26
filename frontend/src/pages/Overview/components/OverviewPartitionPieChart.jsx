@@ -151,7 +151,7 @@ export default function OverviewPartitionPieChart({ rows, scope = SCOPE_ALL, onS
   const empty = !activeRows?.length;
 
   return (
-    <Card className="overview-panel overview-panel--partition" bordered={false} title="分区投稿分布">
+    <Card className="overview-panel overview-section-card overview-panel--partition" bordered={false} title="分区投稿分布">
       <div className="overview-partition-pie-inner">
         <div className="overview-partition-pie-toolbar">
           <span className="overview-partition-pie-toolbar-hint" aria-hidden />

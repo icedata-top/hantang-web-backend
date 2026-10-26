@@ -1,15 +1,3 @@
-.overview-panel--partition .ant-card-head {
-  border-bottom: none !important;
-  min-height: 48px;
-}
-
-.overview-panel--partition .ant-card-head-title {
-  font-size: 15px;
-  font-weight: 600;
-  padding: 12px 0 4px;
-  color: var(--text) !important;
-}
-
 .overview-panel--partition .ant-card-body {
   padding-top: 8px;
 }

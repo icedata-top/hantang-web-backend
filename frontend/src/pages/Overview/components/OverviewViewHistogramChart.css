@@ -1,17 +1,5 @@
-.overview-panel--histogram .ant-card-head {
-  border-bottom: none !important;
-  min-height: 48px;
-}
-
-.overview-panel--histogram .ant-card-head-title {
-  font-size: 15px;
-  font-weight: 600;
-  padding: 12px 0 4px;
-  color: var(--text) !important;
-}
-
-.overview-panel--histogram .ant-card-body {
-  padding-top: 8px;
+.overview-section-card.overview-panel--histogram .ant-card-body {
+  padding-top: 0;
 }
 
 .overview-view-histogram-inner {

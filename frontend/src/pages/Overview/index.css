@@ -183,6 +183,28 @@
   color: var(--text) !important;
 }
 
+/* 图表与明细卡片共用：标题、Tab 和说明文案沿同一条左边线对齐。 */
+.overview-section-card {
+  --overview-section-padding-x: 20px;
+}
+
+.overview-section-card .ant-card-head {
+  padding-inline: var(--overview-section-padding-x);
+  border-bottom: none !important;
+  min-height: 48px;
+}
+
+.overview-section-card .ant-card-head-title {
+  padding: 12px 0 4px;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.overview-section-card .ant-card-body {
+  padding-inline: var(--overview-section-padding-x);
+}
+
 .overview-panel--mock .ant-card-head-title {
   font-size: 15px;
   font-weight: 600;

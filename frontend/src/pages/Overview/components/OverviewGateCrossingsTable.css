@@ -1,14 +1,3 @@
-.overview-panel--gate-crossings .ant-card-head {
-  border-bottom: none !important;
-  min-height: 48px;
-}
-
-.overview-panel--gate-crossings .ant-card-head-title {
-  font-size: 15px;
-  font-weight: 600;
-  padding: 12px 0 4px;
-}
-
 .overview-gate-crossings {
   display: flex;
   min-height: 224px;

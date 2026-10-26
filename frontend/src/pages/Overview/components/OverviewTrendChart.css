@@ -1,15 +1,3 @@
-.overview-panel--trend .ant-card-head {
-  border-bottom: none !important;
-  min-height: 36px;
-}
-
-.overview-panel--trend .ant-card-head-title {
-  font-size: 15px;
-  font-weight: 600;
-  padding: 10px 0 0;
-  color: var(--text) !important;
-}
-
 .overview-panel.overview-panel--trend .ant-card-body {
   padding-top: 0;
 }
