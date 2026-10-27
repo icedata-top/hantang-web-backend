@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { QuestionCircleOutlined } from '@ant-design/icons';
-import { Button, DatePicker, Tooltip } from 'antd';
+import { DatePicker, Tooltip } from 'antd';
 import dayjs from 'dayjs';
 import 'dayjs/locale/zh-cn';
 
@@ -224,10 +224,10 @@ export default function OverviewFilter({ startDate, endDate, onFilterChange }) {
       />
       {dirty ? (
         <div className="overview-filter-actions">
-          <Button onClick={handleReset}>重置</Button>
-          <Button type="primary" onClick={handleConfirm}>
+          <button type="button" className="ds-button" data-variant="secondary" onClick={handleReset}>重置</button>
+          <button type="button" className="ds-button" data-variant="primary" onClick={handleConfirm}>
             确定
-          </Button>
+          </button>
         </div>
       ) : null}
     </div>

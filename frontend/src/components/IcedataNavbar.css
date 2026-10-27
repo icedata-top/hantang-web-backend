@@ -7,22 +7,6 @@
   background: var(--bg);
 }
 
-.icedata-navbar-card {
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card);
-  background: var(--navbar-bg) !important;
-  border: 1px solid var(--border) !important;
-  transition:
-    box-shadow 0.2s ease,
-    background-color 0.2s ease,
-    border-color 0.2s ease;
-}
-
-.icedata-navbar-card:hover {
-  box-shadow: var(--shadow-card-hover);
-  background: var(--bg-hover) !important;
-}
-
 .icedata-navbar-card .ant-card-body {
   padding: 0 16px;
   background: transparent !important;
@@ -139,31 +123,16 @@
   border-bottom-color: var(--theme-primary) !important;
 }
 
-.icedata-theme-toggle {
-  border-radius: 8px;
-  border-color: var(--border);
-  color: var(--text);
-  background: var(--card-bg);
-}
-
+.icedata-theme-toggle,
 .icedata-lang-toggle {
-  border-radius: 8px;
-  border-color: var(--border);
-  color: var(--text);
-  background: var(--card-bg);
-  font-weight: 700;
+  flex: none;
+  width: var(--control-height);
+  padding: 0;
+  border-radius: 50%;
 }
 
 .icedata-theme-toggle .anticon {
-  font-size: 16px;
-}
-
-.icedata-theme-toggle:hover,
-.icedata-theme-toggle:focus,
-.icedata-lang-toggle:hover,
-.icedata-lang-toggle:focus {
-  color: var(--theme-primary) !important;
-  border-color: var(--theme-accent) !important;
+  font-size: var(--font-size-icon);
 }
 
 .icedata-menu-overflow-icon {
@@ -174,10 +143,6 @@
 
 [data-theme='dark'] .icedata-navbar-wrap {
   background: linear-gradient(to bottom, var(--bg), color-mix(in srgb, var(--bg) 88%, transparent));
-}
-
-[data-theme='dark'] .icedata-navbar-card {
-  border-color: #343840 !important;
 }
 
 [data-theme='dark'] .icedata-navbar-menu.ant-menu {
@@ -198,8 +163,8 @@
 
 [data-theme='dark'] .ant-menu-submenu-popup .ant-menu {
   background: var(--navbar-bg) !important;
-  border: 1px solid var(--border);
-  box-shadow: 0 8px 24px var(--shadow);
+  border: var(--surface-border-width) solid var(--surface-border);
+  box-shadow: var(--shadow-card-hover);
 }
 
 [data-theme='dark'] .ant-menu-submenu-popup .ant-menu-item {

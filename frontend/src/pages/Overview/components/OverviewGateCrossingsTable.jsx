@@ -89,7 +89,7 @@ export default function OverviewGateCrossingsTable({
   onPageChange,
 }) {
   return (
-    <Card className="overview-panel overview-section-card overview-panel--gate-crossings" bordered={false} title="播放过线记录">
+    <Card className="overview-panel ds-surface overview-section-card overview-panel--gate-crossings" variant="borderless" title="播放过线记录">
       <div className="overview-gate-crossings">
         <Table
           className="overview-gate-crossings-table"

@@ -29,8 +29,8 @@
 <section className="ds-surface">
   <h2>内容标题</h2>
   <button className="ds-button" data-variant="primary">保存更改</button>
-  <button className="ds-button" data-variant="secondary">筛选条件</button>
-  <button className="ds-button" data-variant="normal">取消</button>
+  <button className="ds-button" data-variant="secondary">取消</button>
+  <button className="ds-button" data-variant="normal">更多</button>
   <button className="ds-button" data-variant="danger" disabled>删除记录</button>
 </section>
 ```
@@ -61,7 +61,7 @@
 
 ## 按钮
 
-Primary 用于核心操作，Secondary 用于次要操作，Normal 用于常规操作，Danger 用于破坏性操作。规范页的所有按钮仅提供演示反馈。
+Primary 用于核心操作，Secondary 用于取消、重置等次要操作，Normal 用于更多等常规操作，Danger 用于破坏性操作。总览筛选的「重置」使用 Secondary，「确定」使用 Primary。规范页的所有按钮仅提供演示反馈。
 
 品牌主色保持 #438BED。Primary 使用品牌蓝与黑色按配置比例混色，Danger 使用当前主题的 `--highlight-red` 与黑色混色；原色占比为 100% 时直接使用基础色。下表比例均表示原色占比，余量混入所列端点；预览页显示最终解析出的 HEX。
 

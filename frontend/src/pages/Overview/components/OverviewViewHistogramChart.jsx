@@ -111,7 +111,7 @@ export default function OverviewViewHistogramChart({ rows, asOfDate, scope = SCO
   const empty = !activeRows?.length;
 
   return (
-    <Card className="overview-panel overview-section-card overview-panel--histogram" bordered={false} title="播放量直方图">
+    <Card className="overview-panel ds-surface overview-section-card overview-panel--histogram" variant="borderless" title="播放量直方图">
       <div className="overview-view-histogram-inner">
         <div className="overview-view-histogram-toolbar">
           {asOfDate ? (

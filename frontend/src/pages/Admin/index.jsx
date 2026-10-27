@@ -49,7 +49,7 @@ function AdminRuntime() {
           'View the current system configuration. Visual specifications are available under Design; the other sections are still planned.',
         )}
       </p>
-      <section className="admin-panel app-card-surface" aria-labelledby="admin-environment-title">
+      <section className="admin-panel ds-surface" aria-labelledby="admin-environment-title">
         <h2 id="admin-environment-title">{t('当前配置', 'Current configuration')}</h2>
         <dl className="admin-config-list">
           <div><dt>{t('当前环境', 'Environment')}</dt><dd>{CURRENT_APP_ENV}</dd></div>
@@ -133,7 +133,7 @@ export default function Admin() {
 
   return (
     <div className="admin-shell">
-      <aside className="admin-sidebar" aria-label={t('管理目录', 'Administration menu')}>
+      <aside className="admin-sidebar ds-surface" aria-label={t('管理目录', 'Administration menu')}>
         <div className="admin-sidebar-heading">
           <p className="admin-sidebar-title">{t('管理配置', 'Administration')}</p>
         </div>

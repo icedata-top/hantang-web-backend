@@ -58,7 +58,8 @@
   box-shadow: none;
 }
 
-.ds-surface {
+.ds-surface,
+.ant-card.ds-surface {
   border: var(--surface-border-width) solid var(--surface-border);
   border-radius: var(--radius-card);
   background: var(--surface);
@@ -68,7 +69,9 @@
 
 .ds-surface:hover,
 .ds-surface:focus-visible,
-.ds-surface[data-preview-state='hover'] {
+.ds-surface[data-preview-state='hover'],
+.ant-card.ds-surface:hover,
+.ant-card.ds-surface:focus-visible {
   background: var(--surface-hover);
   box-shadow: var(--shadow-card-hover);
 }

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { FilterOutlined } from '@ant-design/icons';
-import { Button, Card, Drawer, Spin, Typography, message } from 'antd';
+import { Card, Drawer, Spin, Typography, message } from 'antd';
 import OverviewFilter, { getDefaultOverviewFilter } from './components/OverviewFilter.jsx';
 import OverviewTrendChart, { TAB_SUBMISSIONS } from './components/OverviewTrendChart.jsx';
 import OverviewViewHistogramChart from './components/OverviewViewHistogramChart.jsx';
@@ -202,7 +202,7 @@ export default function Overview() {
       <div className="overview-layout">
         {!isMobile && (
           <aside className="overview-sidebar" aria-label="筛选条件">
-            <Card className="overview-panel overview-panel--filter" bordered={false} title="筛选条件">
+            <Card className="overview-panel ds-surface overview-panel--filter" variant="borderless" title="筛选条件">
               {filterBlock}
             </Card>
           </aside>
@@ -211,16 +211,16 @@ export default function Overview() {
         {isMobile && (
           <>
             <div className="overview-mobile-filter-bar">
-              <Button
-                type="default"
-                className="overview-mobile-filter-btn"
-                icon={<FilterOutlined />}
+              <button
+                type="button"
+                className="ds-button overview-mobile-filter-btn"
+                data-variant="secondary"
                 onClick={() => setFilterDrawerOpen(true)}
                 aria-expanded={filterDrawerOpen}
                 aria-controls="overview-filter-drawer"
               >
-                筛选条件
-              </Button>
+                <FilterOutlined />筛选条件
+              </button>
             </div>
             <Drawer
               id="overview-filter-drawer"
@@ -246,7 +246,7 @@ export default function Overview() {
               ) : payload?.indicators?.length ? (
                 <div className="overview-indicator-grid">
                   {payload.indicators.map((row) => (
-                    <Card key={row.name} className="overview-panel overview-indicator-card" bordered={false}>
+                    <Card key={row.name} className="overview-panel ds-surface overview-indicator-card" variant="borderless">
                       <IndicatorCell data={row} precision={1} />
                     </Card>
                   ))}

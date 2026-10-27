@@ -128,8 +128,8 @@ function Surfaces({ t }) {
 
 const BUTTONS = [
   { type: 'primary', name: 'Primary', label: ['保存更改', 'Save'], usage: ['核心操作', 'Main action'] },
-  { type: 'secondary', name: 'Secondary', label: ['筛选条件', 'Filter'], usage: ['次要操作', 'Supporting action'] },
-  { type: 'normal', name: 'Normal', label: ['取消', 'Cancel'], usage: ['常规操作', 'Routine action'] },
+  { type: 'secondary', name: 'Secondary', label: ['取消', 'Cancel'], usage: ['次要操作', 'Supporting action'] },
+  { type: 'normal', name: 'Normal', label: ['更多', 'More'], usage: ['常规操作', 'Routine action'] },
   { type: 'danger', name: 'Danger', label: ['删除记录', 'Delete'], usage: ['破坏性操作', 'Destructive action'] },
 ];
 

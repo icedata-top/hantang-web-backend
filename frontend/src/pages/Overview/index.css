@@ -126,52 +126,8 @@
   }
 }
 
-/* 移动端「筛选条件」按钮：与主题一致 */
-.overview-mobile-filter-btn.ant-btn-default {
-  background: var(--card-bg);
-  border-color: var(--border);
-  color: var(--text);
-}
-
-.overview-mobile-filter-btn.ant-btn-default:hover {
-  background: var(--bg-hover);
-  border-color: var(--theme-primary);
-  color: var(--theme-primary);
-}
-
-[data-theme='dark'] .overview-mobile-filter-btn.ant-btn-default {
-  background: var(--card-bg) !important;
-  border-color: #343840 !important;
-  color: var(--text) !important;
-}
-
-[data-theme='dark'] .overview-mobile-filter-btn.ant-btn-default:hover {
-  border-color: var(--theme-primary) !important;
-  color: var(--theme-primary) !important;
-}
-
 .overview-filter-drawer .ant-drawer-content-wrapper {
   max-width: min(320px, calc(100vw - 24px));
-}
-
-.overview-panel.ant-card {
-  background: var(--navbar-bg) !important;
-}
-
-.overview-panel {
-  border-radius: var(--radius-card) !important;
-  box-shadow: var(--shadow-card) !important;
-  background: var(--navbar-bg) !important;
-  border: 1px solid var(--border) !important;
-  transition:
-    box-shadow 0.2s ease,
-    background-color 0.2s ease,
-    border-color 0.2s ease;
-}
-
-.overview-panel:hover {
-  box-shadow: var(--shadow-card-hover) !important;
-  background: var(--bg-hover) !important;
 }
 
 .overview-panel .ant-card-body {
@@ -214,10 +170,6 @@
 .overview-panel--mock .ant-card-head {
   border-bottom: none !important;
   min-height: 44px;
-}
-
-[data-theme='dark'] .overview-panel {
-  border-color: #343840 !important;
 }
 
 .overview-filter {

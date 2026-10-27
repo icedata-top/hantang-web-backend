@@ -184,7 +184,7 @@ export default function OverviewTrendChart({ trend, loading = false, activeTab =
   const empty = !trend?.length;
 
   return (
-    <Card className="overview-panel overview-section-card overview-panel--trend" bordered={false} title="数据趋势">
+    <Card className="overview-panel ds-surface overview-section-card overview-panel--trend" variant="borderless" title="数据趋势">
       <div className="overview-trend-card-inner">
         <Tabs
           activeKey={activeTab}

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Button, Card, Menu } from 'antd';
+import { Card, Menu } from 'antd';
 import { MoonOutlined, SunOutlined } from '@ant-design/icons';
 import { getMenuKeyFromPathname, MENU_KEY_TO_PATH } from '../routes/menuPaths.js';
 import './IcedataNavbar.css';
@@ -99,7 +99,7 @@ export default function IcedataNavbar() {
 
   return (
     <header className="icedata-navbar-wrap">
-      <Card className="icedata-navbar-card" bodyStyle={{ padding: '0 16px' }}>
+      <Card className="icedata-navbar-card ds-surface" variant="borderless" styles={{ body: { padding: '0 16px' } }}>
         <div className="icedata-navbar-inner">
           <Link to="/" className="icedata-navbar-logo-link" aria-label="冰数据首页">
             <img
@@ -122,23 +122,24 @@ export default function IcedataNavbar() {
               }}
             />
           </div>
-          <Button
-            className="icedata-lang-toggle"
+          <button
+            type="button"
+            className="ds-button icedata-lang-toggle"
+            data-variant="normal"
             onClick={handleLanguageToggle}
-            shape="circle"
             aria-label={isZh ? t('切换到英文', 'Switch to English') : t('切换到中文', 'Switch to Chinese')}
             title={isZh ? t('英文模式', 'English Mode') : t('中文模式', 'Chinese Mode')}
           >
             {isZh ? 'En' : '中'}
-          </Button>
-          <Button
-            className="icedata-theme-toggle"
+          </button>
+          <button
+            type="button"
+            className="ds-button icedata-theme-toggle"
+            data-variant="normal"
             onClick={handleThemeToggle}
-            shape="circle"
-            icon={isDark ? <SunOutlined /> : <MoonOutlined />}
             aria-label={isDark ? t('切换到日间模式', 'Switch to Light Mode') : t('切换到夜间模式', 'Switch to Dark Mode')}
             title={isDark ? t('日间模式', 'Light Mode') : t('夜间模式', 'Dark Mode')}
-          />
+          >{isDark ? <SunOutlined /> : <MoonOutlined />}</button>
         </div>
       </Card>
     </header>

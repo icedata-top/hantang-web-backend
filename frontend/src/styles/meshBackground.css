@@ -58,21 +58,8 @@ html[data-mesh='on'][data-theme='dark']::before {
     );
 }
 
-/* 导航外层透明，卡片半透明毛玻璃浮在背景上 */
-html[data-mesh='on'] .icedata-navbar-wrap {
-  background: transparent;
-}
-
-html[data-mesh='on'] .icedata-navbar-card {
-  background: color-mix(in srgb, var(--navbar-bg) 42%, transparent) !important;
-  backdrop-filter: blur(14px) saturate(1.25);
-  -webkit-backdrop-filter: blur(14px) saturate(1.25);
-}
-
-html[data-mesh='on'] .icedata-navbar-card:hover {
-  background: color-mix(in srgb, var(--bg-hover) 55%, transparent) !important;
-}
-
+/* 导航外层透出弥散背景；卡片本身使用统一的 Surface。 */
+html[data-mesh='on'] .icedata-navbar-wrap,
 html[data-mesh='on'][data-theme='dark'] .icedata-navbar-wrap {
   background: transparent;
 }
