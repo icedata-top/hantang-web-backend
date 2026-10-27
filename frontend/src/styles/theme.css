@@ -1,0 +1,191 @@
+/*
+ * 主题唯一编辑入口：颜色、字体、字号、字重、圆角、阴影和边框宽度。
+ * 配色分三层：基础色 → 日夜混色比例 → 公共派生配方。
+ * 改基础色即可联动所有语义色；需要单独调深浅时只改对应比例。
+ * Danger、Error、上涨色均取自当前主题的 --highlight-red。
+ * 黑、白是混色的明暗端点，不另设独立的按钮或提示业务色。
+ * 按钮 14px / 400；按钮、卡片描边宽度均为 0px。
+ */
+:root,
+[data-theme='light'],
+[data-theme='dark'] {
+  /* 字体与排版 */
+  --font-size-title: 24px;
+  --font-size-heading: 18px;
+  --font-size-body: 14px;
+  --font-size-caption: 12px;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --line-height-body: 1.6;
+  --font-family-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  --font-family-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-size-xs: 10px;
+  --font-size-meta: 11px;
+  --font-size-label: 13px;
+  --font-size-display: 30px;
+  --font-size-display-compact: 26px;
+  --font-size-button: var(--font-size-body);
+  --font-size-icon: 16px;
+  --font-weight-button: var(--font-weight-regular);
+  --line-height-title: 1.4;
+  --line-height-heading: 1.5;
+  --line-height-button: 22px;
+
+  /* 表面、控件与边框 */
+  --canvas: var(--bg);
+  --surface: var(--navbar-bg);
+  --surface-hover: var(--bg-hover);
+  --surface-border: var(--border);
+  --text-primary: var(--text);
+  --focus-ring: var(--theme-primary);
+  --radius-card: 8px;
+  --radius-control: 6px;
+  --control-height: 36px;
+  --button-border-width: 0px;
+  --surface-border-width: 0px;
+  --alert-border-width: 0px;
+
+  /* 基础明暗端点与品牌色 */
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --theme-primary: #438bed;
+  --scrollbar-size: 8px;
+}
+
+/* 白天：基础中性色、九种强调色，以及派生比例 */
+:root,
+[data-theme='light'] {
+  --bg: #f4f4f4;
+  --bg-hover: var(--color-white);
+  --text: #333333;
+  --card-bg: var(--color-white);
+  --navbar-bg: #fafafa;
+
+  --highlight-red: #f05454;
+  --highlight-orange: #ff9745;
+  --highlight-yellow: #e6c837;
+  --highlight-green: #46b970;
+  --highlight-cyan: #33b9c9;
+  --highlight-blue: var(--theme-primary);
+  --highlight-indigo: #6355d1;
+  --highlight-violet: #9d5ed8;
+  --highlight-faint-purple: #b089d0;
+
+  /* 百分比表示原色占比：与黑混合越低越深，与白混合越低越浅。 */
+  --text-secondary-strength: 72%;
+  --text-disabled-strength: 45%;
+  --link-strength: 72%;
+  --link-hover-strength: 64%;
+  --link-anchor: var(--color-black);
+  --primary-solid-strength: 100%;
+  --primary-hover-strength: 80%;
+  --danger-solid-strength: 100%;
+  --danger-hover-strength: 78%;
+  --secondary-fill-strength: 8%;
+  --secondary-hover-strength: 14%;
+  --disabled-fill-strength: 6%;
+  --alert-fill-strength: 20%;
+  --alert-border-strength: 28%;
+  --alert-text-strength: 60%;
+  --alert-text-anchor: var(--text);
+  --border-strength: 12%;
+  --shadow-strength: 12%;
+  --shadow-card-strength: 6%;
+  --shadow-card-detail-strength: 4%;
+}
+
+/* 夜间：保留独立的基础色，复用同一套派生配方。 */
+[data-theme='dark'] {
+  --bg: #1e1f22;
+  --bg-hover: #27282d;
+  --text: #e0e0e0;
+  --card-bg: #24262b;
+  --navbar-bg: #212226;
+
+  --highlight-red: #ff7875;
+  --highlight-orange: #ffa940;
+  --highlight-yellow: #f0d060;
+  --highlight-green: #73d13d;
+  --highlight-cyan: #36cfc9;
+  --highlight-blue: #69b1ff;
+  --highlight-indigo: #8578e0;
+  --highlight-violet: #b37feb;
+  --highlight-faint-purple: #c4a8d4;
+
+  --text-secondary-strength: 72%;
+  --text-disabled-strength: 35%;
+  --link-strength: 70%;
+  --link-hover-strength: 55%;
+  --link-anchor: var(--color-white);
+  --primary-solid-strength: 100%;
+  --primary-hover-strength: 80%;
+  --danger-solid-strength: 80%;
+  --danger-hover-strength: 60%;
+  --secondary-fill-strength: 18%;
+  --secondary-hover-strength: 28%;
+  --disabled-fill-strength: 8%;
+  --alert-fill-strength: 16%;
+  --alert-border-strength: 35%;
+  --alert-text-strength: 70%;
+  --alert-text-anchor: var(--text);
+  --border-strength: 12%;
+  --shadow-strength: 35%;
+  --shadow-card-strength: 25%;
+  --shadow-card-detail-strength: 20%;
+}
+
+/* 公共派生配方：每个显式主题容器都重新计算，保证日夜对照互不串色。 */
+:root,
+[data-theme='light'],
+[data-theme='dark'] {
+  --theme-accent: color-mix(in srgb, var(--theme-primary) 70%, var(--color-white));
+  --border: color-mix(in srgb, var(--text) var(--border-strength), var(--surface));
+  --shadow: color-mix(in srgb, var(--color-black) var(--shadow-strength), transparent);
+  --shadow-card: 0 1px 8px color-mix(in srgb, var(--color-black) var(--shadow-card-strength), transparent), 0 1px 2px color-mix(in srgb, var(--color-black) var(--shadow-card-detail-strength), transparent);
+  --shadow-card-hover: 0 10px 24px var(--shadow);
+  --scrollbar-thumb: color-mix(in srgb, var(--text) 22%, transparent);
+  --scrollbar-thumb-hover: color-mix(in srgb, var(--text) 38%, transparent);
+
+  --text-secondary: color-mix(in srgb, var(--text) var(--text-secondary-strength), var(--canvas));
+  --text-disabled: color-mix(in srgb, var(--text) var(--text-disabled-strength), var(--canvas));
+  --text-link: color-mix(in srgb, var(--theme-primary) var(--link-strength), var(--link-anchor));
+  --text-link-hover: color-mix(in srgb, var(--theme-primary) var(--link-hover-strength), var(--link-anchor));
+
+  --button-primary-bg: color-mix(in srgb, var(--theme-primary) var(--primary-solid-strength), var(--color-black));
+  --button-primary-hover: color-mix(in srgb, var(--theme-primary) var(--primary-hover-strength), var(--color-black));
+  --button-primary-text: var(--color-white);
+  --button-secondary-bg: color-mix(in srgb, var(--theme-primary) var(--secondary-fill-strength), var(--surface));
+  --button-secondary-hover: color-mix(in srgb, var(--theme-primary) var(--secondary-hover-strength), var(--surface));
+  --button-secondary-text: var(--text-link);
+  --button-normal-bg: var(--surface);
+  --button-normal-hover: var(--surface-hover);
+  --button-normal-text: var(--text-primary);
+  --button-danger-bg: color-mix(in srgb, var(--highlight-red) var(--danger-solid-strength), var(--color-black));
+  --button-danger-hover: color-mix(in srgb, var(--highlight-red) var(--danger-hover-strength), var(--color-black));
+  --button-danger-text: var(--color-white);
+  --button-disabled-bg: color-mix(in srgb, var(--text) var(--disabled-fill-strength), var(--surface));
+  --button-disabled-text: var(--text-disabled);
+
+  --tooltip-bg: var(--text-primary);
+  --tooltip-text: var(--canvas);
+
+  /* 信息取品牌蓝，警告取强调橙，错误取强调红。 */
+  --alert-info-bg: color-mix(in srgb, var(--theme-primary) var(--alert-fill-strength), var(--surface));
+  --alert-info-border: color-mix(in srgb, var(--theme-primary) var(--alert-border-strength), var(--surface));
+  --alert-info-text: color-mix(in srgb, var(--theme-primary) var(--alert-text-strength), var(--alert-text-anchor));
+  --alert-warning-bg: color-mix(in srgb, var(--highlight-orange) var(--alert-fill-strength), var(--surface));
+  --alert-warning-border: color-mix(in srgb, var(--highlight-orange) var(--alert-border-strength), var(--surface));
+  --alert-warning-text: color-mix(in srgb, var(--highlight-orange) var(--alert-text-strength), var(--alert-text-anchor));
+  --alert-error-bg: color-mix(in srgb, var(--highlight-red) var(--alert-fill-strength), var(--surface));
+  --alert-error-border: color-mix(in srgb, var(--highlight-red) var(--alert-border-strength), var(--surface));
+  --alert-error-text: color-mix(in srgb, var(--highlight-red) var(--alert-text-strength), var(--alert-text-anchor));
+
+  --trend-up: var(--highlight-red);
+  --trend-down: var(--highlight-green);
+  --trend-flat: color-mix(in srgb, var(--text) 50%, var(--canvas));
+  --picker-header-text: var(--text-secondary);
+  --picker-body-text: var(--text-primary);
+  --selection-bg: color-mix(in srgb, var(--theme-primary) 20%, transparent);
+  --selection-text: var(--color-white);
+}

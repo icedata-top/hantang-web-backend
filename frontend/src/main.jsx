@@ -4,7 +4,9 @@ import App from './App.jsx';
 import './i18n';
 
 import 'antd/dist/reset.css';
+import './styles/theme.css';
 import './styles/global.css';
+import './styles/design-system.css';
 import './styles/meshBackground.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(

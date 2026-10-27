@@ -10,6 +10,7 @@ import {
   SettingOutlined,
 } from '@ant-design/icons';
 import { CURRENT_APP_ENV, getApiBaseUrl } from '../../config/runtimeEnv.js';
+import DesignSpec from './DesignSpec.jsx';
 import {
   ADMIN_NAV,
   adminRootGroupKeys,
@@ -44,8 +45,8 @@ function AdminRuntime() {
       <h1>{t('运行环境', 'Runtime')}</h1>
       <p className="admin-lead">
         {t(
-          '查看当前系统的运行配置。左侧其余栏目仍是规划，打开后只显示施工说明。',
-          'View the current system configuration. The other sections are still planned and only show a construction note.',
+          '查看当前系统的运行配置。设计分组可查看视觉规范，其余栏目仍在规划中。',
+          'View the current system configuration. Visual specifications are available under Design; the other sections are still planned.',
         )}
       </p>
       <section className="admin-panel app-card-surface" aria-labelledby="admin-environment-title">
@@ -151,7 +152,8 @@ export default function Admin() {
       </aside>
       <div className="admin-main">
         {leaf?.key === 'runtime' ? <AdminRuntime /> : null}
-        {leaf && leaf.key !== 'runtime' ? <AdminPlaceholder leaf={leaf} /> : null}
+        {leaf?.key === 'spec' ? <DesignSpec /> : null}
+        {leaf && !['runtime', 'spec'].includes(leaf.key) ? <AdminPlaceholder leaf={leaf} /> : null}
         {!leaf ? <AdminMissing /> : null}
       </div>
     </div>

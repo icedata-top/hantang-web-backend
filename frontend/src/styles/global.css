@@ -1,82 +1,8 @@
-:root {
-  /* 页面与层级表面 */
-  --bg: #f4f4f4;
-  --bg-hover: #ffffff;
-  --text: #333333;
-  /* 表单/输入区等需与白底对比时仍用白 */
-  --card-bg: #ffffff;
-  /* 导航栏、总览等「卡片」默认与页面主色一致，悬停再用 --bg-hover 提亮 */
-  --navbar-bg: #fafafa;
-  --border: #e5e7eb;
-  --shadow: rgba(15, 23, 42, 0.12);
-  --theme-primary: #438bed;
-  --theme-accent: #76aff2;
-
-  /* 卡片：较小圆角；默认轻阴影，悬停加重（与导航栏、总览等共用） */
-  --radius-card: 8px;
-  --shadow-card: 0 1px 8px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
-  --shadow-card-hover: 0 10px 24px var(--shadow);
-
-  /** 高亮色：用于 Chip、Alter、图表系列 等需要突出显示的元素 */
-  --highlight-red: #f05454;
-  --highlight-orange: #ff9745;
-  --highlight-yellow: #e6c837;
-  --highlight-green: #46b970;
-  --highlight-cyan: #33b9c9;
-  --highlight-blue: #438bed; 
-  --highlight-indigo: #6355d1;
-  --highlight-violet: #9d5ed8;
-  --highlight-faint-purple: #b089d0;
-
-  /* 同环比涨跌：上升红、下降绿（与 A 股等常见行情色一致） */
-  --trend-up: var(--highlight-red);
-  --trend-down: var(--highlight-green);
-  --trend-flat: #8c8c8c;
-
-  /* 滚动条（与总览主列一致） */
-  --scrollbar-size: 8px;
-  --scrollbar-thumb: rgba(15, 23, 42, 0.22);
-  --scrollbar-thumb-hover: rgba(15, 23, 42, 0.38);
-}
-
-[data-theme='dark'] {
-  --bg: #1e1f22;
-  --bg-hover: #27282d;
-  --text: #e0e0e0;
-  --card-bg: #24262b;
-  --navbar-bg: #212226;
-  --border: #2b2f36;
-  --shadow: rgba(0, 0, 0, 0.35);
-  --theme-primary: #438bed;
-  --theme-accent: #76aff2;
-
-  --shadow-card: 0 1px 4px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.2);
-  --shadow-card-hover: 0 10px 24px var(--shadow);
-
-  /** 高亮色（夜间）：在深底上略提亮、饱和度适中，与浅色同色相 */
-  --highlight-red: #ff7875;
-  --highlight-orange: #ffa940;
-  --highlight-yellow: #f0d060;
-  --highlight-green: #73d13d;
-  --highlight-cyan: #36cfc9;
-  --highlight-blue: #69b1ff;
-  --highlight-indigo: #8578e0;
-  --highlight-violet: #b37feb;
-  --highlight-faint-purple: #c4a8d4;
-
-  /* 同环比涨跌：与高亮色对齐 */
-  --trend-up: var(--highlight-red);
-  --trend-down: var(--highlight-green);
-  --trend-flat: #8c8c8c;
-
-  --scrollbar-thumb: rgba(255, 255, 255, 0.22);
-  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.4);
-}
-
+/* 全局基础样式；主题值统一在 theme.css 中编辑。 */
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
-    Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-body);
   background: var(--bg);
   color: var(--text);
   scrollbar-width: thin;
@@ -130,23 +56,23 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 [data-theme='dark'] .app-card-surface {
-  border-color: #343840;
+  border-color: var(--surface-border);
 }
 
 /* Ant Design 日期面板（挂到 body）：深色与页面变量一致 */
 [data-theme='dark'] .ant-picker-dropdown .ant-picker-panel-container {
   background: var(--card-bg);
-  border-color: #343840;
+  border-color: var(--surface-border);
   color: var(--text);
 }
 
 [data-theme='dark'] .ant-picker-dropdown .ant-picker-header,
 [data-theme='dark'] .ant-picker-dropdown .ant-picker-content th {
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--picker-header-text);
 }
 
 [data-theme='dark'] .ant-picker-dropdown .ant-picker-cell {
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--picker-body-text);
 }
 
 [data-theme='dark'] .ant-picker-dropdown .ant-picker-cell-in-view.ant-picker-cell-today .ant-picker-cell-inner::before {
@@ -157,11 +83,11 @@ body::-webkit-scrollbar-thumb:hover {
 [data-theme='dark'] .ant-picker-dropdown .ant-picker-cell-in-view.ant-picker-cell-range-start .ant-picker-cell-inner,
 [data-theme='dark'] .ant-picker-dropdown .ant-picker-cell-in-view.ant-picker-cell-range-end .ant-picker-cell-inner {
   background: var(--theme-primary);
-  color: #fff;
+  color: var(--selection-text);
 }
 
 [data-theme='dark'] .ant-picker-dropdown .ant-picker-cell-in-view.ant-picker-cell-in-range::before {
-  background: rgba(67, 139, 237, 0.2);
+  background: var(--selection-bg);
 }
 
 .page-result {

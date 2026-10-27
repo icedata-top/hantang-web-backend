@@ -1,0 +1,156 @@
+/* 公共组件样式；颜色、字号等可调参数统一来自 theme.css。 */
+.ds-button {
+  --button-bg: var(--button-normal-bg);
+  --button-hover-bg: var(--button-normal-hover);
+  --button-text: var(--button-normal-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: var(--control-height);
+  padding: 6px 16px;
+  border: var(--button-border-width) solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--button-bg);
+  color: var(--button-text);
+  font-family: inherit;
+  font-size: var(--font-size-button);
+  font-weight: var(--font-weight-button);
+  line-height: var(--line-height-button);
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.ds-button[data-variant='primary'] {
+  --button-bg: var(--button-primary-bg);
+  --button-hover-bg: var(--button-primary-hover);
+  --button-text: var(--button-primary-text);
+}
+
+.ds-button[data-variant='secondary'] {
+  --button-bg: var(--button-secondary-bg);
+  --button-hover-bg: var(--button-secondary-hover);
+  --button-text: var(--button-secondary-text);
+}
+
+.ds-button[data-variant='danger'] {
+  --button-bg: var(--button-danger-bg);
+  --button-hover-bg: var(--button-danger-hover);
+  --button-text: var(--button-danger-text);
+}
+
+.ds-button:not(:disabled):hover,
+.ds-button[data-preview-state='hover'] {
+  background: var(--button-hover-bg);
+}
+
+.ds-button:focus-visible,
+.ds-surface:focus-visible,
+.ds-link:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+.ds-button:disabled {
+  background: var(--button-disabled-bg);
+  color: var(--button-disabled-text);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.ds-surface {
+  border: var(--surface-border-width) solid var(--surface-border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  transition: background-color 200ms ease, box-shadow 200ms ease;
+}
+
+.ds-surface:hover,
+.ds-surface:focus-visible,
+.ds-surface[data-preview-state='hover'] {
+  background: var(--surface-hover);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.ds-link {
+  color: var(--text-link);
+  text-decoration: none;
+  text-underline-offset: 3px;
+}
+
+.ds-link:hover {
+  color: var(--text-link-hover);
+  text-decoration: underline;
+}
+
+.ds-tooltip-bubble {
+  position: relative;
+  width: max-content;
+  max-width: min(240px, 100%);
+  padding: 8px 12px;
+  border-radius: var(--radius-control);
+  background: var(--tooltip-bg);
+  color: var(--tooltip-text);
+  box-shadow: var(--shadow-card-hover);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-body);
+  overflow-wrap: anywhere;
+}
+
+.ds-tooltip-bubble::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  border: 5px solid transparent;
+  border-top-color: var(--tooltip-bg);
+  transform: translateX(-50%);
+}
+
+.ds-alert {
+  --alert-bg: var(--alert-info-bg);
+  --alert-border: var(--alert-info-border);
+  --alert-text: var(--alert-info-text);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  border: var(--alert-border-width) solid var(--alert-border);
+  border-radius: var(--radius-card);
+  background: var(--alert-bg);
+  color: var(--alert-text);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+
+.ds-alert[data-variant='warning'] {
+  --alert-bg: var(--alert-warning-bg);
+  --alert-border: var(--alert-warning-border);
+  --alert-text: var(--alert-warning-text);
+}
+
+.ds-alert[data-variant='error'] {
+  --alert-bg: var(--alert-error-bg);
+  --alert-border: var(--alert-error-border);
+  --alert-text: var(--alert-error-text);
+}
+
+.ds-alert > .anticon {
+  flex: none;
+  margin-top: 3px;
+  font-size: var(--font-size-icon);
+}
+
+.ds-alert strong {
+  display: block;
+  font-weight: var(--font-weight-semibold);
+}
+
+.ds-alert p { margin: 4px 0 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ds-button,
+  .ds-surface { transition: none; }
+}

@@ -70,7 +70,7 @@ ICEDATA_BACKEND_IMAGE=ghcr.io/icedata-top/hantang-web-backend:main
 
 ## 管理配置页面
 
-管理配置页面位于 `/admin`。顶部「管理配置」是一级，左侧分组是二级，分组下的页面是三级。「运行环境」展示当前环境、API 地址和管理入口状态；其余条目为施工占位，复用开发中插图，尚未接通数据或写入。
+管理配置页面位于 `/admin`。顶部「管理配置」是一级，左侧分组是二级，分组下的页面是三级。「运行环境」展示当前环境、API 地址和管理入口状态；「视觉规范」位于 `/admin/design/spec`，支持白天、夜间和对照预览，展示 Canvas、Surface、按钮三态、文字、Tooltip 和三种 Alert。其余条目为施工占位，复用开发中插图，尚未接通数据或写入。
 只有显式启用开关时，才注册页面路由和顶部「管理配置」菜单；未配置、空值或 `false` 均关闭，直接访问 `/admin` 返回 404 页面。
 
 本地开发在 `frontend/.env.local` 中配置后重启开发服务器：
@@ -119,31 +119,39 @@ icedata-web-react/
 │   ├── services/              # API / MOCK
 │   ├── hooks/
 │   └── styles/
-│       ├── global.css         # 全局主题与卡片变量
+│       ├── theme.css          # 统一主题变量，手动调整颜色、字号、字重等
+│       ├── global.css         # 全局基础样式与既有组件适配
+│       ├── design-system.css  # 可复用的按钮、卡片、Tooltip、Alert 样式
 │       └── meshBackground.css # 首页 / 关于弥散背景
 └── tests/
 ```
 
 ## 配色方案
 
-配色在 `src/styles/global.css` 中通过 **CSS 自定义属性** 定义，浅色为 `:root`，深色为根节点带 `[data-theme='dark']`（与导航栏主题切换一致）。**品牌色在深浅主题下相同**。
+颜色、字体、字号、字重、圆角、阴影与边框宽度统一在 **`src/styles/theme.css`** 中手动编辑。公共参数同时影响两种主题，白天为 `:root` 或 `[data-theme='light']`，夜间为 `[data-theme='dark']`（与导航栏主题切换一致）。**品牌色在深浅主题下相同**。
+
+`src/styles/design-system.css` 只负责可复用组件样式，通过变量引用主题；`src/styles/global.css` 负责全局基础样式与既有组件适配。规范页的布局在 `src/pages/Admin/DesignSpec.css`，不重复定义色值与字号。完整约定与页面使用示例见 [视觉规范](../doc/design/visual-spec.md)。
+
+常用手调入口：`--font-size-button`（当前 14px）、`--font-weight-button`（当前 400）、`--font-size-body`、`--text-secondary`，以及 `--button-{类型}-bg/hover/text`。四类按钮、新规范卡片及三种 Alert 均无描边，由 `--button-border-width: 0px`、`--surface-border-width: 0px`、`--alert-border-width: 0px` 控制。后续页面直接使用 `ds-button`、`ds-surface`、`ds-alert` 等公共类与主题变量。
+
+业务色通过 `color-mix()` 从基础色推导：Primary / Info 使用品牌蓝，Danger / Error / 上涨色统一使用 `--highlight-red`，Warning 使用 `--highlight-orange`。日夜主题分别设置混色比例，正文与辅助、禁用文字也由基础文本色和背景色混合生成。只改基础色即可联动全部相关组件；深浅程度可单独调整 `*-strength` 比例。
 
 ### 品牌色（冰数据）
 
 | 用途 | 变量名 | 色值 | 说明 |
 |------|--------|------|------|
 | 主题主色 | `--theme-primary` | `#438BED` | 链接、强调、导航高亮、搜索按钮默认色等 |
-| 高亮 / 悬停 | `--theme-accent` | `#76AFF2` | 按钮悬停、部分强调态 |
+| 品牌高亮 | `--theme-accent` | 品牌蓝 70% + 白 30% | 品牌强调、既有搜索按钮悬停等；随品牌主色联动 |
 
 ### 涨跌色（同环比等）
 
-与 **A 股等常见行情色** 一致：**上升为红、下降为绿**；持平为中性灰。变量在 `src/styles/global.css` 的 `:root` 与 `[data-theme='dark']` 中定义，组件内用 `var(--trend-up)` 等引用。
+与 **A 股等常见行情色** 一致：**上升为红、下降为绿**；持平为中性灰。变量在 `src/styles/theme.css` 中定义，组件内用 `var(--trend-up)` 等引用。
 
 | 变量名 | 浅色（`:root`） | 深色（`[data-theme='dark']`） | 含义 |
 |--------|------------------|-------------------------------|------|
-| `--trend-up` | `#CF1322` | `#FF7875` | 上升（红） |
-| `--trend-down` | `#3F8600` | `#95DE64` | 下降（绿） |
-| `--trend-flat` | `#8C8C8C` | `#8C8C8C` | 持平 / 无变化 |
+| `--trend-up` | `#F05454` | `#FF7875` | 上升（红），引用 `--highlight-red` |
+| `--trend-down` | `#46B970` | `#73D13D` | 下降（绿），引用 `--highlight-green` |
+| `--trend-flat` | 正文色与 Canvas 各 50% | 正文色与 Canvas 各 50% | 持平 / 无变化 |
 
 ### 浅色主题（`:root`）
 
@@ -153,9 +161,9 @@ icedata-web-react/
 | `--bg-hover` | `#ffffff` | 卡片、可悬停表面在 pointer 悬停时的背景 |
 | `--text` | `#333333` | 正文与标题文字 |
 | `--card-bg` | `#ffffff` | 表单控件、次级块背景等 |
-| `--navbar-bg` | `#f4f4f4` | 导航栏卡片、总览卡片等默认表面背景（与 `--bg` 一致，悬停再用 `--bg-hover` 提亮） |
-| `--border` | `#e5e7eb` | 边框、分割线 |
-| `--shadow` | `rgba(15, 23, 42, 0.12)` | **悬停卡片阴影**等较重阴影的基准色 |
+| `--navbar-bg` | `#fafafa` | Surface：导航栏卡片、总览卡片等默认表面背景，悬停使用 `--bg-hover` 提亮 |
+| `--border` | 正文色 12% + Surface 88% | 边框、分割线 |
+| `--shadow` | 黑色 12% + 透明 88% | **悬停卡片阴影**等较重阴影的基准色 |
 
 ### 深色主题（`[data-theme='dark']`）
 
@@ -165,9 +173,9 @@ icedata-web-react/
 | `--bg-hover` | `#27282D` | 卡片等表面悬停背景 |
 | `--text` | `#e0e0e0` | 正文与标题文字 |
 | `--card-bg` | `#24262b` | 表单控件、次级块背景等 |
-| `--navbar-bg` | `#1E1F22` | 导航栏卡片、总览卡片等默认表面背景 |
-| `--border` | `#2b2f36` | 边框 |
-| `--shadow` | `rgba(0, 0, 0, 0.35)` | 悬停卡片阴影的基准色 |
+| `--navbar-bg` | `#212226` | Surface：导航栏卡片、总览卡片等默认表面背景 |
+| `--border` | 正文色 12% + Surface 88% | 边框 |
+| `--shadow` | 黑色 35% + 透明 65% | 悬停卡片阴影的基准色 |
 
 ### 卡片与阴影（全局）
 
