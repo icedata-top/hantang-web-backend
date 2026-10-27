@@ -12,4 +12,6 @@ frontend/node_modules/
 frontend/dist/
 frontend/.env
 frontend/.env.*
+# 本地管理入口开关（VITE_ADMIN_ENABLED），不提交到仓库
+frontend/.env.local
 !frontend/.env.example

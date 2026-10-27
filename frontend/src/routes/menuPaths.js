@@ -1,3 +1,5 @@
+import { ADMIN_ENABLED } from '../config/runtimeEnv.js';
+
 /** 导航菜单项 key → 路由路径（未实现页面统一进入「待开发」页） */
 export const MENU_KEY_TO_PATH = {
   home: '/',
@@ -6,6 +8,7 @@ export const MENU_KEY_TO_PATH = {
   vocals: '/vocals',
   producers: '/producers',
   about: '/about',
+  ...(ADMIN_ENABLED ? { admin: '/admin' } : {}),
 };
 
 const PATH_TO_MENU_KEY = Object.fromEntries(
@@ -13,5 +16,8 @@ const PATH_TO_MENU_KEY = Object.fromEntries(
 );
 
 export function getMenuKeyFromPathname(pathname) {
+  if (ADMIN_ENABLED && (pathname === '/admin' || pathname.startsWith('/admin/'))) {
+    return 'admin';
+  }
   return PATH_TO_MENU_KEY[pathname];
 }

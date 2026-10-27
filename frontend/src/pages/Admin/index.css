@@ -1,0 +1,212 @@
+.admin-shell {
+  --admin-top-offset: 88px;
+  height: calc(100vh - var(--admin-top-offset));
+  display: flex;
+  gap: 16px;
+  padding: 16px 20px 20px;
+  box-sizing: border-box;
+  overflow: hidden;
+  color: var(--text);
+}
+
+.admin-sidebar {
+  flex: 0 0 260px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-radius: var(--radius-card);
+  background: var(--navbar-bg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.admin-sidebar-heading {
+  flex: none;
+  padding: 16px 16px 4px 20px;
+}
+
+.admin-sidebar-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.admin-side-menu.ant-menu {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  width: 100%;
+  border-inline-end: none !important;
+  background: transparent !important;
+  color: var(--text);
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+.admin-side-menu.ant-menu .ant-menu-sub.ant-menu-inline {
+  background: transparent !important;
+}
+
+.admin-side-menu.ant-menu .ant-menu-item,
+.admin-side-menu.ant-menu .ant-menu-submenu-title {
+  color: var(--text) !important;
+  background: transparent !important;
+}
+
+.admin-side-menu.ant-menu .ant-menu-item .ant-menu-item-icon,
+.admin-side-menu.ant-menu .ant-menu-item .anticon,
+.admin-side-menu.ant-menu .ant-menu-submenu-title .ant-menu-item-icon,
+.admin-side-menu.ant-menu .ant-menu-submenu-title .anticon,
+.admin-side-menu.ant-menu .ant-menu-submenu-arrow {
+  color: var(--text) !important;
+}
+
+.admin-side-menu.ant-menu .ant-menu-item:hover,
+.admin-side-menu.ant-menu .ant-menu-submenu-title:hover,
+.admin-side-menu.ant-menu .ant-menu-item-active,
+.admin-side-menu.ant-menu .ant-menu-submenu-active > .ant-menu-submenu-title {
+  color: var(--theme-primary) !important;
+  background: color-mix(in srgb, var(--theme-primary) 8%, transparent) !important;
+}
+
+.admin-side-menu.ant-menu .ant-menu-item-selected {
+  color: var(--theme-primary) !important;
+  background: color-mix(in srgb, var(--theme-primary) 14%, transparent) !important;
+}
+
+.admin-side-menu.ant-menu .ant-menu-item-selected .ant-menu-item-icon,
+.admin-side-menu.ant-menu .ant-menu-item-selected .anticon,
+.admin-side-menu.ant-menu .ant-menu-submenu-selected > .ant-menu-submenu-title,
+.admin-side-menu.ant-menu .ant-menu-submenu-selected > .ant-menu-submenu-title .ant-menu-item-icon,
+.admin-side-menu.ant-menu .ant-menu-submenu-selected > .ant-menu-submenu-title .anticon,
+.admin-side-menu.ant-menu .ant-menu-submenu-selected > .ant-menu-submenu-title .ant-menu-submenu-arrow {
+  color: var(--theme-primary) !important;
+}
+
+.admin-main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+.admin-page {
+  max-width: 960px;
+  padding: 8px 8px 48px;
+}
+
+.admin-page h1 {
+  margin: 0 0 8px;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.admin-lead,
+.admin-panel-note {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.admin-panel {
+  margin-top: 24px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.admin-panel h2 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.admin-config-list {
+  margin: 0;
+}
+
+.admin-config-list > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-config-list dt {
+  min-width: 120px;
+  font-weight: 600;
+}
+
+.admin-config-list dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.admin-panel-note {
+  margin-top: 16px;
+  opacity: 0.8;
+}
+
+.admin-section.page-result {
+  padding-top: 12px;
+}
+
+.admin-crumb {
+  margin: 0 auto;
+  max-width: 520px;
+  text-align: center;
+  font-size: 13px;
+  opacity: 0.7;
+}
+
+.admin-section-title {
+  margin: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+}
+
+.admin-placeholder-note {
+  margin: 8px auto 0;
+  max-width: 420px;
+  text-align: left;
+}
+
+.admin-placeholder-note h2 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.admin-placeholder-note ul {
+  margin: 0;
+  padding-left: 1.2em;
+  line-height: 1.6;
+}
+
+.admin-placeholder-note li + li {
+  margin-top: 6px;
+}
+
+[data-theme='dark'] .admin-sidebar {
+  border-color: #343840;
+}
+
+@media (max-width: 767px) {
+  .admin-shell {
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .admin-sidebar {
+    flex: 0 1 auto;
+    width: 100%;
+    max-height: 42vh;
+  }
+}

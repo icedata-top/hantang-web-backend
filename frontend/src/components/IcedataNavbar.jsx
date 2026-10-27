@@ -5,6 +5,7 @@ import { Button, Card, Menu } from 'antd';
 import { MoonOutlined, SunOutlined } from '@ant-design/icons';
 import { getMenuKeyFromPathname, MENU_KEY_TO_PATH } from '../routes/menuPaths.js';
 import './IcedataNavbar.css';
+import { ADMIN_ENABLED } from '../config/runtimeEnv.js';
 
 export default function IcedataNavbar() {
   const { i18n } = useTranslation();
@@ -67,6 +68,7 @@ export default function IcedataNavbar() {
       ],
     },
     { key: 'about', label: t('关于', 'About') },
+    ...(ADMIN_ENABLED ? [{ key: 'admin', label: t('管理配置', 'Administration') }] : []),
   ];
 
   const selectedKeys = useMemo(() => {

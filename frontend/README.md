@@ -68,6 +68,25 @@ ICEDATA_BACKEND_IMAGE=ghcr.io/icedata-top/hantang-web-backend:main
 
 `npm run dev` 未设置时默认使用 `DEV`，直接请求 `http://localhost:8080`。`npm run build` 未设置时默认使用 `PROD`。
 
+## 管理配置页面
+
+管理配置页面位于 `/admin`。顶部「管理配置」是一级，左侧分组是二级，分组下的页面是三级。「运行环境」展示当前环境、API 地址和管理入口状态；其余条目为施工占位，复用开发中插图，尚未接通数据或写入。
+只有显式启用开关时，才注册页面路由和顶部「管理配置」菜单；未配置、空值或 `false` 均关闭，直接访问 `/admin` 返回 404 页面。
+
+本地开发在 `frontend/.env.local` 中配置后重启开发服务器：
+
+```dotenv
+VITE_ADMIN_ENABLED=true
+```
+
+`.env.local` 已加入 Git 忽略，不提交本地开关。删除此项或设置为 `false` 即可关闭。
+Vite 构建也会读取 `.env.local`，发布时应确认开关值。
+
+Docker 部署设置 `ICEDATA_ADMIN_ENABLED=true` 并重新创建前端容器即可开启，无需重新构建镜像；默认关闭。
+运行时的 `adminEnabled` 优先于 Vite 的 `VITE_ADMIN_ENABLED`。
+
+此开关仅控制前端页面与菜单，不是身份认证。不要在前端环境变量中存放密码或密钥；后续管理写入接口需要后端权限校验。
+
 ## 目录树
 
 ```

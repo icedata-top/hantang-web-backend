@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Outlet, Route, Routes, useLocation } from 'react-router-dom';
 import IcedataNavbar from './components/IcedataNavbar.jsx';
 import About from './pages/About/index.jsx';
@@ -8,6 +8,9 @@ import NotFound from './pages/NotFound.jsx';
 import UnderDevelopment from './pages/UnderDevelopment.jsx';
 import Stash from './pages/Stash/index.jsx';
 import UniSeek from './pages/UniSeek/UniSeek.jsx';
+import { ADMIN_ENABLED } from './config/runtimeEnv.js';
+
+const Admin = lazy(() => import('./pages/Admin/index.jsx'));
 
 function AppLayout() {
   const { pathname } = useLocation();
@@ -46,6 +49,9 @@ export default function App() {
           <Route path="vocals" element={<UnderDevelopment />} />
           <Route path="producers" element={<UnderDevelopment />} />
           <Route path="about" element={<About />} />
+          {ADMIN_ENABLED && (
+            <Route path="admin/*" element={<Suspense fallback={null}><Admin /></Suspense>} />
+          )}
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

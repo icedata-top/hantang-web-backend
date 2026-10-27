@@ -34,6 +34,11 @@ const BASE_URL_BY_ENV = Object.freeze({
 });
 
 const RUNTIME_CONFIG = globalThis.window?.__ICEDATA_RUNTIME_CONFIG__ ?? {};
+/** 管理入口默认关闭；运行时配置优先于构建时配置，仅 true 显式开启。 */
+export const ADMIN_ENABLED = String(
+  RUNTIME_CONFIG.adminEnabled ?? import.meta.env?.VITE_ADMIN_ENABLED ?? '',
+).trim().toLowerCase() === 'true';
+
 const VITE_API_BASE_URL = normalizeBaseUrl(import.meta.env?.VITE_API_BASE_URL);
 const RUNTIME_API_BASE_URL = normalizeBaseUrl(RUNTIME_CONFIG.apiBaseUrl);
 
