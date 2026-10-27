@@ -92,6 +92,24 @@
 .spec-alert-caption { margin-bottom: 8px; font-size: var(--font-size-caption); }
 .spec-alert-caption strong { font-weight: var(--font-weight-medium); }
 .spec-alert-colors { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 8px; color: var(--text-secondary); font-size: var(--font-size-xs); }
+.spec-tab-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; padding: 20px; border-radius: var(--radius-card); background: var(--surface); }
+.spec-tab-metrics span { display: block; color: var(--text-secondary); font-size: var(--font-size-caption); }
+.spec-tab-metrics strong { display: block; margin-top: 8px; font-size: var(--font-size-title); font-weight: var(--font-weight-semibold); font-variant-numeric: tabular-nums; }
+.spec-tab-copy { min-height: 110px; padding: 16px; border-radius: var(--radius-card); background: var(--surface); }
+.spec-tab-copy strong { font-weight: var(--font-weight-medium); }
+.spec-tab-copy p { margin: 8px 0 0; color: var(--text-secondary); font-size: var(--font-size-caption); }
+.spec-record-name { display: block; overflow: hidden; text-overflow: ellipsis; }
+.spec-record-id { display: block; margin-top: 3px; color: var(--text-secondary); font-size: var(--font-size-caption); font-variant-numeric: tabular-nums; }
+.spec-table-pagination { margin-top: 20px; }
+.spec-demo-label { margin: 0 0 12px; color: var(--text-secondary); font-size: var(--font-size-caption); }
+.spec-pagination-live { padding: 16px; border-radius: var(--radius-card); background: var(--surface); }
+.spec-pagination-range { margin: 12px 0 0; color: var(--text-secondary); font-size: var(--font-size-caption); font-variant-numeric: tabular-nums; }
+.spec-pagination-states { display: flex; flex-wrap: wrap; gap: 24px; margin: 24px 0; }
+.spec-pagination-states > div { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.spec-pagination-states span { color: var(--text-secondary); font-size: var(--font-size-caption); }
+.spec-pagination-colors { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.spec-pagination-colors span { display: block; color: var(--text-secondary); font-size: var(--font-size-caption); }
+.spec-pagination-colors code { font-family: var(--font-family-mono); font-size: var(--font-size-xs); }
 .spec-page-footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--text-secondary); font-size: var(--font-size-meta); }
 
 @container (min-width: 900px) {

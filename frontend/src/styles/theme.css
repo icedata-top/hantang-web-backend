@@ -46,6 +46,19 @@
   --surface-border-width: 0px;
   --alert-border-width: 0px;
 
+  /* 导航与数据展示的尺寸 */
+  --tabs-height: 40px;
+  --tabs-gap: 24px;
+  --tabs-indicator-size: 2px;
+  --table-row-height: 52px;
+  --table-cell-padding-block: 12px;
+  --table-cell-padding-inline: 16px;
+  --table-empty-height: 208px;
+  --pagination-item-size: 32px;
+  --pagination-item-size-compact: 28px;
+  --pagination-gap: 4px;
+  --pagination-border-width: 0px;
+
   /* 基础明暗端点与品牌色 */
   --color-white: #ffffff;
   --color-black: #000000;
@@ -75,9 +88,12 @@
   /* 百分比表示原色占比：与黑混合越低越深，与白混合越低越浅。 */
   --text-secondary-strength: 72%;
   --text-disabled-strength: 45%;
-  --link-strength: 72%;
-  --link-hover-strength: 64%;
+  --link-strength: 100%;
+  --link-hover-strength: 80%;
   --link-anchor: var(--color-black);
+  --tabs-idle-text: var(--theme-primary);
+  --tabs-hover-text: var(--text-link-hover);
+  --tabs-hover-indicator: var(--text-link-hover);
   --primary-solid-strength: 100%;
   --primary-hover-strength: 80%;
   --danger-solid-strength: 100%;
@@ -118,6 +134,9 @@
   --link-strength: 70%;
   --link-hover-strength: 55%;
   --link-anchor: var(--color-white);
+  --tabs-idle-text: var(--text-secondary);
+  --tabs-hover-text: var(--text-link);
+  --tabs-hover-indicator: var(--theme-primary);
   --primary-solid-strength: 100%;
   --primary-hover-strength: 80%;
   --danger-solid-strength: 80%;
@@ -180,6 +199,23 @@
   --alert-error-bg: color-mix(in srgb, var(--highlight-red) var(--alert-fill-strength), var(--surface));
   --alert-error-border: color-mix(in srgb, var(--highlight-red) var(--alert-border-strength), var(--surface));
   --alert-error-text: color-mix(in srgb, var(--highlight-red) var(--alert-text-strength), var(--alert-text-anchor));
+
+  /* Tabs、Table、Pagination 均引用已有派生色。 */
+  --tabs-text: var(--tabs-idle-text);
+  --tabs-active-text: var(--text-link);
+  --tabs-indicator: var(--theme-primary);
+  --tabs-divider: var(--border);
+  --table-bg: var(--surface);
+  --table-header-bg: color-mix(in srgb, var(--text) 4%, var(--surface));
+  --table-header-text: var(--text-secondary);
+  --table-divider: var(--border);
+  --table-row-hover: var(--button-secondary-bg);
+  --pagination-text: var(--text-primary);
+  --pagination-active-bg: var(--alert-info-bg);
+  --pagination-active-text: var(--alert-info-text);
+  --pagination-hover-bg: color-mix(in srgb, var(--alert-info-bg) 60%, var(--surface));
+  --pagination-hover-text: var(--alert-info-text);
+  --pagination-disabled-text: var(--text-disabled);
 
   --trend-up: var(--highlight-red);
   --trend-down: var(--highlight-green);

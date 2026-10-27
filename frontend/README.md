@@ -70,7 +70,7 @@ ICEDATA_BACKEND_IMAGE=ghcr.io/icedata-top/hantang-web-backend:main
 
 ## 管理配置页面
 
-管理配置页面位于 `/admin`。顶部「管理配置」是一级，左侧分组是二级，分组下的页面是三级。「运行环境」展示当前环境、API 地址和管理入口状态；「视觉规范」位于 `/admin/design/spec`，支持白天、夜间和对照预览，展示 Canvas、Surface、按钮三态、文字、Tooltip 和三种 Alert。其余条目为施工占位，复用开发中插图，尚未接通数据或写入。
+管理配置页面位于 `/admin`。顶部「管理配置」是一级，左侧分组是二级，分组下的页面是三级。「运行环境」展示当前环境、API 地址和管理入口状态；「视觉规范」位于 `/admin/design/spec`，支持白天、夜间和对照预览，展示 Canvas、Surface、按钮三态、文字、Tooltip、三种 Alert、Tabs、Table 与 Pagination。其余条目为施工占位，复用开发中插图，尚未接通数据或写入。
 只有显式启用开关时，才注册页面路由和顶部「管理配置」菜单；未配置、空值或 `false` 均关闭，直接访问 `/admin` 返回 404 页面。
 
 本地开发在 `frontend/.env.local` 中配置后重启开发服务器：
@@ -132,7 +132,9 @@ icedata-web-react/
 
 `src/styles/design-system.css` 只负责可复用组件样式，通过变量引用主题；`src/styles/global.css` 负责全局基础样式与既有组件适配。规范页的布局在 `src/pages/Admin/DesignSpec.css`，不重复定义色值与字号。完整约定与页面使用示例见 [视觉规范](../doc/design/visual-spec.md)。
 
-常用手调入口：`--font-size-button`（当前 14px）、`--font-weight-button`（当前 400）、`--font-size-body`、`--text-secondary`，以及 `--button-{类型}-bg/hover/text`。四类按钮、新规范卡片及三种 Alert 均无描边，由 `--button-border-width: 0px`、`--surface-border-width: 0px`、`--alert-border-width: 0px` 控制。后续页面直接使用 `ds-button`、`ds-surface`、`ds-alert` 等公共类与主题变量。
+常用手调入口：`--font-size-button`（当前 14px）、`--font-weight-button`（当前 400）、`--font-size-body`、`--text-secondary`，以及 `--button-{类型}-bg/hover/text`。四类按钮、新规范卡片及三种 Alert 均无描边，由 `--button-border-width: 0px`、`--surface-border-width: 0px`、`--alert-border-width: 0px` 控制。后续页面直接使用 `ds-button`、`ds-surface`、`ds-alert` 等公共类与主题变量。Tabs、Table、Pagination 的公共 React 组件从 `src/components/design-system/DataDisplay.jsx` 导入；尺寸和配色仍集中在 `theme.css`，分页器全状态无边框，选中配色直接引用 Info Alert。
+
+白天文字链接、行内「查看」和可用 Tab 文字直接使用 100% 品牌蓝，悬停加深；夜间沿用现有链接派生色。
 
 业务色通过 `color-mix()` 从基础色推导：Primary / Info 使用品牌蓝，Danger / Error / 上涨色统一使用 `--highlight-red`，Warning 使用 `--highlight-orange`。日夜主题分别设置混色比例，正文与辅助、禁用文字也由基础文本色和背景色混合生成。只改基础色即可联动全部相关组件；深浅程度可单独调整 `*-strength` 比例。
 

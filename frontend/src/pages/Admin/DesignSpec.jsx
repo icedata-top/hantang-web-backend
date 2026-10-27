@@ -1,4 +1,4 @@
-import { createContext, useContext, useId, useLayoutEffect, useRef, useState } from 'react';
+import { useId, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   InfoCircleOutlined,
@@ -8,8 +8,9 @@ import {
   CloseCircleOutlined,
 } from '@ant-design/icons';
 import './DesignSpec.css';
+import { PaginationSample, TableSample, TabsSample } from './DataDisplaySamples.jsx';
+import { TokenContext, Token, Value, TypeMetrics } from './SpecTokens.jsx';
 
-const TokenContext = createContext({});
 const TOKEN_NAMES = [
   'canvas', 'surface', 'surface-hover', 'surface-border', 'theme-primary', 'theme-accent',
   'text-primary', 'text-secondary', 'text-disabled', 'text-link', 'text-link-hover',
@@ -23,6 +24,10 @@ const TOKEN_NAMES = [
   'font-weight-regular', 'font-weight-medium', 'font-weight-semibold', 'font-weight-button',
   'line-height-title', 'line-height-heading', 'line-height-body',
   'radius-card', 'radius-control', 'control-height', 'button-border-width', 'surface-border-width', 'alert-border-width',
+  'tabs-height', 'tabs-gap', 'tabs-indicator-size',
+  'table-row-height', 'table-cell-padding-block', 'table-cell-padding-inline',
+  'pagination-item-size', 'pagination-item-size-compact', 'pagination-gap', 'pagination-border-width',
+  'pagination-active-bg', 'pagination-active-text',
   ...['info', 'warning', 'error'].flatMap((type) => ['bg', 'border', 'text'].map((part) => `alert-${type}-${part}`)),
 ];
 
@@ -36,20 +41,6 @@ function formatColor(value) {
   const rgb = channels.slice(0, 3).map((channel) => hex(channel * scale)).join('');
   const alpha = channels[3] ?? 1;
   return `#${rgb}${alpha < 1 ? hex(alpha * 255) : ''}`.toUpperCase();
-}
-
-function Token({ name }) {
-  const tokens = useContext(TokenContext);
-  return <code className="spec-token" title={`--${name}`}>{tokens[name] || '—'}</code>;
-}
-
-function Value({ name }) {
-  const tokens = useContext(TokenContext);
-  return <span title={`--${name}`}>{tokens[name] || '—'}</span>;
-}
-
-function TypeMetrics({ size, weight = 'regular', lineHeight = 'body' }) {
-  return <code><Value name={`font-size-${size}`} /> / <Value name={`font-weight-${weight}`} /> / <Value name={`line-height-${lineHeight}`} /></code>;
 }
 
 function Swatch({ name, label }) {
@@ -278,6 +269,9 @@ const SECTIONS = [
   { id: 'typography', en: 'Typography', zh: '文字', description: ['用字号、字重和颜色表达内容的重要程度。', 'Express content hierarchy through size, weight, and color.'], Component: Typography },
   { id: 'tooltips', en: 'Tooltip', zh: '悬停提示', description: ['为局部内容提供简短说明，支持鼠标与键盘。', 'Add concise context, accessible with mouse and keyboard.'], Component: Tooltips },
   { id: 'alerts', en: 'Alert', zh: '状态提示', description: ['信息、警告、错误三种语义，使用同一套结构。', 'Information, warning, and error share a consistent structure.'], Component: Alerts },
+  { id: 'tabs', en: 'Tabs', zh: '标签页', description: ['同一内容区域内切换视图，选中、悬停、禁用与键盘操作保持一致。', 'Switch views within one content area, with consistent selection, hover, disabled, and keyboard behavior.'], Component: TabsSample },
+  { id: 'table', en: 'Table', zh: '表格', description: ['以对齐、留白和分隔线组织数据，覆盖排序、空态与加载。', 'Organize data through alignment, spacing, and dividers, including sorting, empty, and loading states.'], Component: TableSample },
+  { id: 'pagination', en: 'Pagination', zh: '分页', description: ['轻量、无边框，沿用 Info Alert 的 Primary 派生色。', 'Lightweight and borderless, using the Primary-derived Info Alert colors.'], Component: PaginationSample },
 ];
 
 export default function DesignSpec() {

@@ -2,7 +2,7 @@
 
 视觉预览入口：`/admin/design/spec`，随管理入口开关启用。页面可切换白天、夜间或对照，窄屏下对照样本上下排列。页面顶部的主题预览不改变全站主题，导航栏的主题切换仍控制外层界面。
 
-沿用 `frontend/README.md` 的品牌蓝、现有表面层级、8px 卡片圆角、普通与悬停阴影。本次补齐按钮、文字、Tooltip 与三种 Alert。现有页面继续使用原来的样式，新规范通过语义变量和 `ds-*` 样式供后续页面采用。
+沿用 `frontend/README.md` 的品牌蓝、现有表面层级、8px 卡片圆角、普通与悬停阴影。规范覆盖按钮、文字、Tooltip、三种 Alert、Tabs、Table 与 Pagination。现有页面继续使用原来的样式，新规范通过语义变量、`ds-*` 样式与公共组件供后续页面采用。
 
 ## 手动编辑与页面复用
 
@@ -99,8 +99,8 @@ Primary 用于核心操作，Secondary 用于次要操作，Normal 用于常规�
 | 正文与标题 | 直接引用 `--text` | 直接引用 `--text` |
 | 辅助文本 | 正文 72% + Canvas 28% | 正文 72% + Canvas 28% |
 | 禁用文本 | 正文 45% + Canvas 55% | 正文 35% + Canvas 65% |
-| 链接 | 品牌蓝 72% + 黑 28% | 品牌蓝 70% + 白 30% |
-| 链接悬停 | 品牌蓝 64% + 黑 36% | 品牌蓝 55% + 白 45% |
+| 链接 | 品牌蓝 100% | 品牌蓝 70% + 白 30% |
+| 链接悬停 | 品牌蓝 80% + 黑 20% | 品牌蓝 55% + 白 45% |
 
 辅助文字使用明确颜色，避免父容器透明度降低整个内容的可读性。对齐的数字使用 `font-variant-numeric: tabular-nums`。链接悬停增加下划线，键盘聚焦有外环。
 
@@ -123,3 +123,37 @@ Primary 用于核心操作，Secondary 用于次要操作，Normal 用于常规�
 标题 14px / 600，正文 14px / 400，行高 1.6，图标 16px，内边距 14px × 16px，圆角 8px，无边框（`--alert-border-width: 0px`）。语义由颜色、图标和文字共同表达。
 
 实现：`.ds-alert` 配合 `data-variant="info|warning|error"`，颜色对应 `--alert-{类型}-bg/border/text`。规范页是静态样本，不主动播报错误；业务页面在动态状态变化时按场景配置适当的播报语义。
+
+## Tabs
+
+正文 14px / 400，选中项为 500 字重，默认高度 40px、间距 24px、选中下划线 2px，分别由 `--tabs-height`、`--tabs-gap`、`--tabs-indicator-size` 控制。没有外框，底部分隔线引用 `--tabs-divider`。
+
+白天可用 Tab 文字和选中下划线直接使用 100% `--theme-primary`，悬停时文字与选中下划线使用 80% 品牌色加黑。夜间未选中项使用辅助文本色，选中及悬停文字引用现有夜间链接色，下划线保持品牌主色。禁用项始终使用 `--text-disabled`，不响应点击、不参与方向键切换。
+
+同一时刻只有一个选中项。左右方向键循环切换并自动选中，Home / End 跳到首尾可用项；Tab 进入内容区域。窄屏横向滚动，键盘聚焦外环放在控件内部以避免裁切。组件提供完整的 tablist / tab / tabpanel 关联。
+
+公共组件：`DsTabs`，接收 `items`（key、label、children、disabled）、`value`、`onChange` 和 `label`。
+
+## Table
+
+正文 14px / 400，表头 500 字重。最小行高 52px，单元格内边距 12px × 16px，通过 `--table-row-height`、`--table-cell-padding-block`、`--table-cell-padding-inline` 调整。无外框和纵向边线，仅保留横向分隔线，末行不画底线。
+
+表头背景由正文色 4% 混入 Surface 得到，行悬停引用 Primary 的次要按钮浅底，避免新增独立颜色。数字右对齐、使用等宽数字和千分位；缺失数据用 —，真实零使用 0。长名称单行省略，完整名称可悬停查看。表格最小宽度 480px，窄容器内部横向滚动。
+
+支持可排序表头，显示方向与 `aria-sort`。样本以播放量排序，缺失值在升降序中均排在最后。行内「查看」使用公共文字链接色，白天直接使用 100% 品牌主色，悬停加深并出现下划线。
+
+空数据与加载采用同一居中区域，尺寸由 `--table-empty-height` 控制；空数据给出筛选建议，加载显示状态图标与文字并设置 `aria-busy`。样本中空数据、加载状态的分页按钮均禁用。
+
+公共组件：`DsTable`，接收 `columns`（key、title、width、align、sortable、render）、`rows`（每行有唯一 id）、`caption`、`loading`、`sortKey`、`sortDirection`、`onSort` 与 `emptyText`。排序与数据请求由使用页面管理。
+
+## Pagination
+
+所有状态均无边框，由 `--pagination-border-width: 0px` 控制。页码默认 32px、间距 4px、圆角 6px，正文 14px / 400，当前页为 600 字重。窄容器中页码缩小到 28px；对应尺寸由 `--pagination-item-size`、`--pagination-gap`、`--pagination-item-size-compact` 控制。
+
+当前页背景和文字直接引用 `--alert-info-bg` / `--alert-info-text`，每页条数选择框也沿用这两个变量；悬停背景将 Info 背景 60% 与 Surface 40% 混合，文字保持 Info 前景色。禁用文字引用 `--text-disabled`。没有另设硬编码业务颜色，日夜自动随 Info Alert 一起变化。
+
+首尾禁用对应方向按钮，整体禁用时所有控件不可操作；空数据展示总数 0 和禁用的第 1 页。超过 7 页时保留首尾、当前页附近页码和省略号，省略号不进入焦点顺序。当前页通过 `aria-current="page"` 标注，每个分页区域有独立名称。修改每页条数后由页面重置到第 1 页，键盘聚焦显示 2px 外环。
+
+公共组件：`DsPagination`，接收正整数 `current` / `pageSize`、非负 `total`、`onChange`、`disabled`、`label`，可选 `pageSizeOptions` / `onPageSizeChange`。
+
+以上组件从 `frontend/src/components/design-system/DataDisplay.jsx` 导入，共享已全局加载的主题与样式。规范页的尺寸与颜色标注直接读取实际主题变量，保存 `theme.css` 后同步更新。

@@ -150,7 +150,156 @@
 
 .ds-alert p { margin: 4px 0 0; }
 
+.ds-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.ds-tab-list {
+  display: flex;
+  gap: var(--tabs-gap);
+  overflow-x: auto;
+  border-bottom: 1px solid var(--tabs-divider);
+}
+
+.ds-tab {
+  position: relative;
+  flex: none;
+  min-height: var(--tabs-height);
+  padding: 8px 2px;
+  border: 0;
+  background: transparent;
+  color: var(--tabs-text);
+  font-family: inherit;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-body);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 160ms ease;
+}
+
+.ds-tab::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: var(--tabs-indicator-size);
+  border-radius: var(--tabs-indicator-size);
+  background: transparent;
+}
+
+.ds-tab[aria-selected='true'] { color: var(--tabs-active-text); }
+.ds-tab:not(:disabled):hover { color: var(--tabs-hover-text); }
+.ds-tab[aria-selected='true'] { font-weight: var(--font-weight-medium); }
+.ds-tab[aria-selected='true']::after { background: var(--tabs-indicator); }
+.ds-tab[aria-selected='true']:hover::after { background: var(--tabs-hover-indicator); }
+.ds-tab:disabled { color: var(--text-disabled); cursor: not-allowed; }
+.ds-tab-panel { padding-top: 20px; }
+.ds-tab-panel:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
+.ds-tab:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: -3px; border-radius: var(--radius-control); }
+
+.ds-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: var(--radius-card);
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+.ds-table {
+  width: 100%;
+  min-width: 480px;
+  table-layout: fixed;
+  border-collapse: collapse;
+  background: var(--table-bg);
+  color: var(--text-primary);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+
+.ds-table th,
+.ds-table td {
+  height: var(--table-row-height);
+  padding: var(--table-cell-padding-block) var(--table-cell-padding-inline);
+  border: 0;
+  border-bottom: 1px solid var(--table-divider);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.ds-table th { background: var(--table-header-bg); color: var(--table-header-text); font-weight: var(--font-weight-medium); }
+.ds-table tbody tr:last-child td { border-bottom: 0; }
+.ds-table tbody tr:hover { background: var(--table-row-hover); }
+.ds-table tbody tr:has(.ds-table-empty):hover { background: transparent; }
+.ds-table [data-align='right'] { text-align: right; font-variant-numeric: tabular-nums; }
+.ds-table-cell { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ds-table-sort { display: inline-flex; align-items: center; justify-content: inherit; gap: 6px; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; white-space: nowrap; cursor: pointer; }
+.ds-table-sort:hover,
+.ds-table th[aria-sort='ascending'] .ds-table-sort,
+.ds-table th[aria-sort='descending'] .ds-table-sort { color: var(--text-link); }
+.ds-table-empty { display: flex; min-height: var(--table-empty-height); flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--text-secondary); }
+.ds-table-empty-symbol { font-size: var(--font-size-title); color: var(--text-disabled); }
+.ds-table-empty-hint { font-size: var(--font-size-caption); }
+.ds-text-button { padding: 0; border: 0; background: transparent; color: var(--text-link); font: inherit; cursor: pointer; text-underline-offset: 3px; }
+.ds-text-button:hover { color: var(--text-link-hover); text-decoration: underline; }
+
+.ds-pagination { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; font-size: var(--font-size-body); line-height: var(--line-height-body); }
+.ds-pagination-summary { color: var(--text-secondary); font-size: var(--font-size-caption); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ds-pagination-pages { display: flex; flex-wrap: wrap; align-items: center; gap: var(--pagination-gap); }
+.ds-page-button,
+.ds-pagination-gap {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--pagination-item-size);
+  height: var(--pagination-item-size);
+  padding: 0 4px;
+  border: var(--pagination-border-width) solid var(--border);
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--pagination-text);
+  font-family: inherit;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.ds-page-button:not(:disabled):hover,
+.ds-page-button[data-preview-state='hover'] { background: var(--pagination-hover-bg); color: var(--pagination-hover-text); }
+.ds-page-button[aria-current='page'],
+.ds-page-button[aria-current='page']:not(:disabled):hover,
+.ds-page-button[data-preview-state='active'] { background: var(--pagination-active-bg); color: var(--pagination-active-text); font-weight: var(--font-weight-semibold); }
+.ds-page-button:disabled { background: transparent; color: var(--pagination-disabled-text); cursor: not-allowed; }
+.ds-pagination-gap { color: var(--text-secondary); cursor: default; }
+.ds-page-button .anticon { font-size: var(--font-size-caption); }
+.ds-page-size-select { min-height: var(--pagination-item-size); max-width: 100%; padding: 4px 8px; border: var(--pagination-border-width) solid var(--border); border-radius: var(--radius-control); background: var(--pagination-active-bg); color: var(--pagination-active-text); font-family: inherit; font-size: var(--font-size-caption); cursor: pointer; }
+.ds-page-size-select:disabled { background: transparent; color: var(--pagination-disabled-text); cursor: not-allowed; }
+.ds-page-size-select option { background: var(--surface); color: var(--text-primary); }
+.ds-page-button:focus-visible,
+.ds-page-size-select:focus-visible,
+.ds-table-sort:focus-visible,
+.ds-text-button:focus-visible,
+.ds-table-scroll:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+
+@container (max-width: 360px) {
+  .ds-pagination { --pagination-item-size: var(--pagination-item-size-compact); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ds-button,
-  .ds-surface { transition: none; }
+  .ds-surface,
+  .ds-tab,
+  .ds-page-button { transition: none; }
 }
