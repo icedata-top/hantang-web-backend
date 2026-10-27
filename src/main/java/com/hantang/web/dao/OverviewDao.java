@@ -126,6 +126,15 @@ public class OverviewDao {
             throw new IllegalArgumentException("OverviewRequest 及 endDate 不能为空");
         }
         String endDate = request.getEndDate().format(DateTimeFormatter.ISO_LOCAL_DATE);
+        List<Object> params = new ArrayList<>();
+        params.add(endDate);
+        String scope = request.getAddtionalParams() == null ? null : request.getAddtionalParams().get("scope");
+        String submissionFilter = "";
+        if (scope != null && "new".equals(scope.trim())) {
+            // 用 EXISTS 按投稿日期限定作品，避免元数据重复行放大分桶数量。
+            submissionFilter = "AND EXISTS (SELECT 1 FROM hantang_dynamic.processed_videos p "
+                    + "WHERE p.aid = video_daily.aid " + buildFilterSql(request, params) + ") ";
+        }
         String sql = "SELECT "
                 + "CASE "
                 + "WHEN \"view\" < 0 THEN 'E01' "
@@ -141,9 +150,10 @@ public class OverviewDao {
                 + "COUNT(*)::bigint AS cnt "
                 + "FROM hantang_dynamic.video_daily "
                 + "WHERE record_date = ?::date "
+                + submissionFilter
                 + "GROUP BY 1 "
                 + "ORDER BY 1";
-        return postgreDao.queryList(sql, List.of(endDate));
+        return postgreDao.queryList(sql, params);
     }
 
     public GateCrossingQueryResult getGateCrossings(OverviewRequest request, Long aid, int page, int pageSize) {

@@ -103,6 +103,7 @@ public class OverviewRequest {
 - **用途**：返回播放量分桶（全部投稿 / 新投稿）
 - **路径**：`POST /overview/get-view-histogram`
 - **范围参数**：通过 `OverviewRequest.addtionalParams.scope` 区分 `all` / `new`
+- **统计口径**：两种范围均使用所选结束日的 `video_daily` 累计播放量分桶。`all` 不限制投稿日期；`new` 通过 `aid` 匹配 `processed_videos`，仅统计 `pubdate` 落在用户所选开始日 00:00:00 至结束日 23:59:59 的作品，不对播放量作区间差分。
 
 **响应体**
 
