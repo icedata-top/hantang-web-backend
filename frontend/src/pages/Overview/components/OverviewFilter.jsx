@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import { DatePicker, Tooltip } from 'antd';
 import dayjs from 'dayjs';
 import 'dayjs/locale/zh-cn';
-
-dayjs.locale('zh-cn');
 
 const { RangePicker } = DatePicker;
 
@@ -13,9 +12,17 @@ const { RangePicker } = DatePicker;
  * @param {string} startDate YYYY-MM-DD
  * @param {string} endDate YYYY-MM-DD
  */
-function buildFilterTimeHints(startDate, endDate) {
+function buildFilterTimeHints(startDate, endDate, isZh) {
   const start = dayjs(startDate).startOf('day');
   const endNext = dayjs(endDate).add(1, 'day').startOf('day');
+  if (!isZh) {
+    const startDateLabel = start.locale('en').format('MMM D, YYYY');
+    const endDateLabel = endNext.locale('en').format('MMM D, YYYY');
+    return {
+      submissionLine: `New videos and active producers are counted from ${startDateLabel} at 00:00 to ${endDateLabel} at 00:00.`,
+      videoStatsLine: `Views, favorites, and other video metrics show increases from ${startDateLabel} at 04:00 to ${endDateLabel} at 04:00.`,
+    };
+  }
   const a0 = `${start.format('YYYY年M月D日')}0时`;
   const b0 = `${endNext.format('YYYY年M月D日')}0时`;
   const a4 = `${start.format('YYYY年M月D日')}4时`;
@@ -53,10 +60,10 @@ export function getDefaultOverviewFilter() {
 /**
  * 不含今天的快捷范围：结束日为昨天，「最近7天」为昨天起往前共 7 天（含），「最近30天」同理。
  */
-export function getOverviewRangePresets() {
+export function getOverviewRangePresets(isZh = true) {
   return [
     {
-      label: '最近7天',
+      label: isZh ? '最近7天' : 'Last 7 days',
       value: () => {
         const end = getOverviewMaxSelectableDate();
         let start = end.subtract(6, 'day');
@@ -67,7 +74,7 @@ export function getOverviewRangePresets() {
       },
     },
     {
-      label: '最近14天',
+      label: isZh ? '最近14天' : 'Last 14 days',
       value: () => {
         const end = getOverviewMaxSelectableDate();
         let start = end.subtract(13, 'day');
@@ -78,7 +85,7 @@ export function getOverviewRangePresets() {
       },
     },
     {
-      label: '最近30天',
+      label: isZh ? '最近30天' : 'Last 30 days',
       value: () => {
         const end = getOverviewMaxSelectableDate();
         let start = end.subtract(29, 'day');
@@ -115,8 +122,8 @@ function isOverviewDateDisabled(current, info) {
  * 弹层双月视图：左侧上月、右侧本月（与 Ant Design `defaultPickerValue` 约定一致，每次打开面板会重置）。
  * @returns {[import('dayjs').Dayjs, import('dayjs').Dayjs]}
  */
-function getDefaultRangePanelMonths() {
-  return [dayjs().subtract(1, 'month').startOf('month'), dayjs().startOf('month')];
+function getDefaultRangePanelMonths(locale) {
+  return [dayjs().locale(locale).subtract(1, 'month').startOf('month'), dayjs().locale(locale).startOf('month')];
 }
 
 /**
@@ -126,6 +133,10 @@ function getDefaultRangePanelMonths() {
  * @param {(next: { startDate?: string, endDate?: string }) => void} [props.onFilterChange]
  */
 export default function OverviewFilter({ startDate, endDate, onFilterChange }) {
+  const { i18n } = useTranslation();
+  const isZh = String(i18n?.language || 'zh').toLowerCase().startsWith('zh');
+  const t = (zh, en) => (isZh ? zh : en);
+  const dateLocale = isZh ? 'zh-cn' : 'en';
   const initialRange = useMemo(() => {
     if (startDate && endDate) return [dayjs(startDate), dayjs(endDate)];
     return null;
@@ -153,11 +164,12 @@ export default function OverviewFilter({ startDate, endDate, onFilterChange }) {
 
   const timeHints = useMemo(() => {
     if (!startDate || !endDate) return null;
-    return buildFilterTimeHints(startDate, endDate);
-  }, [startDate, endDate]);
+    return buildFilterTimeHints(startDate, endDate, isZh);
+  }, [startDate, endDate, isZh]);
 
   const calendarYearMonth = dayjs().format('YYYY-MM');
-  const defaultPickerValue = useMemo(() => getDefaultRangePanelMonths(), [calendarYearMonth]);
+  const defaultPickerValue = useMemo(() => getDefaultRangePanelMonths(dateLocale), [calendarYearMonth, dateLocale]);
+  const pickerRange = useMemo(() => draftRange?.map((date) => date?.locale(dateLocale)) ?? null, [draftRange, dateLocale]);
 
   const handleConfirm = () => {
     const maxEnd = getOverviewMaxSelectableDate();
@@ -188,7 +200,7 @@ export default function OverviewFilter({ startDate, endDate, onFilterChange }) {
     <div className="overview-filter">
       <div className="overview-filter-date-heading">
         <span className="overview-filter-date-label" id={dateLabelId}>
-          日期范围
+          {t('日期范围', 'Date range')}
         </span>
         {timeHints ? (
           <Tooltip
@@ -204,7 +216,7 @@ export default function OverviewFilter({ startDate, endDate, onFilterChange }) {
               className="overview-filter-hint-trigger"
               role="button"
               tabIndex={0}
-              aria-label="指标时间范围说明"
+              aria-label={t('指标时间范围说明', 'Metric time window details')}
             >
               <QuestionCircleOutlined />
             </span>
@@ -212,21 +224,21 @@ export default function OverviewFilter({ startDate, endDate, onFilterChange }) {
         ) : null}
       </div>
       <RangePicker
-        value={draftRange}
-        presets={getOverviewRangePresets()}
+        value={pickerRange}
+        presets={getOverviewRangePresets(isZh)}
         disabledDate={isOverviewDateDisabled}
         defaultPickerValue={defaultPickerValue}
         onChange={handleRangeChange}
         allowClear
         format="YYYY-MM-DD"
-        placeholder={['开始日期', '结束日期']}
+        placeholder={[t('开始日期', 'Start date'), t('结束日期', 'End date')]}
         aria-labelledby={dateLabelId}
       />
       {dirty ? (
         <div className="overview-filter-actions">
-          <button type="button" className="ds-button" data-variant="secondary" onClick={handleReset}>重置</button>
+          <button type="button" className="ds-button" data-variant="secondary" onClick={handleReset}>{t('重置', 'Reset')}</button>
           <button type="button" className="ds-button" data-variant="primary" onClick={handleConfirm}>
-            确定
+            {t('确定', 'Apply')}
           </button>
         </div>
       ) : null}

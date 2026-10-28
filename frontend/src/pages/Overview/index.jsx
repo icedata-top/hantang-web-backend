@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FilterOutlined } from '@ant-design/icons';
-import { Card, Drawer, Spin, Typography, message } from 'antd';
+import { Card, ConfigProvider, Drawer, Spin, Typography, message } from 'antd';
+import enUS from 'antd/locale/en_US';
+import zhCN from 'antd/locale/zh_CN';
 import OverviewFilter, { getDefaultOverviewFilter } from './components/OverviewFilter.jsx';
 import OverviewTrendChart, { TAB_SUBMISSIONS } from './components/OverviewTrendChart.jsx';
 import OverviewViewHistogramChart from './components/OverviewViewHistogramChart.jsx';
@@ -41,6 +44,9 @@ function useIsMobile() {
 }
 
 export default function Overview() {
+  const { i18n } = useTranslation();
+  const isZh = String(i18n?.language || 'zh').toLowerCase().startsWith('zh');
+  const t = (zh, en) => (isZh ? zh : en);
   useMeshParallax(true);
 
   const [filter, setFilter] = useState(() => getDefaultOverviewFilter());
@@ -67,12 +73,14 @@ export default function Overview() {
   const isMobile = useIsMobile();
 
   const showApiError = useCallback((err) => {
+    const isChinese = String(i18n.language || 'zh').toLowerCase().startsWith('zh');
+    const errorMessage = isChinese ? (err?.message || '请求失败') : 'Request failed. Please try again.';
     if (err instanceof ApiError) {
-      message.error(`[${err.code}] ${err.message}`);
+      message.error(`[${err.code}] ${errorMessage}`);
       return;
     }
-    message.error(err?.message || '请求失败');
-  }, []);
+    message.error(errorMessage);
+  }, [i18n]);
 
   const loadIndicators = useCallback((startDate, endDate) => {
     setLoading(true);
@@ -198,91 +206,93 @@ export default function Overview() {
   );
 
   return (
-    <div className="overview-page">
-      <div className="overview-layout">
-        {!isMobile && (
-          <aside className="overview-sidebar" aria-label="筛选条件">
-            <Card className="overview-panel ds-surface overview-panel--filter" variant="borderless" title="筛选条件">
-              {filterBlock}
-            </Card>
-          </aside>
-        )}
+    <ConfigProvider locale={isZh ? zhCN : enUS}>
+      <div className="overview-page">
+        <div className="overview-layout">
+          {!isMobile && (
+            <aside className="overview-sidebar" aria-label={t('筛选条件', 'Filters')}>
+              <Card className="overview-panel ds-surface overview-panel--filter" variant="borderless" title={t('筛选条件', 'Filters')}>
+                {filterBlock}
+              </Card>
+            </aside>
+          )}
 
-        {isMobile && (
-          <>
-            <div className="overview-mobile-filter-bar">
-              <button
-                type="button"
-                className="ds-button overview-mobile-filter-btn"
-                data-variant="secondary"
-                onClick={() => setFilterDrawerOpen(true)}
-                aria-expanded={filterDrawerOpen}
-                aria-controls="overview-filter-drawer"
+          {isMobile && (
+            <>
+              <div className="overview-mobile-filter-bar">
+                <button
+                  type="button"
+                  className="ds-button overview-mobile-filter-btn"
+                  data-variant="secondary"
+                  onClick={() => setFilterDrawerOpen(true)}
+                  aria-expanded={filterDrawerOpen}
+                  aria-controls="overview-filter-drawer"
+                >
+                  <FilterOutlined />{t('筛选条件', 'Filters')}
+                </button>
+              </div>
+              <Drawer
+                id="overview-filter-drawer"
+                title={t('筛选条件', 'Filters')}
+                placement="left"
+                width={320}
+                open={filterDrawerOpen}
+                onClose={() => setFilterDrawerOpen(false)}
+                destroyOnClose={false}
+                className="overview-filter-drawer"
+                styles={{ body: { paddingTop: 12 } }}
               >
-                <FilterOutlined />筛选条件
-              </button>
-            </div>
-            <Drawer
-              id="overview-filter-drawer"
-              title="筛选条件"
-              placement="left"
-              width={320}
-              open={filterDrawerOpen}
-              onClose={() => setFilterDrawerOpen(false)}
-              destroyOnClose={false}
-              className="overview-filter-drawer"
-              styles={{ body: { paddingTop: 12 } }}
-            >
-              {filterBlock}
-            </Drawer>
-          </>
-        )}
+                {filterBlock}
+              </Drawer>
+            </>
+          )}
 
-        <div className="overview-main-scroll">
-          <section className="overview-metrics" aria-label="指标数值" aria-live="polite" aria-busy={loading}>
-            <Spin spinning={loading}>
-              {!filter?.startDate || !filter?.endDate ? (
-                <Text type="secondary">请选择日期范围以查看指标。</Text>
-              ) : payload?.indicators?.length ? (
-                <div className="overview-indicator-grid">
-                  {payload.indicators.map((row) => (
-                    <Card key={row.name} className="overview-panel ds-surface overview-indicator-card" variant="borderless">
-                      <IndicatorCell data={row} precision={1} />
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                <Text type="secondary">{loading ? '加载指标中…' : '暂无数据'}</Text>
-              )}
-            </Spin>
-          </section>
+          <div className="overview-main-scroll">
+            <section className="overview-metrics" aria-label={t('指标数值', 'Metrics')} aria-live="polite" aria-busy={loading}>
+              <Spin spinning={loading}>
+                {!filter?.startDate || !filter?.endDate ? (
+                  <Text type="secondary">{t('请选择日期范围以查看指标。', 'Select a date range to view metrics.')}</Text>
+                ) : payload?.indicators?.length ? (
+                  <div className="overview-indicator-grid">
+                    {payload.indicators.map((row) => (
+                      <Card key={row.name} className="overview-panel ds-surface overview-indicator-card" variant="borderless">
+                        <IndicatorCell data={row} precision={1} />
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <Text type="secondary">{loading ? t('加载指标中…', 'Loading metrics…') : t('暂无数据', 'No data')}</Text>
+                )}
+              </Spin>
+            </section>
 
-          <OverviewTrendChart
-            trend={trendRows}
-            loading={trendLoading}
-            activeTab={trendType}
-            onTabChange={setTrendType}
-          />
+            <OverviewTrendChart
+              trend={trendRows}
+              loading={trendLoading}
+              activeTab={trendType}
+              onTabChange={setTrendType}
+            />
 
-          {/* 分区饼图暂时隐藏，同时停用其请求；组件和 API 保留。 */}
+            {/* 分区饼图暂时隐藏，同时停用其请求；组件和 API 保留。 */}
 
-          <OverviewViewHistogramChart
-            rows={payload?.viewHistogram ?? []}
-            asOfDate={filter?.endDate}
-            scope={histogramScope}
-            onScopeChange={setHistogramScope}
-          />
+            <OverviewViewHistogramChart
+              rows={payload?.viewHistogram ?? []}
+              asOfDate={filter?.endDate}
+              scope={histogramScope}
+              onScopeChange={setHistogramScope}
+            />
 
-          <OverviewGateCrossingsTable
-            rows={payload?.gateCrossings ?? []}
-            total={payload?.gateCrossingsTotal ?? 0}
-            page={gateCrossingsPage}
-            pageSize={GATE_CROSSINGS_PAGE_SIZE}
-            loading={gateCrossingsLoading}
-            onPageChange={setGateCrossingsPage}
-          />
+            <OverviewGateCrossingsTable
+              rows={payload?.gateCrossings ?? []}
+              total={payload?.gateCrossingsTotal ?? 0}
+              page={gateCrossingsPage}
+              pageSize={GATE_CROSSINGS_PAGE_SIZE}
+              loading={gateCrossingsLoading}
+              onPageChange={setGateCrossingsPage}
+            />
+          </div>
         </div>
       </div>
-    </div>
+    </ConfigProvider>
   );
 }

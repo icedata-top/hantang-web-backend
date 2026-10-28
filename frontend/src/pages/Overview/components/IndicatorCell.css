@@ -1,7 +1,7 @@
 /* 卡片内紧凑排列：标题、数值、环比。 */
 .indicator-cell {
   display: grid;
-  grid-template-columns: 2.35em minmax(0, 1fr);
+  grid-template-columns: max-content minmax(0, 1fr);
   align-items: baseline;
   column-gap: 10px;
   row-gap: 6px;
@@ -18,6 +18,10 @@
   line-height: 1.35;
   text-align: left;
   letter-spacing: 0.01em;
+}
+
+.indicator-cell-title:lang(en) {
+  min-height: 2.7em;
 }
 
 .indicator-cell-main-row {

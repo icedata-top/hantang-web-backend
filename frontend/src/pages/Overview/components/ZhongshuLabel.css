@@ -1,0 +1,15 @@
+.overview-zhongshu-label {
+  cursor: help;
+}
+
+.overview-zhongshu-label .anticon {
+  margin-inline-start: 4px;
+  font-size: 12px;
+  opacity: 0.65;
+}
+
+.overview-zhongshu-label:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
+  border-radius: 2px;
+}

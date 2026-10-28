@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, Spin, Tabs, Typography } from 'antd';
 import VChart from '@visactor/vchart';
 import { useDocThemeDark } from '../../../hooks/useDocThemeDark.js';
+import ZhongshuLabel from './ZhongshuLabel.jsx';
 import './OverviewTrendChart.css';
 
 const { Text } = Typography;
@@ -12,19 +14,19 @@ export const TAB_SUBMISSIONS = 'submissions';
 export const TAB_VIDEO_STATS = 'videoStats';
 
 const SUBMISSION_TREND_METRICS = [
-  { key: 'newVideoCount', label: '新投稿视频数' },
-  { key: 'activeUserCount', label: '活跃作者数' },
+  { key: 'newVideoCount', label: '新投稿视频数', labelEn: 'New Videos' },
+  { key: 'activeUserCount', label: '活跃作者数', labelEn: 'Active Producers' },
 ];
 
 /** 视频数据 Tab：折线维度（与后端字段一致） */
 export const VIDEO_TREND_METRICS = [
-  { key: 'view', label: '播放量' },
-  { key: 'favorite', label: '收藏量' },
-  { key: 'like', label: '点赞量' },
-  { key: 'coin', label: '硬币量' },
-  { key: 'share', label: '分享量' },
-  { key: 'reply', label: '评论量' },
-  { key: 'danmaku', label: '弹幕量' },
+  { key: 'view', label: '播放量', labelEn: 'Views' },
+  { key: 'favorite', label: '收藏量', labelEn: 'Favorites' },
+  { key: 'like', label: '点赞量', labelEn: 'Likes' },
+  { key: 'coin', label: '硬币量', labelEn: 'Coins' },
+  { key: 'share', label: '分享量', labelEn: 'Shares' },
+  { key: 'reply', label: '评论量', labelEn: 'Comments' },
+  { key: 'danmaku', label: '弹幕量', labelEn: 'Danmaku' },
 ];
 
 /**
@@ -54,7 +56,7 @@ function readTrendColors() {
  * @param {TrendDay[]} trend
  * @param {{ submissions: string[], videoStats: string[] }} colors
  */
-function buildLineSpec(tab, trend, colors) {
+function buildLineSpec(tab, trend, colors, isZh) {
   if (!trend?.length) {
     return null;
   }
@@ -69,10 +71,10 @@ function buildLineSpec(tab, trend, colors) {
   const values = [];
   for (const row of trend) {
     const ind = row.indicators ?? {};
-    for (const { key, label } of metrics) {
+    for (const { key, label, labelEn } of metrics) {
       values.push({
         date: row.date,
-        series: label,
+        series: isZh ? label : labelEn,
         value: ind[key] ?? (isSubmissions ? 0 : null),
       });
     }
@@ -104,7 +106,7 @@ function buildLineSpec(tab, trend, colors) {
     crosshair: { xField: { visible: true } },
     axes: [
       { orient: 'bottom', type: 'band' },
-      { orient: 'left', title: { visible: true, text: isSubmissions ? '数量' : '数值' } },
+      { orient: 'left', title: { visible: true, text: isSubmissions ? (isZh ? '数量' : 'Count') : (isZh ? '数值' : 'Value') } },
     ],
   };
 }
@@ -117,14 +119,17 @@ function buildLineSpec(tab, trend, colors) {
  * @param {(tab: string) => void} [props.onTabChange]
  */
 export default function OverviewTrendChart({ trend, loading = false, activeTab = TAB_SUBMISSIONS, onTabChange }) {
+  const { i18n } = useTranslation();
+  const isZh = String(i18n?.language || 'zh').toLowerCase().startsWith('zh');
+  const t = (zh, en) => (isZh ? zh : en);
   const hostRef = useRef(null);
   const chartRef = useRef(null);
   const isDark = useDocThemeDark();
 
   const colors = useMemo(() => readTrendColors(), [isDark]);
   const spec = useMemo(
-    () => loading ? null : buildLineSpec(activeTab, trend, colors),
-    [activeTab, trend, colors, loading],
+    () => loading ? null : buildLineSpec(activeTab, trend, colors, isZh),
+    [activeTab, trend, colors, loading, isZh],
   );
 
   useEffect(() => {
@@ -175,16 +180,19 @@ export default function OverviewTrendChart({ trend, loading = false, activeTab =
 
   const tabItems = useMemo(
     () => [
-      { key: TAB_SUBMISSIONS, label: '投稿与作者' },
-      { key: TAB_VIDEO_STATS, label: '中术50视频数据' },
+      { key: TAB_SUBMISSIONS, label: isZh ? '投稿与作者' : 'Videos & Producers' },
+      {
+        key: TAB_VIDEO_STATS,
+        label: <ZhongshuLabel focusable={false}>{isZh ? '中术50视频数据' : 'Representative Videos'}</ZhongshuLabel>,
+      },
     ],
-    [],
+    [isZh],
   );
 
   const empty = !trend?.length;
 
   return (
-    <Card className="overview-panel ds-surface overview-section-card overview-panel--trend" variant="borderless" title="数据趋势">
+    <Card className="overview-panel ds-surface overview-section-card overview-panel--trend" variant="borderless" title={t('数据趋势', 'Data Trends')}>
       <div className="overview-trend-card-inner">
         <Tabs
           activeKey={activeTab}
@@ -198,15 +206,15 @@ export default function OverviewTrendChart({ trend, loading = false, activeTab =
             <div className="overview-trend-chart-loading" role="status" aria-live="polite" aria-busy="true">
               <div className="overview-trend-chart-loading-content">
                 <Spin />
-                <Text type="secondary">正在加载趋势数据…</Text>
+                <Text type="secondary">{t('正在加载趋势数据…', 'Loading trend data…')}</Text>
               </div>
             </div>
           ) : empty ? (
             <div className="overview-trend-chart-empty">
-              <Text type="secondary">暂无趋势数据，请先选择日期范围。</Text>
+              <Text type="secondary">{t('暂无趋势数据，请先选择日期范围。', 'No trend data. Select a date range first.')}</Text>
             </div>
           ) : (
-            <div className="overview-trend-chart-host" ref={hostRef} role="img" aria-label="指标趋势折线图" />
+            <div className="overview-trend-chart-host" ref={hostRef} role="img" aria-label={t('指标趋势折线图', 'Metric trends line chart')} />
           )}
         </div>
       </div>
