@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, Navigate, useLocation, useParams } from 'react-router-dom';
+import { Tooltip, Typography } from 'antd';
 import {
   ArrowLeftOutlined, DownloadOutlined, ExportOutlined, PictureOutlined, UserOutlined,
   PlayCircleOutlined, LikeOutlined, DollarOutlined, StarOutlined,
@@ -188,13 +189,17 @@ export function VideoDetailView({ aid, info, latest }) {
               </div>
             </div>
           </div>
-          {uploader?.sign && <p className="video-detail-creator-sign">{uploader.sign}</p>}
+          {uploader?.sign && <Tooltip title={uploader.sign} trigger={['hover', 'focus']}>
+            <Typography.Paragraph className="video-detail-creator-sign" tabIndex={0}
+              ellipsis={{ rows: 1, suffix: '' }}>
+              {uploader.sign}
+            </Typography.Paragraph>
+          </Tooltip>}
         </section>}
 
     <section className="ds-surface video-detail-metrics" aria-labelledby="video-detail-metrics-title" aria-busy={latest.status === 'loading'}>
       <div className="video-detail-section-header">
-        <div><h2 id="video-detail-metrics-title">{t('最新数据', 'Latest Metrics')}</h2>
-          <p>{t('最近一次收录的累计数据', 'Latest collected cumulative totals')}</p></div>
+        <h2 id="video-detail-metrics-title">{t('最新数据', 'Latest Metrics')}</h2>
       </div>
       {latest.status === 'error' && <Notice kind="error" retry={latest.retry} t={t}>
         {t('最新数据加载失败，视频信息仍可查看。', 'Could not load the latest metrics. Video information is still available.')}
