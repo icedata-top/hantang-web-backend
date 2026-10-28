@@ -8,6 +8,8 @@ import NotFound from './pages/NotFound.jsx';
 import UnderDevelopment from './pages/UnderDevelopment.jsx';
 import Stash from './pages/Stash/index.jsx';
 import UniSeek from './pages/UniSeek/UniSeek.jsx';
+import VideoDetail from './pages/video/VideoDetail.jsx';
+import ProducerDetail from './pages/producer/ProducerDetail.jsx';
 import { ADMIN_ENABLED } from './config/runtimeEnv.js';
 
 const Admin = lazy(() => import('./pages/Admin/index.jsx'));
@@ -46,8 +48,10 @@ export default function App() {
           <Route path="uniseek" element={<UniSeek />} />
           <Route path="stash" element={<Stash />} />
           <Route path="videos" element={<UnderDevelopment />} />
+          <Route path="videos/:aid" element={<VideoDetail />} />
           <Route path="vocals" element={<UnderDevelopment />} />
           <Route path="producers" element={<UnderDevelopment />} />
+          <Route path="producers/:userId" element={<ProducerDetail />} />
           <Route path="about" element={<About />} />
           {ADMIN_ENABLED && (
             <Route path="admin/*" element={<Suspense fallback={null}><Admin /></Suspense>} />

@@ -5,6 +5,7 @@ import com.hantang.web.config.Zhongshu50Config;
 import com.hantang.web.controller.DataReaderController;
 import com.hantang.web.controller.HomeController;
 import com.hantang.web.controller.OverviewController;
+import com.hantang.web.controller.VideoController;
 import io.javalin.Javalin;
 
 public class App {
@@ -30,7 +31,8 @@ public class App {
         BaseController[] controllers = {
                 new DataReaderController(),
                 new HomeController(),
-                new OverviewController()
+                new OverviewController(),
+                new VideoController()
         };
 
         for (BaseController controller : controllers) {

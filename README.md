@@ -10,8 +10,14 @@
 |------|------|
 | `frontend/` | 前端 |
 | `src/` | 后端源码 |
-| `sql/` | 数据库 DDL |
+| `sql/` | 数据库 DDL、表文档、查询示例与实例数据 |
 | `doc/todo/`、`doc/design/`、`doc/rule/` | 待办、设计、约定 |
+
+## 视频与创作者数据
+
+视频静态信息（标题、投稿时间、简介、封面、上传者等）统一来自 PostgreSQL 的 `hantang_dynamic.processed_videos`；如无必要，不得使用 `hantang_dynamic.video_static`，也不得将其作为默认回退来源。创作者账号信息来自 `hantang_dynamic.discovered_users`，上传者关联为 `processed_videos.user_id = discovered_users.user_id`。
+
+字段含义、时间及缺失值口径见[视频与创作者表文档](sql/video_creator_reference.md)，可执行的只读 SQL 见[查询示例](sql/video_creator_queries.sql)，世末歌者（`aid=6009789`）与 COPY（`user_id=396194`）的完整实例见[实例数据说明](sql/examples/video_creator_sample.md)。
 
 ## 技术栈
 

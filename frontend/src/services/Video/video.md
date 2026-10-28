@@ -1,0 +1,46 @@
+# 视频详情 API
+
+日期：2026-10-28。用于网页 `/videos/:aid`。DEV 环境请求本机后端 `http://localhost:8080`；PROD 默认使用同源 `/api` 前缀，由 Caddy 转发。下文路径均为后端路径，不含此前缀。
+
+## 基本信息
+
+`GET /videos/{aid}/info`，例如 `/videos/6009789/info`。
+
+仅查询 `hantang_dynamic.processed_videos`，通过 `LEFT JOIN discovered_users` 补充上传者账号资料。如无必要，不得使用 `video_static`，不提供默认回退。查询使用明确字段列表，不返回过滤、删除、采集、标注、置信度、内部备注等运维配置字段，也不直接返回整个 `extras`。
+
+响应 `result` 的字段：
+
+- `aid`、`bvid`、`title`：视频标识与标题。
+- `pubdate`：秒级 Unix 投稿时间戳，可为 NULL；网页固定转换为北京时间。
+- `description`、`pic`：简介与封面地址，可为 NULL。
+- `tags`：去除空项及重复项的标签数组，优先使用 `tag_new`，其缺失时使用分号分隔的 `tag`；无标签时为空数组。
+- `typeId`、`tidV2`、`pidV2`：旧版分区、新版分区、新版父分区 ID，保留各自含义。
+- `copyright`：源版权类型编码。
+- `duration`：从 `extras.duration` 读取的非负整数时长（秒）；缺失或无法解析时为 NULL。
+- `uploader`：`userId`、`name`、`face`、`sign`、`officialTitle`。视频没有上传者 ID 时整个对象为 NULL；有 ID 但账号资料缺失时保留 ID，其余字段可为 NULL。上传者不等于全部创作角色。
+
+## 最新日快照
+
+`GET /videos/{aid}/latest-metrics`，例如 `/videos/6009789/latest-metrics`。
+
+从 `hantang_dynamic.video_daily` 按该视频的 `record_date` 降序读取最新记录。这里的“最新”是该视频已收录的最新日快照，不是全表最新日期或实时 B 站数据；不计算当日增量，也不跨不同日期拼接非空指标。
+
+响应 `result` 包含：`aid`、`recordDate`（`YYYY-MM-DD`）、`view`、`like`、`coin`、`favorite`、`share`、`reply`、`danmaku`。七个指标都是该快照的累计值；NULL 保留为 NULL，真实零保留为 0。页面各指标独立显示，缺失值为 `—`，记录日期显示为“统计于 yyyy-MM-dd 凌晨”。此文案沿用日快照采集口径，不表示已获得精确采集时分秒。
+
+基本信息和最新日快照分别请求；无日快照时仍可查看基本信息。一项加载失败时可单独重试，切换视频或离开页面会取消旧请求，避免旧视频结果覆盖新页面。
+
+## 响应与错误
+
+沿用 `ResponseDTO`：`code`、`timestamp`、`msg`、`result`。成功时 HTTP 状态及 `code` 为 200；`timestamp` 是响应生成的秒级时间戳，不是视频或快照的采集时间。
+
+- 400：`aid` 不是不带前导零的正整数，或超出有符号 64 位整数范围。
+- 404：基本信息无记录，或该视频尚无日快照；两者通过对应接口区分。
+- 500：数据库查询失败，或存在重复的基本信息/上传者关联行、同一最新日期的重复日快照。服务端记录具体原因，响应不暴露 SQL 或内部异常细节。
+
+两个查询最多读取两行用于识别歧义，不任意取最大值或将重复数据静默合并。没有快照时不补零；最新快照存在但部分指标缺失时仍返回该日期。
+
+## MOCK 与验收记录
+
+`video.mock.js` 仅保存[文档实例](../../../../sql/examples/video_creator_sample.md)中的公开视频基本信息，不打包整条运维元数据。尚无真实日快照实例，MOCK 的最新数据接口按 404 处理，不生成演示计数。其他 aid 在 MOCK 中按基本信息不存在处理。
+
+2026-10-28 用户已手动验收 API 与页面路由正确。后续布局修改不改变本接口契约；前端构建已通过。数据库表结构与示例资料见[表文档](../../../../sql/video_creator_reference.md)。

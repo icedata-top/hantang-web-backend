@@ -81,6 +81,10 @@
 .spec-type-meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; color: var(--text-secondary); font-size: var(--font-size-xs); }
 .spec-type-meta > code { font-size: var(--font-size-xs); }
 
+.spec-chip-list { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 20px 28px; }
+.spec-chip-list > div { min-width: 0; max-width: 100%; }
+.spec-chip-list .spec-type-meta { margin: 10px 0 0; }
+
 .spec-tooltip-stage { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 60px; min-height: 220px; }
 .spec-tooltip-example { display: flex; max-width: 100%; flex-direction: column; align-items: center; gap: 15px; }
 .spec-tooltip-static-label { display: inline-flex; align-items: center; gap: 5px; color: var(--text-secondary); font-size: var(--font-size-caption); }

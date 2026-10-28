@@ -1,7 +1,11 @@
 -- hantang_dynamic 字段快照
 -- 来源：PostgreSQL 库 hantang，schema hantang_dynamic
 -- 只记录字段、类型、是否可空和默认值，不含主键、索引和外键
+-- 视频静态信息统一读取 hantang_dynamic.processed_videos；如无必要，不得使用 video_static，亦不得默认回退。
+-- 表说明与来源核实范围：video_creator_reference.md；只读查询：video_creator_queries.sql。
+-- 用户于 2026-10-28 提供三张视频/账号表的字段、可空性及实例；默认值仍沿用原快照，未重新核验。
 
+-- 视频静态信息的统一数据源，同时保存预处理状态与标签。
 CREATE TABLE hantang_dynamic.processed_videos (
     aid bigint NOT NULL,
     bvid varchar NOT NULL,
@@ -52,6 +56,7 @@ CREATE TABLE hantang_dynamic.video_daily (
     like integer
 );
 
+-- 创作者账号信息；processed_videos.user_id 对应本表 user_id。
 CREATE TABLE hantang_dynamic.discovered_users (
     user_id bigint NOT NULL,
     user_name varchar,
@@ -81,6 +86,7 @@ CREATE TABLE hantang_dynamic.video_collection_gate_crossings (
     created_at timestamptz NOT NULL DEFAULT now()
 );
 
+-- 仅保留已有结构供必要的存量对照；如无必要，不得用于视频信息查询。
 CREATE TABLE hantang_dynamic.video_static (
     aid bigint NOT NULL,
     bvid varchar(50) NOT NULL,

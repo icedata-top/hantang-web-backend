@@ -27,6 +27,7 @@
   --font-size-display-compact: 26px;
   --font-size-button: var(--font-size-body);
   --font-size-icon: 16px;
+  --media-action-icon-size: 36px;
   --font-weight-button: var(--font-weight-regular);
   --line-height-title: 1.4;
   --line-height-heading: 1.5;
@@ -101,6 +102,7 @@
   --secondary-fill-strength: 8%;
   --secondary-hover-strength: 14%;
   --disabled-fill-strength: 6%;
+  --chip-orange-text-strength: 55%;
   --alert-fill-strength: 20%;
   --alert-border-strength: 28%;
   --alert-text-strength: 60%;
@@ -144,6 +146,7 @@
   --secondary-fill-strength: 18%;
   --secondary-hover-strength: 28%;
   --disabled-fill-strength: 8%;
+  --chip-orange-text-strength: 85%;
   --alert-fill-strength: 16%;
   --alert-border-strength: 35%;
   --alert-text-strength: 70%;
@@ -170,6 +173,14 @@
   --text-disabled: color-mix(in srgb, var(--text) var(--text-disabled-strength), var(--canvas));
   --text-link: color-mix(in srgb, var(--theme-primary) var(--link-strength), var(--link-anchor));
   --text-link-hover: color-mix(in srgb, var(--theme-primary) var(--link-hover-strength), var(--link-anchor));
+
+  --chip-neutral-bg: color-mix(in srgb, var(--text) 8%, var(--surface));
+  --chip-neutral-text: var(--text-secondary);
+  --chip-orange-bg: color-mix(in srgb, var(--highlight-orange) 16%, var(--surface));
+  --chip-orange-text: color-mix(in srgb, var(--highlight-orange) var(--chip-orange-text-strength), var(--text));
+  --media-overlay-bg: color-mix(in srgb, var(--color-black) 56%, transparent);
+  --media-overlay-text: var(--color-white);
+  --media-overlay-gradient: linear-gradient(transparent 35%, var(--media-overlay-bg));
 
   --button-primary-bg: color-mix(in srgb, var(--theme-primary) var(--primary-solid-strength), var(--color-black));
   --button-primary-hover: color-mix(in srgb, var(--theme-primary) var(--primary-hover-strength), var(--color-black));

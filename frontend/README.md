@@ -14,6 +14,19 @@
 
 启动后默认在 `http://localhost:5173/` 访问。
 
+## 详情页路由
+
+- 视频详情：`/videos/:aid`，例如 `/videos/6009789`。
+- 创作者详情：`/producers/:userId`，例如 `/producers/396194`。
+
+视频详情已接入基本信息与最新日快照两个接口，展示标题、分区、投稿时间、封面、上传者、七项累计指标、简介及标签；创作者详情仍为空白占位。详情页分别选中「歌曲」和「创作者」导航项；ID 格式须为不带前导零的正整数，否则显示未找到页面。`/videos`、`/producers` 仍保留原有列表待开发入口。
+
+视频页沿用视觉规范：标题与简要信息放在 Canvas 上，桌面端封面与右侧创作者/数据卡片等高，移动端改为单列。封面悬停或键盘聚焦显示下载与观看操作，触屏设备常显操作；统计日期位于数据卡片右下角，缺失指标保留为 `—`。标题、简介、标签中的 `&amp;` 仅在前端按纯文本替换为 `&`；投稿天数按北京时间日期计算，开头为宽开口标点的标题做首行视觉悬挂。
+
+接口、返回字段和错误约定见[视频详情 API](src/services/Video/video.md)。MOCK 模式仅提供文档中世末歌者的公开基本信息；没有真实日快照样本，最新指标按无记录处理，不编造数值。
+
+完整约定见[详情页 URL 设计](../doc/design/detail-page-urls.md)。
+
 ## 环境与后端配置
 
 项目支持三个运行环境：`MOCK`、`DEV`、`PROD`。环境配置与 API base URL 定义在：
@@ -112,9 +125,9 @@ icedata-web-react/
 │   │   ├── About/
 │   │   ├── Overview/
 │   │   ├── UniSeek/           # 统一搜索结果页（独立 Item，不复用列表 Item）
-│   │   ├── video/             # 歌曲：VideoList / VideoDetail
+│   │   ├── video/             # VideoDetail：视频详情、最新日快照与展示格式化
 │   │   ├── vocal/             # 虚拟歌手：VocalList / VocalDetail
-│   │   ├── producer/          # 创作者：ProducerList / ProducerDetail
+│   │   ├── producer/          # ProducerDetail：创作者详情空白占位
 │   │   └── …
 │   ├── services/              # API / MOCK
 │   ├── hooks/

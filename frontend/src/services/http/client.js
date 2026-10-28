@@ -51,6 +51,19 @@ export async function postJson(path, body) {
   return requestPromise;
 }
 
+/** GET with cancellation and the same response envelope as postJson. */
+export async function getJson(path, { signal } = {}) {
+  const response = await fetch(buildApiUrl(path).toString(), {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    signal,
+  });
+  if (!response.ok) {
+    throw new ApiError(response.status, `HTTP ${response.status}: ${response.statusText}`);
+  }
+  return unwrapPayload(await response.json());
+}
+
 function buildApiUrl(path) {
   const baseUrl = getApiBaseUrl();
   const normalizedPath = String(path).replace(/^\/+/, '');

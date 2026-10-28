@@ -20,6 +20,7 @@ const TOKEN_NAMES = [
   'button-danger-bg', 'button-danger-hover', 'button-danger-text',
   'button-disabled-bg', 'button-disabled-text',
   'tooltip-bg', 'tooltip-text',
+  'chip-neutral-bg', 'chip-neutral-text', 'chip-orange-bg', 'chip-orange-text',
   'font-size-title', 'font-size-heading', 'font-size-body', 'font-size-caption', 'font-size-button',
   'font-weight-regular', 'font-weight-medium', 'font-weight-semibold', 'font-weight-button',
   'line-height-title', 'line-height-heading', 'line-height-body',
@@ -263,10 +264,23 @@ function Alerts({ t }) {
   );
 }
 
+function Chips({ t }) {
+  return <>
+    <div className="spec-chip-list">
+      <div><span className="ds-chip" data-variant="neutral">VOCALOID·UTAU</span>
+        <p className="spec-type-meta"><Token name="chip-neutral-bg" /><Token name="chip-neutral-text" /></p></div>
+      <div><span className="ds-chip" data-variant="orange">{t('bilibili 知名音乐UP主', 'bilibili Music Creator')}</span>
+        <p className="spec-type-meta"><Token name="chip-orange-bg" /><Token name="chip-orange-text" /></p></div>
+    </div>
+    <p className="spec-footnote">{t('灰色用于分区与普通标签，橙色用于认证头衔。标签仅展示信息，不冒充可点击按钮。', 'Gray labels identify categories; orange labels show official titles. These labels are informational, not buttons.')}</p>
+  </>;
+}
+
 const SECTIONS = [
   { id: 'surfaces', en: 'Canvas & Surface', zh: '背景与卡片', description: ['从页面底色到内容表面，建立清晰的层级。', 'Build a clear hierarchy from the page canvas to content surfaces.'], Component: Surfaces },
   { id: 'buttons', en: 'Buttons', zh: '按钮', description: ['四种用途，三种状态。每一个状态都可以直接对照。', 'Four purposes, three states. Compare every state directly.'], Component: Buttons },
   { id: 'typography', en: 'Typography', zh: '文字', description: ['用字号、字重和颜色表达内容的重要程度。', 'Express content hierarchy through size, weight, and color.'], Component: Typography },
+  { id: 'chips', en: 'Tag / Chip', zh: '标签', description: ['灰色分类与橙色头衔，使用共享主题变量。', 'Neutral categories and orange titles use shared theme tokens.'], Component: Chips },
   { id: 'tooltips', en: 'Tooltip', zh: '悬停提示', description: ['为局部内容提供简短说明，支持鼠标与键盘。', 'Add concise context, accessible with mouse and keyboard.'], Component: Tooltips },
   { id: 'alerts', en: 'Alert', zh: '状态提示', description: ['信息、警告、错误三种语义，使用同一套结构。', 'Information, warning, and error share a consistent structure.'], Component: Alerts },
   { id: 'tabs', en: 'Tabs', zh: '标签页', description: ['同一内容区域内切换视图，选中、悬停、禁用与键盘操作保持一致。', 'Switch views within one content area, with consistent selection, hover, disabled, and keyboard behavior.'], Component: TabsSample },

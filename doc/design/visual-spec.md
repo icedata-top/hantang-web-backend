@@ -104,6 +104,20 @@ Primary 用于核心操作，Secondary 用于取消、重置等次要操作，No
 
 辅助文字使用明确颜色，避免父容器透明度降低整个内容的可读性。对齐的数字使用 `font-variant-numeric: tabular-nums`。链接悬停增加下划线，键盘聚焦有外环。
 
+视频标题以 `【`、`（`、`《`、`〈`、`「`、`『`、`〔`、`［`、`｛`、`〖` 等宽开口标点开头时，首行使用 `text-indent: -0.45em` 做视觉悬挂，使标题与分区及封面的左边缘对齐。保留完整标题和标点，换行后的文字仍按内容左边缘排列；普通文字开头的标题不偏移。
+
+## Tag / Chip
+
+公共样式 `.ds-chip` 用于信息标签，搭配 `data-variant="neutral|orange"`。灰色用于分区和普通标签，橙色用于已有认证头衔；只展示信息，不增加按钮交互。规范页提供日夜对照。
+
+标签无描边，圆角引用 `--radius-control`，最小高度 24px，内边距 2px × 8px，字号为 `--font-size-caption`，字重为 `--font-weight-medium`。长标签可换行。
+
+颜色在 `theme.css` 集中维护：`--chip-neutral-bg/text` 使用中性文本与 Surface 派生灰色；`--chip-orange-bg/text` 由 `--highlight-orange` 与 Surface/正文色派生。橙色文字的原色占比通过 `--chip-orange-text-strength` 调整，白天 55%、夜间 85%。
+
+视频封面悬停操作使用 `--media-overlay-bg` 的半透明黑色蒙层，按钮为无背景白字，文字引用 `--media-overlay-text`。键盘聚焦同样显示操作；移动端或无悬停设备常显底部操作，并使用 `--media-overlay-gradient`。这些媒体蒙层不随日夜主题变成浅色，以保证白字可读。
+
+桌面端的「下载封面」「在哔哩哔哩观看」作为左右两组操作，整体居于封面中央；每组图标在上、文字在下，均居中对齐。图标使用 `--media-action-icon-size`（36px），文字使用正文字号（14px）。移动端图标缩为 26px，文字缩为 12px，保留上下结构。
+
 ## Tooltip
 
 背景直接引用 `--text-primary`，文字引用 `--canvas`，由日夜主题的正文色与页面底色自然形成反色提示。字号 12px、字重 400、行高 1.6；内边距 8px × 12px，圆角 6px，最大宽度 240px，箭头与背景同色，阴影复用悬停阴影。

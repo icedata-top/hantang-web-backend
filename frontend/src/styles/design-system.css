@@ -87,6 +87,27 @@
   text-decoration: underline;
 }
 
+.ds-chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-height: 24px;
+  padding: 2px 8px;
+  border-radius: var(--radius-control);
+  background: var(--chip-neutral-bg);
+  color: var(--chip-neutral-text);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-body);
+  overflow-wrap: anywhere;
+}
+
+.ds-chip[data-variant='orange'] {
+  background: var(--chip-orange-bg);
+  color: var(--chip-orange-text);
+}
+
 .ds-tooltip-bubble {
   position: relative;
   width: max-content;

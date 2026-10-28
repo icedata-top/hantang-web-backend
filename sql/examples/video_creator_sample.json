@@ -1,0 +1,160 @@
+{
+  "source": {
+    "documented_on": "2026-10-28",
+    "queried_at": null,
+    "database": "hantang",
+    "schema": "hantang_dynamic",
+    "provenance": "用户粘贴的三条数据库记录、字段查询结果及四张查询截图；未重新连接数据库查询。",
+    "transcription": "完整文本提供长字段和时间；截图确认布尔值、NULL、空数组及 official_role=0。时间字符串保留文本中的 UTC 偏移。",
+    "aid": 6009789,
+    "user_id": 396194,
+    "video_static_policy": "视频静态信息统一来自 processed_videos；如无必要，不得使用 video_static，也不得默认回退。"
+  },
+  "records": {
+    "processed_videos": {
+      "aid": 6009789,
+      "bvid": "BV1Qs411k7Qv",
+      "pubdate": 1472134541,
+      "title": "【乐正绫原创】世末歌者【PV付/COSMOSⅡ】",
+      "description": "自制\n【词曲：COP/绘：唯Tu/影：saiqomo/logo：少年莫然、实拍素材：莫雪 冰镇甜豆浆/压制：ZHider】\n世末歌者系列，部分系列曲：《世末积雨云》av1579079 ，《回音》av2711298 ，《hello&amp;bye，days》av3402945\n具体走评论区。",
+      "tag": "发现《世末歌者》;乐正绫;世末歌者;高音狂魔;乐正绫原创曲;COP;VOCALOID中文曲;COSMOSⅡ;唯Tu;saiqomo;VOCALOID",
+      "pic": "http://i2.hdslb.com/bfs/archive/8b7dfa54e4cb68dc0815bb95cfcba9a3433a9119.jpg",
+      "type_id": 30,
+      "user_id": 396194,
+      "is_filtered": false,
+      "created_at": "2026-01-14 12:05:34.81+00",
+      "updated_at": "2026-08-30 20:00:59.166464+00",
+      "staff": null,
+      "tid_v2": 2016,
+      "dynamic": null,
+      "tag_new": [
+        "发现《世末歌者》",
+        "乐正绫",
+        "世末歌者",
+        "高音狂魔",
+        "乐正绫原创曲",
+        "COP",
+        "VOCALOID中文曲",
+        "COSMOSⅡ",
+        "唯Tu",
+        "saiqomo",
+        "VOCALOID"
+      ],
+      "participle": [
+        "乐正绫",
+        "世末歌者",
+        "高音狂魔",
+        "COP",
+        "唯Tu"
+      ],
+      "ctime": 1497423941,
+      "is_deleted": false,
+      "copyright": 1,
+      "extras": {
+        "cid": 35302832,
+        "state": 0,
+        "rights": {
+          "bp": 0,
+          "hd5": 0,
+          "pay": 0,
+          "elec": 0,
+          "movie": 0,
+          "is_360": 0,
+          "arc_pay": 0,
+          "ugc_pay": 0,
+          "autoplay": 1,
+          "download": 1,
+          "no_share": 0,
+          "clean_mode": 0,
+          "free_watch": 0,
+          "no_reprint": 0,
+          "is_stein_gate": 0,
+          "no_background": 0,
+          "is_cooperation": 0,
+          "ugc_pay_preview": 0
+        },
+        "videos": 1,
+        "duration": 363,
+        "dimension": {
+          "width": 1280,
+          "height": 568,
+          "rotate": 0
+        },
+        "argue_info": {
+          "argue_msg": "",
+          "argue_link": "",
+          "argue_type": 0
+        },
+        "honor_reply": {
+          "honor": [
+            {
+              "aid": 6009789,
+              "desc": "全站排行榜最高第28名",
+              "type": 3,
+              "weekly_recommend_num": 0
+            }
+          ]
+        }
+      },
+      "notes": {
+        "check_status": "pending",
+        "video_category": "chinese_v",
+        "prediction_confidence": 0.7993224336146333
+      },
+      "label_content_type": "maybe_vocaloid",
+      "label_affiliations": null,
+      "label_singers": null,
+      "label_source": "rule",
+      "label_confidence": null,
+      "labeled_at": "2026-03-08 06:05:39.148258+00",
+      "labeled_by": "tid_rule",
+      "label_origin": null,
+      "label_sources": [],
+      "pid_v2": 1003,
+      "mission_id": null,
+      "cover43": null,
+      "tag_ids": null
+    },
+    "discovered_users": {
+      "user_id": 396194,
+      "user_name": "COPY",
+      "fans": 265636,
+      "videos_seen": 63,
+      "videos_filtered": 5,
+      "filter_pass_rate": 0.07936508,
+      "discovered_at": "2026-01-06 16:24:23.169+00",
+      "is_following": true,
+      "last_updated": "2026-09-25 22:00:00.046859+00",
+      "followed_by": [
+        507256226
+      ],
+      "face": "https://i2.hdslb.com/bfs/face/544541afa73735172abbe9e6a4bd44100899d48d.jpg",
+      "sign": null,
+      "level": 6,
+      "official_role": 0,
+      "official_title": "bilibili 知名音乐UP主",
+      "filtered_view": 0
+    }
+  },
+  "derived": {
+    "pubdate_beijing": "2016-08-25 22:15:41",
+    "timezone": "Asia/Shanghai",
+    "expression": "to_timestamp(processed_videos.pubdate) AT TIME ZONE 'Asia/Shanghai'"
+  },
+  "legacy_reference": {
+    "purpose": "仅保留用户已提供的存量对照记录；默认查询、页面、接口和测试使用 records.processed_videos。",
+    "video_static": {
+      "aid": 6009789,
+      "bvid": "BV1Qs411k7Qv",
+      "pubdate": "2016-08-25 14:15:41+00",
+      "title": "【乐正绫原创】世末歌者【PV付/COSMOSⅡ】",
+      "description": "自制\n【词曲：COP/绘：唯Tu/影：saiqomo/logo：少年莫然、实拍素材：莫雪 冰镇甜豆浆/压制：ZHider】\n世末歌者系列，部分系列曲：《世末积雨云》av1579079 ，《回音》av2711298 ，《hello&amp;bye，days》av3402945\n具体走评论区。",
+      "tag": "乐正绫;VOCALOID;世末歌者;高音狂魔;乐正绫原创曲;COP;VOCALOID中文曲;COSMOSⅡ;唯Tu;saiqomo;",
+      "pic": "http://i2.hdslb.com/bfs/archive/8b7dfa54e4cb68dc0815bb95cfcba9a3433a9119.jpg",
+      "type_id": 30,
+      "user_id": 396194,
+      "priority": 1,
+      "updated_at": "2026-03-21 07:00:00.037083+00"
+    }
+  }
+}
