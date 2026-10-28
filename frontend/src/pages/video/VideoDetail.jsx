@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useParams } from 'react-router-dom';
+import { Link, Navigate, useLocation, useParams } from 'react-router-dom';
 import {
   ArrowLeftOutlined, DownloadOutlined, ExportOutlined, PictureOutlined, UserOutlined,
   PlayCircleOutlined, LikeOutlined, DollarOutlined, StarOutlined,
@@ -11,7 +11,8 @@ import { fetchVideoInfo, fetchVideoLatestMetrics } from '../../services/Video/vi
 import { getBilibiliSubPartitionName } from '../../constants/bilibili/type.id.js';
 import { formatNumber } from '../../utils/formatNumber.js';
 import { formatVideoText, getPublicationAgeDays } from './videoDetailFormat.js';
-import NotFound from '../NotFound.jsx';
+import { parseVideoIdentifier } from './videoIdentifier.js';
+import VideoResult from './VideoResult.jsx';
 import './VideoDetail.css';
 
 const METRICS = [
@@ -92,7 +93,7 @@ export function VideoDetailView({ aid, info, latest }) {
   const [downloadState, setDownloadState] = useState('idle');
   const isZh = String(i18n?.language || 'zh').toLowerCase().startsWith('zh');
   const t = (zh, en) => (isZh ? zh : en);
-  if (info.status === 'missing') return <NotFound />;
+  if (info.status === 'missing') return <VideoResult reason="unavailable" />;
   const video = info.data;
   const uploader = video?.uploader;
   const uploaderPath = /^[1-9]\d*$/.test(String(uploader?.userId ?? '')) ? `/producers/${uploader.userId}` : null;
@@ -240,7 +241,13 @@ function VideoDetailPage({ aid }) {
 }
 
 export default function VideoDetail() {
-  const { aid } = useParams();
-  if (!/^[1-9]\d*$/.test(aid ?? '')) return <NotFound />;
+  const { aid: identifier } = useParams();
+  const { search, hash } = useLocation();
+  const resolved = parseVideoIdentifier(identifier);
+  if (resolved.status !== 'valid') return <VideoResult reason={resolved.status} />;
+  const { aid } = resolved;
+  if (identifier !== aid) {
+    return <Navigate to={{ pathname: `/videos/${aid}`, search, hash }} replace />;
+  }
   return <VideoDetailPage key={aid} aid={aid} />;
 }
