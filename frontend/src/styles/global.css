@@ -9,6 +9,34 @@ body {
   scrollbar-color: var(--scrollbar-thumb) transparent;
 }
 
+/* 悬浮层沿用当前主题的 Surface，容纳文本或自定义组件时均保持正常配色。 */
+html .ant-tooltip,
+html .ant-popover {
+  --ant-tooltip-arrow-background-color: var(--tooltip-bg);
+}
+
+html .ant-tooltip .ant-tooltip-container,
+html .ant-tooltip-unique-container,
+html .ant-popover .ant-popover-container {
+  background: var(--tooltip-bg);
+  color: var(--tooltip-text);
+  box-shadow: var(--shadow-card-hover);
+}
+
+html .ant-tooltip .ant-tooltip-container,
+html .ant-tooltip-unique-container {
+  padding: 8px 12px;
+  border-radius: var(--radius-control);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-body);
+}
+
+html .ant-popover .ant-popover-title,
+html .ant-popover .ant-popover-content {
+  color: var(--tooltip-text);
+}
+
 html {
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb) transparent;

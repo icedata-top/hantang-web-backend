@@ -120,9 +120,11 @@ Primary 用于核心操作，Secondary 用于取消、重置等次要操作，No
 
 ## Tooltip
 
-背景直接引用 `--text-primary`，文字引用 `--canvas`，由日夜主题的正文色与页面底色自然形成反色提示。字号 12px、字重 400、行高 1.6；内边距 8px × 12px，圆角 6px，最大宽度 240px，箭头与背景同色，阴影复用悬停阴影。
+悬浮层使用当前主题的 Surface 配色：背景 `--tooltip-bg` 引用 `--surface`，文字 `--tooltip-text` 引用 `--text-primary`；日间与夜间分别沿用对应的 Surface，内部组件也使用正常主题文字色，不使用反色。Tooltip 与 Popover 统一遵循此规则，便于后续放入更多组件。字号 12px、字重引用 `--font-weight-regular`、行高 1.6；Tooltip 内边距 8px × 12px，圆角 6px，普通说明最大宽度 240px（组件内容可按需放宽），箭头与背景同色，阴影复用悬停阴影。
 
 鼠标悬停或键盘聚焦时出现；移开鼠标、失焦或按 Esc 关闭。提示内容可被鼠标指向，触发按钮通过 `aria-describedby` 关联 `role="tooltip"`。预览同时提供常显样本与可交互样本。
+
+RelativeTime 的四项悬停详情使用 Ant Design `Descriptions`，单列、小尺寸、无边框；标签列统一宽度并右对齐，内容列左对齐；标签用辅助文字色、内容用正文色。组件示例见 `/admin/design/components`。
 
 ## 三种 Alert
 

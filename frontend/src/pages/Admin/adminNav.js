@@ -1,7 +1,7 @@
 /**
  * 管理配置目录。
  * 顶栏「管理配置」是一级；这里的分组是二级，分组下的页面是三级。
- * 分组没有 path；页面有 path。「运行环境」与「视觉规范」已实现，其余为施工占位。
+ * 分组没有 path；页面有 path。「运行环境」「视觉规范」「组件预览」已实现，其余为施工占位。
  */
 
 export const ADMIN_NAV = [
@@ -132,10 +132,8 @@ export const ADMIN_NAV = [
         path: '/admin/design/components',
         zh: '组件预览',
         en: 'Components',
-        summaryZh: '集中查看现有界面组件在两种主题下的样子。',
-        summaryEn: 'Review existing interface components in both themes.',
-        pointsZh: ['按钮、表格、图表等现有组件', '日间与夜间对照'],
-        pointsEn: ['Existing buttons, tables, charts, and similar pieces', 'Light and dark side by side'],
+        summaryZh: '展示与操作 RelativeTime 等自定义组件。',
+        summaryEn: 'Explore custom components including RelativeTime.',
       },
       {
         key: 'spec',

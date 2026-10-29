@@ -11,6 +11,7 @@ import {
 } from '@ant-design/icons';
 import { CURRENT_APP_ENV, getApiBaseUrl } from '../../config/runtimeEnv.js';
 import DesignSpec from './DesignSpec.jsx';
+import DesignComponents from './DesignComponents.jsx';
 import {
   ADMIN_NAV,
   adminRootGroupKeys,
@@ -153,7 +154,8 @@ export default function Admin() {
       <div className="admin-main">
         {leaf?.key === 'runtime' ? <AdminRuntime /> : null}
         {leaf?.key === 'spec' ? <DesignSpec /> : null}
-        {leaf && !['runtime', 'spec'].includes(leaf.key) ? <AdminPlaceholder leaf={leaf} /> : null}
+        {leaf?.key === 'components' ? <DesignComponents /> : null}
+        {leaf && !['runtime', 'spec', 'components'].includes(leaf.key) ? <AdminPlaceholder leaf={leaf} /> : null}
         {!leaf ? <AdminMissing /> : null}
       </div>
     </div>

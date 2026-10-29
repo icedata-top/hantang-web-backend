@@ -197,8 +197,8 @@
   --button-disabled-bg: color-mix(in srgb, var(--text) var(--disabled-fill-strength), var(--surface));
   --button-disabled-text: var(--text-disabled);
 
-  --tooltip-bg: var(--text-primary);
-  --tooltip-text: var(--canvas);
+  --tooltip-bg: var(--surface);
+  --tooltip-text: var(--text-primary);
 
   /* 信息取品牌蓝，警告取强调橙，错误取强调红。 */
   --alert-info-bg: color-mix(in srgb, var(--theme-primary) var(--alert-fill-strength), var(--surface));
