@@ -19,6 +19,8 @@
 
 字段含义、时间及缺失值口径见[视频与创作者表文档](sql/video_creator_reference.md)，可执行的只读 SQL 见[查询示例](sql/video_creator_queries.sql)，世末歌者（`aid=6009789`）与 COPY（`user_id=396194`）的完整实例见[实例数据说明](sql/examples/video_creator_sample.md)。
 
+创作者详情提供账号基本信息和分页投稿两个接口，支持以第一作者（`user_id`）或参与作者（`staff`）筛选，按播放量 / 投稿时间升降序排列；接口约定与验证方式见[创作者详情 API](frontend/src/services/Producer/producer.md)。
+
 ## 技术栈
 
 ### 前端

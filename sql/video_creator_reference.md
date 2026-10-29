@@ -6,7 +6,7 @@
 
 配套文件：[可执行的只读查询](video_creator_queries.sql)、[实例数据说明](examples/video_creator_sample.md)、[完整实例 JSON](examples/video_creator_sample.json)。
 
-网页详情路径见[视频详情与创作者详情 URL](../doc/design/detail-page-urls.md)：`/videos/:aid`、`/producers/:userId`。视频详情已接入 `processed_videos` 的公开基本信息与 `video_daily` 的最新日快照；创作者详情仍为空白占位。
+网页详情路径见[视频详情与创作者详情 URL](../doc/design/detail-page-urls.md)：`/videos/:aid`、`/producers/:userId`。视频详情已接入 `processed_videos` 的公开基本信息与 `video_daily` 的最新日快照；创作者详情已接入 `discovered_users` 资料和按 `user_id` / `staff` 身份筛选的分页投稿列表。
 
 ## 数据源约定
 
@@ -16,7 +16,7 @@
 - `processed_videos` 缺行或字段为 NULL 时，应保留缺失状态，不默认从 `video_static` 补齐。
 - 只有明确需要存量数据对账、排查差异或兼容已有逻辑时，才使用 `video_static`，并说明用途。本文保留其结构与实例仅用于存量对照。
 - 创作者的账号资料来自 `discovered_users`。视频上传者关联条件为 `processed_videos.user_id = discovered_users.user_id`。
-- `user_id` 表示上传者，不能据此断定其承担词曲、调教、绘画等全部创作角色。`staff` 也不能在角色定义未确认时直接转成完整创作者名单。
+- `user_id` 表示上传者，不能据此断定其承担词曲、调教、绘画等全部创作角色。2026-10-29 用户确认创作者页面以 `user_id` 展示“第一作者”、以 `staff` 数组成员展示“参与作者”，两类分别筛选；这不代表已经核实具体创作职责或完整创作者名单。
 
 ## `hantang_dynamic.processed_videos`
 
