@@ -1,0 +1,33 @@
+.producer-info { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 0; border: 0; border-radius: 2px; background: transparent; color: inherit; font: inherit; line-height: inherit; vertical-align: middle; text-align: start; cursor: pointer; }
+.producer-info:hover .producer-info-name { color: var(--text-link-hover); }
+.producer-info:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
+.producer-info-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.producer-info-invalid { color: var(--text-secondary); }
+.producer-info-avatar { display: inline-block; flex: 0 0 auto; width: 24px; height: 24px; border-radius: 50%; object-fit: cover; vertical-align: middle; }
+.producer-info-avatar--large { width: 64px; height: 64px; }
+.producer-info-avatar--fallback { display: inline-flex; align-items: center; justify-content: center; background: var(--button-secondary-bg); color: var(--text-secondary); font-size: var(--font-size-body); }
+.producer-info-avatar--large.producer-info-avatar--fallback { font-size: var(--font-size-display); }
+.producer-info-popover { max-width: calc(100vw - 24px); }
+.producer-info-card { width: 320px; max-width: calc(100vw - 48px); max-height: min(560px, calc(100dvh - 80px)); overflow-y: auto; color: var(--text-primary); font-family: var(--font-family-sans); font-size: var(--font-size-body); line-height: var(--line-height-body); }
+.producer-info-header { display: flex; align-items: center; gap: 14px; }
+.producer-info-account { display: flex; flex: 1; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-width: 0; }
+.producer-info-title { width: 100%; font-size: var(--font-size-heading); font-weight: var(--font-weight-semibold); line-height: var(--line-height-heading); overflow-wrap: anywhere; }
+.producer-info-uid { color: var(--text-secondary); font-family: var(--font-family-mono); font-size: var(--font-size-caption); overflow-wrap: anywhere; }
+.producer-info-official { margin-top: 14px; }
+.producer-info-sign { margin: 14px 0; color: var(--text-secondary); white-space: pre-wrap; overflow-wrap: anywhere; }
+.producer-info-fans { display: flex; align-items: baseline; gap: 10px; color: var(--text-secondary); font-size: var(--font-size-caption); }
+.producer-info-fans strong { color: var(--text-primary); font-size: var(--font-size-heading); font-weight: var(--font-weight-semibold); font-variant-numeric: tabular-nums; }
+.producer-info-status { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 14px 0; color: var(--text-secondary); font-size: var(--font-size-caption); }
+.producer-info-status .ds-button { min-height: 28px; padding: 2px 8px; font-size: inherit; }
+.producer-info-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+/* 保留共享 Primary / Secondary 按钮配色，避免 Popover 的默认链接样式覆盖。 */
+.producer-info-actions .ds-button {
+  flex: 1 1 0;
+  background: var(--button-bg);
+  color: var(--button-text);
+  text-decoration: none;
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+.producer-info-actions .ds-button:is(:hover, :active, :focus) { color: var(--button-text); text-decoration: none; }
+.producer-info-actions .ds-button:hover { background: var(--button-hover-bg); }
+.producer-info-actions .ds-button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
