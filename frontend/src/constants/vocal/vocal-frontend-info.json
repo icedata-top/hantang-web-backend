@@ -1,0 +1,311 @@
+{
+    "group_list": [
+        {
+            "id": 1,
+            "name": "上海禾念信息科技有限公司",
+            "short_name": "禾念",
+            "type": "company",
+            "official_website": "https://vsinger.com/",
+            "copyright_website": "https://vsinger.com/aboutus#%E7%89%88%E6%9D%83%E8%AF%B4%E6%98%8E"
+        },
+        {
+            "id": 2,
+            "name": "株式会社ガイノイド",
+            "short_name": "GYNOID",
+            "type": "company",
+            "official_website": "https://gynoid.co.jp/",
+            "copyright_website": ""
+        },
+        {
+            "id": 3,
+            "name": "北京福托科技开发有限责任公司",
+            "short_name": "福托",
+            "type": "company",
+            "official_website": "https://space.bilibili.com/623328493",
+            "copyright_website": ""
+        },
+        {
+            "id": 11,
+            "name": "阿铃养鲸鱼",
+            "short_name": "风铃",
+            "type": "personal",
+            "official_website": "https://www.bilibili.com/opus/654807192100143129",
+            "copyright_website": "https://www.bilibili.com/opus/654807192100143129"
+        },
+        {
+            "id": 12,
+            "name": "玖蝶",
+            "short_name": "玖蝶",
+            "type": "personal",
+            "official_website": "https://space.bilibili.com/676771003/dynamic",
+            "copyright_website": "https://space.bilibili.com/676771003/dynamic"
+        }
+    ],
+    "vocal_list": [
+        {
+            "id": 101,
+            "name": "洛天依",
+            "group_id": 1,
+            "image_path": "",
+            "support_color_list": ["#66CCFF"],
+            "official_producer_id": 0,
+            "official_persona": {
+                "gender": "女",
+                "age": 15,
+                "birthday": "07-12",
+                "height": 156,
+                "cv": "山新＆鹿乃"
+            }
+        },
+        {
+            "id": 102,
+            "name": "言和",
+            "group_id": 1,
+            "image_path": "",
+            "support_color_list": ["#00FFCC"],
+            "official_producer_id": 0,
+            "official_persona": {
+                "gender": "女",
+                "birthday": "07-11",
+                "height": 170,
+                "cv": "刘婧荦"
+            }
+        },
+        {
+            "id": 103,
+            "name": "乐正绫",
+            "group_id": 1,
+            "image_path": "",
+            "support_color_list": ["#EE0000"],
+            "official_producer_id": 0,
+            "official_persona": {
+                "gender": "女",
+                "age": 16,
+                "birthday": "04-12",
+                "height": 160,
+                "cv": "祈Inory"
+            }
+        },
+        {
+            "id": 104,
+            "name": "乐正龙牙",
+            "group_id": 1,
+            "image_path": "",
+            "support_color_list": ["#006666"],
+            "official_producer_id": 0,
+            "official_persona": {
+                "gender": "男",
+                "age": 23,
+                "birthday": "10-02",
+                "height": 180,
+                "cv": "阿杰"
+            }
+        },
+        {
+            "id": 105,
+            "name": "徵羽摩柯",
+            "group_id": 1,
+            "image_path": "",
+            "support_color_list": ["#0080FF"],
+            "official_producer_id": 0,
+            "official_persona": {
+                "gender": "男",
+                "age": 14,
+                "birthday": "12-10",
+                "height": 150,
+                "cv": "苏尚卿"
+            }
+        },
+        {
+            "id": 106,
+            "name": "墨清弦",
+            "group_id": 1,
+            "image_path": "",
+            "support_color_list": ["#FFFF00"],
+            "official_producer_id": 0,
+            "official_persona": {
+                "gender": "女",
+                "age": 17,
+                "birthday": "05-20",
+                "height": 171,
+                "cv": "冥月"
+            }
+        },
+        {
+            "id": 201,
+            "name": "心华",
+            "group_id": 2,
+            "image_path": "/public/vocals/xinhua.webp",
+            "image_source_url": "https://vcpedia.cn/index.php?curid=56621",
+            "support_color_list": ["#EE82EE"],
+            "official_producer_id": 0,
+            "official_persona": {
+                "creator": "VOFAN",
+                "gender": "女",
+                "age": 16,
+                "birthday": "02-10",
+                "height": 160,
+                "cv": "王文仪"
+            }
+        },
+        {
+            "id": 301,
+            "name": "星尘",
+            "group_id": 3,
+            "image_path": "",
+            "support_color_list": ["#9999FF", "#FFFF00"],
+            "official_producer_id": 0,
+            "official_persona": {
+                "gender": "女",
+                "age": 16,
+                "birthday": "08-12",
+                "height": 160,
+                "weight": 45,
+                "cv": "茶理理"
+            }
+        },
+        {
+            "id": 302,
+            "name": "海伊",
+            "group_id": 3,
+            "image_path": "/public/vocals/haiyi.png",
+            "image_source_url": "https://quadimension.booth.pm/items/2256836",
+            "support_color_list": ["#3399FF"],
+            "official_producer_id": 0,
+            "official_persona": {
+                "gender": "女",
+                "age": 15,
+                "birthday": "07-22",
+                "height": 155,
+                "cv": "花筝Anly"
+            }
+        },
+        {
+            "id": 303,
+            "name": "苍穹",
+            "group_id": 3,
+            "image_path": "/public/vocals/cangqiong.png",
+            "image_source_url": "https://quadimension.booth.pm/items/2256836",
+            "support_color_list": [],
+            "official_producer_id": 0,
+            "official_persona": {
+                "gender": "女",
+                "age": 18,
+                "birthday": "05-20",
+                "height": 175,
+                "cv": "Kinoko蘑菇"
+            }
+        },
+        {
+            "id": 304,
+            "name": "赤羽",
+            "group_id": 3,
+            "image_path": "/public/vocals/chiyu.png",
+            "image_source_url": "https://quadimension.booth.pm/items/2256836",
+            "support_color_list": ["#FF4004"],
+            "official_producer_id": 0,
+            "official_persona": {
+                "gender": "女",
+                "age": 17,
+                "birthday": "11-26",
+                "height": 158,
+                "cv": "呦猫UNEKO"
+            }
+        },
+        {
+            "id": 305,
+            "name": "诗岸",
+            "group_id": 3,
+            "image_path": "/public/vocals/shian.png",
+            "image_source_url": "https://quadimension.booth.pm/items/2256836",
+            "support_color_list": ["#F6BE71"],
+            "official_producer_id": 0,
+            "official_persona": {
+                "gender": "女",
+                "age": 14,
+                "birthday": "01-19",
+                "height": 148,
+                "cv": "Warma"
+            }
+        },
+        {
+            "id": 306,
+            "name": "永夜Minus",
+            "group_id": 3,
+            "image_path": "",
+            "support_color_list": [],
+            "official_producer_id": 0,
+            "official_persona": {
+                "gender": "女",
+                "birthday": "12-08",
+                "cv": "Sawako碎花子"
+            }
+        },
+        {
+            "id": 307,
+            "name": "牧心",
+            "group_id": 3,
+            "image_path": "",
+            "support_color_list": [],
+            "official_producer_id": 0,
+            "official_persona": {
+                "gender": "男",
+                "age": 14,
+                "birthday": "06-30",
+                "cv": "佑可猫"
+            }
+        },
+        {
+            "id": 1101,
+            "name": "起礼",
+            "group_id": 11,
+            "image_path": "/public/vocals/qili.png",
+            "image_source_url": "https://www.bilibili.com/opus/654807192100143129",
+            "support_color_list": ["#FF0099"],
+            "official_producer_id": 0,
+            "official_persona": {
+                "gender": "女",
+                "birthday": "07-13",
+                "height": 140,
+                "weight": 30,
+                "representative": "凤凰",
+                "highlight_list": ["姐姐", "绿瞳", "四条长发"]
+            }
+        },
+        {
+            "id": 1102,
+            "name": "起复",
+            "group_id": 11,
+            "image_path": "/public/vocals/qifu.png",
+            "image_source_url": "https://www.bilibili.com/opus/654807192100143129",
+            "support_color_list": ["#99FF00"],
+            "official_producer_id": 0,
+            "official_persona": {
+                "gender": "男",
+                "birthday": "07-13",
+                "height": 142,
+                "weight": 31,
+                "representative": "笛子",
+                "highlight_list": ["弟弟", "红瞳", "四条眉毛"]
+            }
+        },
+        {
+            "id": 1201,
+            "name": "潋妤",
+            "group_id": 12,
+            "image_path": "/public/vocals/lianyu.webp",
+            "support_color_list": ["#A4DCDC", "#F4ACAC"],
+            "official_producer_id": 0,
+            "official_persona": {
+                "creator": "苍梧",
+                "gender": "女",
+                "age": 16.5,
+                "height": 161,
+                "weight": 45,
+                "appearance": "粉色单马尾（另有双马尾版本）、蓝瞳。鬓角一侧扎麻花辫。",
+                "personality": "如阳光般热情活力，也有着似水般温柔细腻的内心",
+                "cv": "玖蝶"
+            }
+        }
+    ]
+}
