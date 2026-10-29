@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
-import { Result, Tooltip } from 'antd';
+import { Result, Segmented, Tooltip } from 'antd';
 import { ArrowLeftOutlined, ExportOutlined, LoadingOutlined, ReloadOutlined, UserOutlined } from '@ant-design/icons';
 import { DsPagination, DsTable } from '../../components/design-system/DataDisplay.jsx';
+import ProducerInfo from '../../components/custom/ProducerInfo/ProducerInfo.jsx';
+import RelativeTime from '../../components/custom/RelativeTime/RelativeTime.jsx';
 import { fetchProducerInfo, fetchProducerVideos } from '../../services/Producer/producer.api.js';
 import { formatVideoText } from '../video/videoDetailFormat.js';
 import { formatNumber } from '../../utils/formatNumber.js';
@@ -68,23 +70,29 @@ function ProducerDetailPage({ userId }) {
   }
   function updateQuery(next) { setQuery((current) => ({ ...current, ...next, page: 1 })); }
   const columns = [
-    { key: 'title', title: t('视频', 'Video'), render: (value, row) => <div className="producer-video-title">
-      <Link className="ds-link" to={`/videos/${row.aid}`} title={formatVideoText(value)}>{formatVideoText(value) || `av${row.aid}`}</Link>
-      <span className="producer-detail-caption">av{row.aid}</span>
-    </div> },
-    { key: 'userId', title: t('上传者', 'Uploader'), width: 130, render: (value) => value
-      ? <Link className="ds-link producer-detail-id" to={`/producers/${value}`}>{value}</Link> : '—' },
+    { key: 'title', title: t('视频', 'Video'), render: (value, row) => {
+      const title = formatVideoText(value) || `av${row.aid}`;
+      const hanging = /^[【（《〈「『〔［｛〖]/u.test(title.trimStart());
+      return <div className={`producer-video-title${hanging ? ' producer-video-title--hanging' : ''}`}>
+        <Link className="ds-link" to={`/videos/${row.aid}`} title={title}>{title}</Link>
+        <span className="producer-detail-caption">av{row.aid}</span>
+      </div>;
+    } },
+    { key: 'userId', title: t('投稿人', 'Contributor'), width: 200, render: (value) => value ? <ProducerInfo userId={value} showAvatar={query.role === 'staff'} /> : '—' },
     { key: 'view', title: t('播放量', 'Views'), width: 130, align: 'right', sortable: true, render: (value, row) => <Tooltip title={row.recordDate ? t(`统计日期：${row.recordDate}`, `Recorded on ${row.recordDate}`) : t('暂无日快照', 'No daily snapshot')}>
       <span>{value == null ? '—' : formatNumber(value, 'comma')}</span>
     </Tooltip> },
-    { key: 'pubdate', title: t('投稿时间', 'Published'), width: 190, sortable: true, render: (value) => dateText(value, true) },
+    { key: 'pubdate', title: t('投稿时间', 'Published'), width: 160, sortable: true, render: (value) => <RelativeTime value={value} /> },
   ];
 
   return <main className="producer-detail-page">
-    <nav className="producer-detail-breadcrumb" aria-label={t('面包屑', 'Breadcrumb')}>
-      <Link className="ds-link" to="/producers"><ArrowLeftOutlined /> {t('创作者', 'Producers')}</Link>
-      <span aria-hidden="true">/</span><span>{t('创作者详情', 'Producer Details')}</span>
-    </nav>
+    <header className="producer-detail-header">
+      <nav className="producer-detail-breadcrumb" aria-label={t('面包屑', 'Breadcrumb')}>
+        <Link className="ds-link" to="/producers"><ArrowLeftOutlined /> {t('创作者', 'Producers')}</Link>
+        <span aria-hidden="true">/</span><span>{t('创作者详情', 'Producer Details')}</span>
+      </nav>
+      {producer?.lastUpdated && <time className="producer-detail-updated" dateTime={producer.lastUpdated}>{t('资料更新于 ', 'Updated ')}{dateText(producer.lastUpdated)}</time>}
+    </header>
 
     <section className="ds-surface producer-detail-profile" aria-labelledby="producer-detail-name" aria-busy={info.status === 'loading'}>
       <ProducerAvatar src={producer?.face} name={name} />
@@ -108,7 +116,6 @@ function ProducerDetailPage({ userId }) {
         <strong>{producer?.fans == null ? '—' : formatNumber(producer.fans, 'comma')}</strong>
         <a className="ds-link" href={`https://space.bilibili.com/${userId}`} target="_blank" rel="noopener noreferrer">{t('哔哩哔哩主页', 'Bilibili profile')} <ExportOutlined /></a>
       </div>
-      {producer?.lastUpdated && <time className="producer-detail-updated" dateTime={producer.lastUpdated}>{t('资料更新于 ', 'Updated ')}{dateText(producer.lastUpdated)}</time>}
     </section>
 
     <section className="ds-surface producer-detail-videos" aria-labelledby="producer-detail-videos-title">
@@ -118,10 +125,11 @@ function ProducerDetailPage({ userId }) {
           {[['uploader', t('第一作者', 'Primary Author')], ['staff', t('参与作者', 'Contributing Author')]].map(([role, label]) => <button key={role} type="button" className="ds-button" data-variant={query.role === role ? 'secondary' : 'normal'} aria-pressed={query.role === role} onClick={() => updateQuery({ role })}>{label}</button>)}
         </div>
         <div className="producer-detail-sort">
-          <label><span>{t('排序', 'Sort by')}</span><select value={query.sortBy} onChange={(event) => updateQuery({ sortBy: event.target.value })}>
-            <option value="pubdate">{t('投稿时间', 'Published')}</option><option value="view">{t('播放量', 'Views')}</option>
-          </select></label>
-          <button type="button" className="ds-button" data-variant="normal" onClick={() => updateQuery({ order: query.order === 'desc' ? 'asc' : 'desc' })}>{query.order === 'desc' ? t('降序 ↓', 'Descending ↓') : t('升序 ↑', 'Ascending ↑')}</button>
+          <div className="producer-detail-sort-field"><span>{t('排序', 'Sort by')}</span><Segmented
+            aria-label={t('排序依据', 'Sort by')} value={query.sortBy} onChange={(sortBy) => updateQuery({ sortBy })}
+            options={[{ value: 'pubdate', label: t('投稿时间', 'Published') }, { value: 'view', label: t('播放量', 'Views') }]} /></div>
+          <Segmented aria-label={t('排序方向', 'Sort order')} value={query.order} onChange={(order) => updateQuery({ order })}
+            options={[{ value: 'desc', label: t('降序 ↓', 'Descending ↓') }, { value: 'asc', label: t('升序 ↑', 'Ascending ↑') }]} />
         </div>
       </div>
       <p className="producer-detail-list-hint">{t('仅展示冰数据已收录的投稿。播放量为各视频最新一次收录的累计值。', 'Only videos indexed by icedata are shown. Views are the latest collected cumulative totals for each video.')}</p>

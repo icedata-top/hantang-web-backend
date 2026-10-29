@@ -3,15 +3,17 @@ import { useTranslation } from 'react-i18next';
 import { Link, Navigate, useLocation, useParams } from 'react-router-dom';
 import { Tooltip, Typography } from 'antd';
 import {
-  ArrowLeftOutlined, DownloadOutlined, ExportOutlined, PictureOutlined, UserOutlined,
+  ArrowLeftOutlined, DownloadOutlined, ExportOutlined, PictureOutlined,
   PlayCircleOutlined, LikeOutlined, DollarOutlined, StarOutlined,
   ShareAltOutlined, CommentOutlined, MessageOutlined,
   InfoCircleOutlined, WarningOutlined, LoadingOutlined, ReloadOutlined,
 } from '@ant-design/icons';
+import ProducerInfo from '../../components/custom/ProducerInfo/ProducerInfo.jsx';
+import RelativeTime from '../../components/custom/RelativeTime/RelativeTime.jsx';
 import { fetchVideoInfo, fetchVideoLatestMetrics } from '../../services/Video/video.api.js';
 import { getBilibiliSubPartitionName } from '../../constants/bilibili/type.id.js';
 import { formatNumber } from '../../utils/formatNumber.js';
-import { formatVideoText, getPublicationAgeDays } from './videoDetailFormat.js';
+import { formatVideoText } from './videoDetailFormat.js';
 import { parseVideoIdentifier } from './videoIdentifier.js';
 import VideoResult from './VideoResult.jsx';
 import './VideoDetail.css';
@@ -47,28 +49,16 @@ function useVideoRequest(aid, fetcher) {
   return { ...state, retry: () => setAttempt((value) => value + 1) };
 }
 
-function MediaImage({ src, alt, className, avatar = false }) {
+function MediaImage({ src, alt, className }) {
   const [failedSrc, setFailedSrc] = useState(null);
   const safeSrc = /^https?:\/\//i.test(src ?? '') ? src.replace(/^http:\/\//i, 'https://') : null;
   if (!safeSrc || failedSrc === safeSrc) {
     return <span className={`${className} video-detail-image-fallback`} role="img" aria-label={alt}>
-      {avatar ? <UserOutlined /> : <PictureOutlined />}
+      <PictureOutlined />
     </span>;
   }
   return <img className={className} src={safeSrc} alt={alt} referrerPolicy="no-referrer"
     onError={() => setFailedSrc(safeSrc)} />;
-}
-
-function publicationTime(value) {
-  if (value == null) return '—';
-  const date = new Date(value * 1000);
-  if (Number.isNaN(date.getTime())) return '—';
-  const parts = new Intl.DateTimeFormat('en-GB', {
-    timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23',
-  }).formatToParts(date);
-  const part = (type) => parts.find((item) => item.type === type)?.value;
-  return `${part('year')}-${part('month')}-${part('day')} ${part('hour')}:${part('minute')}:${part('second')}`;
 }
 
 function durationText(value) {
@@ -97,11 +87,10 @@ export function VideoDetailView({ aid, info, latest }) {
   if (info.status === 'missing') return <VideoResult reason="unavailable" />;
   const video = info.data;
   const uploader = video?.uploader;
-  const uploaderPath = /^[1-9]\d*$/.test(String(uploader?.userId ?? '')) ? `/producers/${uploader.userId}` : null;
+  const uploaderId = /^[1-9]\d*$/.test(String(uploader?.userId ?? '')) ? uploader.userId : null;
   const title = formatVideoText(video?.title) || `${t('视频', 'Video')} av${aid}`;
   const description = formatVideoText(video?.description);
   const tags = [...new Set((video?.tags ?? []).map(formatVideoText).filter(Boolean))];
-  const publicationAgeDays = getPublicationAgeDays(video?.pubdate);
   const duration = durationText(video?.duration);
   const partialMetrics = latest.status === 'ready' && METRICS.some(([key]) => latest.data?.[key] == null);
 
@@ -138,10 +127,10 @@ export function VideoDetailView({ aid, info, latest }) {
       <h1 id="video-detail-title" className={/^[【（《〈「『〔［｛〖]/u.test(title.trimStart()) ? 'video-detail-title--hanging' : undefined}>{title}</h1>
       <div className="video-detail-meta">
         <span className="ds-chip" data-variant="neutral">{getBilibiliSubPartitionName(video.typeId) || t('视频', 'Video')}</span>
-        <time title={t('投稿时间 · 北京时间', 'Published · UTC+8')}>
-          {publicationTime(video.pubdate)}
-          {publicationAgeDays != null && <span>{t(`（${publicationAgeDays}天之前）`, ` (${publicationAgeDays} ${publicationAgeDays === 1 ? 'day' : 'days'} ago)`)}</span>}
-        </time>
+        <span className="video-detail-published">
+          <span className="ds-sr-only">{t('投稿时间', 'Published')}</span>
+          <RelativeTime value={video.pubdate} mode="absolute-diff" />
+        </span>
         <span className="video-detail-id" aria-label={t('AV号', 'AV ID')}>av{aid}</span>
         <span className="video-detail-id" aria-label={t('BV号', 'BV ID')}>{video.bvid || '—'}</span>
       </div>
@@ -175,20 +164,13 @@ export function VideoDetailView({ aid, info, latest }) {
 
       <aside className="video-detail-sidebar" aria-label={t('创作者与视频数据', 'Creator and video metrics')}>
         {video && <section className="ds-surface video-detail-creator" aria-labelledby="video-detail-creator-title">
-          <div className="video-detail-uploader">
-            <MediaImage className="video-detail-avatar" src={uploader?.face} alt={t('上传者头像', 'Uploader avatar')} avatar />
-            <div className="video-detail-uploader-info">
-              <h2 id="video-detail-creator-title">
-                {uploaderPath ? <Link to={uploaderPath} className="ds-link video-detail-uploader-name">
-                  {uploader.name || String(uploader.userId)}
-                </Link> : <span>{t('账号资料暂缺', 'Account information unavailable')}</span>}
-              </h2>
-              <div className="video-detail-uploader-meta">
-                {uploader?.userId != null && <span className="video-detail-caption video-detail-id" aria-label={t('创作者ID', 'Creator ID')}>{uploader.userId}</span>}
-                {uploader?.officialTitle && <span className="ds-chip" data-variant="orange">{uploader.officialTitle}</span>}
-              </div>
-            </div>
-          </div>
+          <h2 id="video-detail-creator-title">{t('投稿人', 'Contributor')}</h2>
+          {uploaderId
+            ? <ProducerInfo userId={uploaderId} showAvatar className="video-detail-producer" />
+            : <p className="video-detail-caption">{t('账号资料暂缺', 'Account information unavailable')}</p>}
+          {uploader?.officialTitle && <div className="video-detail-uploader-meta">
+            <span className="ds-chip" data-variant="orange">{uploader.officialTitle}</span>
+          </div>}
           {uploader?.sign && <Tooltip title={uploader.sign} trigger={['hover', 'focus']}>
             <Typography.Paragraph className="video-detail-creator-sign" tabIndex={0}
               ellipsis={{ rows: 1, suffix: '' }}>
