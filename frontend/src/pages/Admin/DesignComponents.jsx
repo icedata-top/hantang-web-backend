@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import RelativeTime from '../../components/custom/RelativeTime/RelativeTime.jsx';
 import ProducerInfo from '../../components/custom/ProducerInfo/ProducerInfo.jsx';
+import VideoInfo from '../../components/custom/VideoInfo/VideoInfo.jsx';
 import { getRelativeTimeDetails } from '../../components/custom/RelativeTime/relativeTime.js';
 import './DesignComponents.css';
 
@@ -18,6 +19,10 @@ export default function DesignComponents() {
   const [producerIdInput, setProducerIdInput] = useState('396194');
   const [producerId, setProducerId] = useState('396194');
   const [showProducerAvatar, setShowProducerAvatar] = useState(false);
+  const [videoIdInput, setVideoIdInput] = useState('6009789');
+  const [videoId, setVideoId] = useState('6009789');
+  const [hangingVideoPunctuation, setHangingVideoPunctuation] = useState(true);
+  const [videoPreviewWidth, setVideoPreviewWidth] = useState('360px');
   const today = Math.floor((now + 8 * HOUR) / DAY) * DAY - 8 * HOUR;
   const modes = [['absolute', t('绝对', 'Absolute')], ['relative', t('相对', 'Relative')], ['absolute-diff', t('绝对 + 日期差', 'Absolute + day difference')]];
   const examples = [
@@ -63,6 +68,24 @@ export default function DesignComponents() {
       </form>
       <div className="producer-info-live-preview"><ProducerInfo userId={producerId} showAvatar={showProducerAvatar} /></div>
       <pre className="components-usage"><code>{`<ProducerInfo userId=${JSON.stringify(producerId)}${showProducerAvatar ? ' showAvatar' : ''} />`}</code></pre>
+    </section>
+    <section className="ds-surface components-card" aria-labelledby="video-info-card-title">
+      <div className="components-card-heading"><h2 id="video-info-card-title">VideoInfo</h2><span className="ds-chip" data-variant="neutral">{t('视频（歌曲）信息', 'Video / song information')}</span></div>
+      <p className="components-description">{t('由 AV 号显示视频标题，悬停、聚焦或点击查看基本信息与访问按钮。', 'Resolve an AV ID to its title; hover, focus, or tap for information and links.')}</p>
+      <form className="relative-time-controls video-info-controls" onSubmit={(event) => { event.preventDefault(); setVideoId(videoIdInput); }}>
+        <label className="relative-time-value"><span>{t('AV 号 / aid', 'AV ID / aid')}</span><input aria-label={t('AV 号 / aid', 'AV ID / aid')} value={videoIdInput} onChange={(event) => setVideoIdInput(event.target.value)} placeholder="6009789 / av6009789" spellCheck={false} /></label>
+        <button type="submit" className="ds-button" data-variant="secondary">{t('加载视频', 'Load video')}</button>
+        <label><span>{t('预览宽度', 'Preview width')}</span><select aria-label={t('视频标题预览宽度', 'Video title preview width')} value={videoPreviewWidth} onChange={(event) => setVideoPreviewWidth(event.target.value)}>
+          <option value="240px">240px</option><option value="360px">360px</option><option value="100%">{t('全部宽度', 'Full width')}</option>
+        </select></label>
+        <label className="video-info-hanging-control"><input type="checkbox" checked={hangingVideoPunctuation} onChange={(event) => setHangingVideoPunctuation(event.target.checked)} /><span>{t('开头标点左对齐', 'Hang opening punctuation')}</span></label>
+      </form>
+      <div className="video-info-live-preview"><div className="video-info-preview-content" style={{ width: videoPreviewWidth }}>
+        <span className="video-info-preview-label">{t('视频标题', 'Video title')}</span>
+        <VideoInfo aid={videoId} hangingPunctuation={hangingVideoPunctuation} />
+      </div></div>
+      <p className="components-note">{t('默认示例为《世末歌者》，可比较「【」开头的对齐效果和长标题省略。', 'The default sample is World’s End Singer. Compare opening bracket alignment and long title truncation.')}</p>
+      <pre className="components-usage"><code>{`<VideoInfo aid=${JSON.stringify(videoId)}${hangingVideoPunctuation ? '' : ' hangingPunctuation={false}'} />`}</code></pre>
     </section>
   </main>;
 }

@@ -132,8 +132,8 @@ export const ADMIN_NAV = [
         path: '/admin/design/components',
         zh: '组件预览',
         en: 'Components',
-        summaryZh: '展示与操作 RelativeTime、ProducerInfo 等自定义组件。',
-        summaryEn: 'Explore custom components including RelativeTime and ProducerInfo.',
+        summaryZh: '展示与操作 RelativeTime、ProducerInfo、VideoInfo 等自定义组件。',
+        summaryEn: 'Explore custom components including RelativeTime, ProducerInfo, and VideoInfo.',
       },
       {
         key: 'spec',

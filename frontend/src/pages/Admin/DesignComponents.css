@@ -25,6 +25,11 @@
 .producer-info-controls .producer-info-avatar-control { flex-direction: row; align-items: center; align-self: center; gap: 8px; cursor: pointer; }
 .producer-info-avatar-control input { min-height: auto; accent-color: var(--theme-primary); }
 .producer-info-live-preview { margin-top: 20px; padding: 20px; border-radius: var(--radius-card); background: var(--button-secondary-bg); font-size: var(--font-size-heading); }
+.video-info-controls .video-info-hanging-control { flex-direction: row; align-items: center; align-self: center; gap: 8px; cursor: pointer; }
+.video-info-hanging-control input { min-height: auto; accent-color: var(--theme-primary); }
+.video-info-live-preview { margin-top: 20px; padding: 20px; border-radius: var(--radius-card); background: var(--button-secondary-bg); }
+.video-info-preview-content { min-width: 0; max-width: 100%; font-size: var(--font-size-heading); }
+.video-info-preview-label { display: block; margin-bottom: 8px; color: var(--text-secondary); font-size: var(--font-size-caption); }
 @media (max-width: 767px) {
   .design-components { padding: 8px 0 24px; }
   .components-card { padding: 20px; }

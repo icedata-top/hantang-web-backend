@@ -86,7 +86,7 @@ ICEDATA_BACKEND_IMAGE=ghcr.io/icedata-top/hantang-web-backend:main
 
 ## 管理配置页面
 
-管理配置页面位于 `/admin`。顶部「管理配置」是一级，左侧分组是二级，分组下的页面是三级。「运行环境」展示当前环境、API 地址和管理入口状态；「视觉规范」位于 `/admin/design/spec`，支持白天、夜间和对照预览，展示 Canvas、Surface、按钮三态、文字、Tooltip、三种 Alert、Tabs、Table 与 Pagination。「组件预览」位于 `/admin/design/components`：[RelativeTime](src/components/custom/RelativeTime/README.md) 提供时间输入、三种模式和过去 / 未来示例；[ProducerInfo](src/components/custom/ProducerInfo/README.md) 提供用户 ID 输入、头像开关及创作者资料悬停卡片。其余条目为施工占位，复用开发中插图，尚未接通数据或写入。
+管理配置页面位于 `/admin`。顶部「管理配置」是一级，左侧分组是二级，分组下的页面是三级。「运行环境」展示当前环境、API 地址和管理入口状态；「视觉规范」位于 `/admin/design/spec`，支持白天、夜间和对照预览，展示 Canvas、Surface、按钮三态、文字、Tooltip、三种 Alert、Tabs、Table 与 Pagination。「组件预览」位于 `/admin/design/components`：[RelativeTime](src/components/custom/RelativeTime/README.md) 提供时间输入、三种模式和过去 / 未来示例；[ProducerInfo](src/components/custom/ProducerInfo/README.md) 提供用户 ID 输入、头像开关及创作者资料悬停卡片；[VideoInfo](src/components/custom/VideoInfo/README.md) 提供 AV 号 / aid 输入、视频资料气泡、开头标点对齐开关与标题宽度预览。其余条目为施工占位，复用开发中插图，尚未接通数据或写入。
 只有显式启用开关时，才注册页面路由和顶部「管理配置」菜单；未配置、空值或 `false` 均关闭，直接访问 `/admin` 返回 404 页面。
 
 本地开发在 `frontend/.env.local` 中配置后重启开发服务器：
