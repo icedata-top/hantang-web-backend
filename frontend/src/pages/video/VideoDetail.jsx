@@ -10,6 +10,7 @@ import {
 } from '@ant-design/icons';
 import ProducerInfo from '../../components/custom/ProducerInfo/ProducerInfo.jsx';
 import RelativeTime from '../../components/custom/RelativeTime/RelativeTime.jsx';
+import VideoHonor from '../../components/custom/VideoHonor/VideoHonor.jsx';
 import { fetchVideoInfo, fetchVideoLatestMetrics } from '../../services/Video/video.api.js';
 import { getBilibiliSubPartitionName } from '../../constants/bilibili/type.id.js';
 import { formatNumber } from '../../utils/formatNumber.js';
@@ -127,6 +128,7 @@ export function VideoDetailView({ aid, info, latest }) {
       <h1 id="video-detail-title" className={/^[【（《〈「『〔［｛〖]/u.test(title.trimStart()) ? 'video-detail-title--hanging' : undefined}>{title}</h1>
       <div className="video-detail-meta">
         <span className="ds-chip" data-variant="neutral">{getBilibiliSubPartitionName(video.typeId) || t('视频', 'Video')}</span>
+        <VideoHonor views={latest.status === 'ready' ? latest.data?.view : null} />
         <span className="video-detail-published">
           <span className="ds-sr-only">{t('投稿时间', 'Published')}</span>
           <RelativeTime value={video.pubdate} mode="absolute-diff" />

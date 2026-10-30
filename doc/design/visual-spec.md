@@ -125,6 +125,8 @@ Primary 用于核心操作，Secondary 用于取消、重置等次要操作，No
 
 颜色在 `theme.css` 集中维护：`--chip-neutral-bg/text` 使用中性文本与 Surface 派生灰色；`--chip-orange-bg/text` 由 `--highlight-orange` 与 Surface/正文色派生。橙色文字的原色占比通过 `--chip-orange-text-strength` 调整，白天 55%、夜间 85%。
 
+播放荣誉复用 Ant Design `Tag variant="filled"`，统一使用 `TrophyOutlined` 奖杯图标，无边框。殿堂（≥10万）、传说（≥100万）、神话（≥1000万）分别从 `--highlight-blue`、`--highlight-orange`、`--highlight-violet` 派生颜色；背景和文字使用 `--honor-{hall|legend|myth}-bg/text`，不硬编码颜色。视频详情标题下只显示最高荣誉；本页三个日夜样本各自对应独立播放量。完整数据口径见[视频播放荣誉](video-view-honors.md)。
+
 视频封面悬停操作使用 `--media-overlay-bg` 的半透明黑色蒙层，按钮为无背景白字，文字引用 `--media-overlay-text`。键盘聚焦同样显示操作；移动端或无悬停设备常显底部操作，并使用 `--media-overlay-gradient`。这些媒体蒙层不随日夜主题变成浅色，以保证白字可读。
 
 桌面端的「下载封面」「在哔哩哔哩观看」作为左右两组操作，整体居于封面中央；每组图标在上、文字在下，均居中对齐。图标使用 `--media-action-icon-size`（36px），文字使用正文字号（14px）。移动端图标缩为 26px，文字缩为 12px，保留上下结构。

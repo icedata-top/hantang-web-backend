@@ -11,6 +11,8 @@ import {
 import './DesignSpec.css';
 import { PaginationSample, TableSample, TabsSample } from './DataDisplaySamples.jsx';
 import { TokenContext, Token, Value, TypeMetrics } from './SpecTokens.jsx';
+import VideoHonor from '../../components/custom/VideoHonor/VideoHonor.jsx';
+import { VIDEO_VIEW_HONORS } from '../../constants/video/viewHonors.js';
 
 const TOKEN_NAMES = [
   'canvas', 'surface', 'surface-hover', 'surface-border', 'theme-primary', 'theme-accent',
@@ -22,6 +24,7 @@ const TOKEN_NAMES = [
   'button-disabled-bg', 'button-disabled-text',
   'tooltip-bg', 'tooltip-text',
   'chip-neutral-bg', 'chip-neutral-text', 'chip-orange-bg', 'chip-orange-text',
+  ...['hall', 'legend', 'myth'].flatMap((level) => ['bg', 'text'].map((part) => `honor-${level}-${part}`)),
   'font-size-title', 'font-size-heading', 'font-size-body', 'font-size-caption', 'font-size-button',
   'font-weight-regular', 'font-weight-medium', 'font-weight-semibold', 'font-weight-button',
   'line-height-title', 'line-height-heading', 'line-height-body',
@@ -275,6 +278,13 @@ function Chips({ t }) {
         <p className="spec-type-meta"><Token name="chip-orange-bg" /><Token name="chip-orange-text" /></p></div>
     </div>
     <p className="spec-footnote">{t('灰色用于分区与普通标签，橙色用于认证头衔。标签仅展示信息，不冒充可点击按钮。', 'Gray labels identify categories; orange labels show official titles. These labels are informational, not buttons.')}</p>
+    <p className="spec-footnote">{t('播放荣誉示例：殿堂 ≥ 10万，传说 ≥ 100万，神话 ≥ 1000万。每个示例独立判定，视频详情只显示最高一级。', 'View honor examples: Hall of Fame ≥ 100K, Legendary ≥ 1M, Mythic ≥ 10M. Each example is independent; a video shows only its highest honor.')}</p>
+    <div className="spec-chip-list spec-honor-list">
+      {[...VIDEO_VIEW_HONORS].reverse().map(({ id, threshold }) => <div key={id}>
+        <VideoHonor views={threshold} />
+        <p className="spec-type-meta"><Token name={`honor-${id}-bg`} /><Token name={`honor-${id}-text`} /></p>
+      </div>)}
+    </div>
   </>;
 }
 
@@ -282,7 +292,7 @@ const SECTIONS = [
   { id: 'surfaces', en: 'Canvas & Surface', zh: '背景与卡片', description: ['从页面底色到内容表面，建立清晰的层级。', 'Build a clear hierarchy from the page canvas to content surfaces.'], Component: Surfaces },
   { id: 'buttons', en: 'Buttons', zh: '按钮', description: ['四种用途，三种状态。每一个状态都可以直接对照。', 'Four purposes, three states. Compare every state directly.'], Component: Buttons },
   { id: 'typography', en: 'Typography', zh: '文字', description: ['用字号、字重和颜色表达内容的重要程度。', 'Express content hierarchy through size, weight, and color.'], Component: Typography },
-  { id: 'chips', en: 'Tag / Chip', zh: '标签', description: ['灰色分类与橙色头衔，使用共享主题变量。', 'Neutral categories and orange titles use shared theme tokens.'], Component: Chips },
+  { id: 'chips', en: 'Tag / Chip', zh: '标签', description: ['分类、认证与播放荣誉，使用共享主题变量。', 'Categories, verification, and view honors use shared theme tokens.'], Component: Chips },
   { id: 'tooltips', en: 'Tooltip', zh: '悬停提示', description: ['沿用当前主题的 Surface 配色，支持文字和组件内容。', 'Use the current Surface colors for text and embedded components.'], Component: Tooltips },
   { id: 'alerts', en: 'Alert', zh: '状态提示', description: ['信息、警告、错误三种语义，使用同一套结构。', 'Information, warning, and error share a consistent structure.'], Component: Alerts },
   { id: 'tabs', en: 'Tabs', zh: '标签页', description: ['同一内容区域内切换视图，选中、悬停、禁用与键盘操作保持一致。', 'Switch views within one content area, with consistent selection, hover, disabled, and keyboard behavior.'], Component: TabsSample },

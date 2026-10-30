@@ -46,6 +46,7 @@
   --button-border-width: 0px;
   --surface-border-width: 0px;
   --alert-border-width: 0px;
+  --honor-fill-strength: 16%;
 
   /* 导航与数据展示的尺寸 */
   --tabs-height: 40px;
@@ -103,6 +104,7 @@
   --secondary-hover-strength: 14%;
   --disabled-fill-strength: 6%;
   --chip-orange-text-strength: 55%;
+  --honor-text-strength: 45%;
   --alert-fill-strength: 20%;
   --alert-border-strength: 28%;
   --alert-text-strength: 60%;
@@ -147,6 +149,7 @@
   --secondary-hover-strength: 28%;
   --disabled-fill-strength: 8%;
   --chip-orange-text-strength: 85%;
+  --honor-text-strength: 85%;
   --alert-fill-strength: 16%;
   --alert-border-strength: 35%;
   --alert-text-strength: 70%;
@@ -178,6 +181,13 @@
   --chip-neutral-text: var(--text-secondary);
   --chip-orange-bg: color-mix(in srgb, var(--highlight-orange) 16%, var(--surface));
   --chip-orange-text: color-mix(in srgb, var(--highlight-orange) var(--chip-orange-text-strength), var(--text));
+  /* 播放荣誉：殿堂蓝、传说橙、神话紫，仅从既有 highlight 色派生。 */
+  --honor-hall-bg: color-mix(in srgb, var(--highlight-blue) var(--honor-fill-strength), var(--surface));
+  --honor-hall-text: color-mix(in srgb, var(--highlight-blue) var(--honor-text-strength), var(--text));
+  --honor-legend-bg: color-mix(in srgb, var(--highlight-orange) var(--honor-fill-strength), var(--surface));
+  --honor-legend-text: color-mix(in srgb, var(--highlight-orange) var(--honor-text-strength), var(--text));
+  --honor-myth-bg: color-mix(in srgb, var(--highlight-violet) var(--honor-fill-strength), var(--surface));
+  --honor-myth-text: color-mix(in srgb, var(--highlight-violet) var(--honor-text-strength), var(--text));
   --media-overlay-bg: color-mix(in srgb, var(--color-black) 56%, transparent);
   --media-overlay-text: var(--color-white);
   --media-overlay-gradient: linear-gradient(transparent 35%, var(--media-overlay-bg));

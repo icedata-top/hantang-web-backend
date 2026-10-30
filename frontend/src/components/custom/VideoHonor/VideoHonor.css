@@ -1,0 +1,5 @@
+.video-honor-tag.ant-tag { display: inline-flex; align-items: center; box-sizing: border-box; min-height: 24px; margin: 0; padding: 2px 8px; border: 0; border-radius: var(--radius-control); font-size: var(--font-size-caption); font-weight: var(--font-weight-medium); line-height: var(--line-height-body); white-space: nowrap; }
+.video-honor-tag[data-honor='hall'] { background: var(--honor-hall-bg); color: var(--honor-hall-text); }
+.video-honor-tag[data-honor='legend'] { background: var(--honor-legend-bg); color: var(--honor-legend-text); }
+.video-honor-tag[data-honor='myth'] { background: var(--honor-myth-bg); color: var(--honor-myth-text); }
+.video-honor-tag:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
