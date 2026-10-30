@@ -25,6 +25,14 @@
             "copyright_website": ""
         },
         {
+            "id": 4,
+            "name": "クリプトン・フューチャー・メディア株式会社クリプトン",
+            "short_name": "Crypton",
+            "type": "company",
+            "official_website": "https://piapro.net/intl/zh-hans.html",
+            "copyright_website": "https://piapro.net/intl/zh-hans.html"
+        },
+        {
             "id": 11,
             "name": "阿铃养鲸鱼",
             "short_name": "风铃",
@@ -109,7 +117,8 @@
             "id": 105,
             "name": "徵羽摩柯",
             "group_id": 1,
-            "image_path": "",
+            "image_path": "/public/vocals/zhiyunmoke.webp",
+            "image_source_url": "https://vcpedia.cn/File:%E5%BE%B5%E7%BE%BD%E6%91%A9%E6%9F%AF.jpg",
             "support_color_list": ["#0080FF"],
             "official_producer_id": 0,
             "official_persona": {
@@ -124,7 +133,8 @@
             "id": 106,
             "name": "墨清弦",
             "group_id": 1,
-            "image_path": "",
+            "image_path": "/public/vocals/moqingxian.webp",
+            "image_source_url": "https://vcpedia.cn/File:MOQINGXIAN.jpg",
             "support_color_list": ["#FFFF00"],
             "official_producer_id": 0,
             "official_persona": {
@@ -237,7 +247,8 @@
             "id": 306,
             "name": "永夜Minus",
             "group_id": 3,
-            "image_path": "",
+            "image_path": "/public/vocals/yongye.webp",
+            "image_source_url": "https://vcpedia.cn/File:%E6%B0%B8%E5%A4%9Cai%E7%AB%8B%E7%BB%98.png",
             "support_color_list": [],
             "official_producer_id": 0,
             "official_persona": {
@@ -250,7 +261,8 @@
             "id": 307,
             "name": "牧心",
             "group_id": 3,
-            "image_path": "",
+            "image_path": "/public/vocals/muxin.webp",
+            "image_source_url": "https://vcpedia.cn/File:Muxin_full.png",
             "support_color_list": [],
             "official_producer_id": 0,
             "official_persona": {
@@ -258,6 +270,26 @@
                 "age": 14,
                 "birthday": "06-30",
                 "cv": "佑可猫"
+            }
+        },
+        {
+            "id": 401,
+            "name": "初音未来",
+            "group_id": 4,
+            "image_path": "/public/vocals/hatsunemiku.png",
+            "image_source_url": "https://sonicwire.com/product/virtualsinger/special/mikuv4c",
+            "license": "CC BY-NC 3.0 Unported",
+            "support_color_list": ["#39C5BB"],
+            "official_producer_id": 0,
+            "official_persona": {
+                "age": 16,
+                "birthday": "08-31",
+                "height": 158,
+                "weight": 42,
+                "cv": "藤田咲",
+                "creator": "KEI",
+                "zodiac": "处女座",
+                "origin": "日本"
             }
         },
         {

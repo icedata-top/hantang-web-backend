@@ -1,7 +1,7 @@
-import { useId, useState } from 'react';
+import { Fragment, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
-import { Button, Descriptions, Result, Tag } from 'antd';
+import { Button, Result, Tag } from 'antd';
 import { ArrowLeftOutlined, ExportOutlined, HeartOutlined, PictureOutlined } from '@ant-design/icons';
 import catalog from '../../constants/vocal/vocal-frontend-info.json';
 import { formatVocalBirthday, getVocalArtworkSource, resolveVocalProfile, vocalExternalUrl } from './vocalProfile.js';
@@ -55,14 +55,19 @@ export function VocalDetailView({ profile }) {
   const persona = vocal.official_persona ?? {};
   const birthday = formatVocalBirthday(persona.birthday, isZh);
   const gender = ({ 女: t('女', 'Female'), 男: t('男', 'Male') })[persona.gender] || persona.gender;
+  const zodiac = ({ 处女座: t('处女座', 'Virgo') })[persona.zodiac] || persona.zodiac;
+  const origin = ({ 日本: t('日本', 'Japan') })[persona.origin] || persona.origin;
   const supportColors = (vocal.support_color_list ?? []).filter((color) => /^#[\da-f]{6}$/i.test(color));
   const fields = [
     ['birthday', t('生日', 'Birthday'), birthday],
+    ['zodiac', t('星座', 'Zodiac'), zodiac],
     ['height', t('身高', 'Height'), persona.height != null ? `${persona.height} cm` : null],
     ['cv', t('声源', 'Voice provider'), persona.cv],
     ['creator', t('形象设计', 'Character designer'), persona.creator],
     ['weight', t('体重', 'Weight'), persona.weight != null ? `${persona.weight} kg` : null],
+    ['origin', t('出身地区', 'Origin'), origin],
     ['representative', t('代表物', 'Motif'), persona.representative],
+    ['license', t('许可', 'License'), vocal.license],
   ].filter(([, , value]) => value != null && value !== '');
 
   // Fan colors are profile data, used only for the swatches and geometric artwork texture.
@@ -94,8 +99,9 @@ export function VocalDetailView({ profile }) {
 
       <section className="vocal-hero-info" aria-labelledby="vocal-profile-title">
         <div className="vocal-profile-heading"><span aria-hidden="true" /><h2 id="vocal-profile-title">{t('角色资料', 'PROFILE')}</h2></div>
-        {fields.length > 0 ? <Descriptions className="vocal-profile-facts" column={1} colon={false} size="small"
-          items={fields.map(([key, label, children]) => ({ key, label, children }))} />
+        {fields.length > 0 ? <dl className="vocal-profile-facts">
+          {fields.map(([key, label, value]) => <Fragment key={key}><dt>{label}</dt><dd>{value}</dd></Fragment>)}
+        </dl>
           : <p className="vocal-profile-caption">{t('角色设定资料暂缺', 'Character details are unavailable')}</p>}
         {persona.personality && <p className="vocal-profile-note">{persona.personality}</p>}
         {persona.appearance && <p className="vocal-profile-note">{persona.appearance}</p>}

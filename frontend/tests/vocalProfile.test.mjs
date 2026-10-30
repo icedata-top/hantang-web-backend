@@ -27,7 +27,7 @@ test('all catalog profiles resolve and every configured image maps to an existin
     }
   }
   assert.equal(resolveVocalProfile('301', catalog).imageSrc, '/vocals/xingchen.jpg');
-  assert.equal(resolveVocalProfile('105', catalog).imageSrc, null);
+  assert.equal(resolveVocalProfile('105', catalog).imageSrc, '/vocals/zhiyunmoke.webp');
   assert.equal(resolveVocalProfile('307', catalog).vocal.name, '牧心');
 });
 
@@ -78,6 +78,9 @@ test('artwork platforms match real domains and subdomains rather than lookalike 
     ['https://weibo.com/5599743152/DbswphZBO', '微博'],
     ['https://www.weibo.com/', '微博'],
     ['https://weibo.com.example.test/', null],
+    ['https://sonicwire.com/product/virtualsinger/special/mikuv4c', 'SONICWIRE'],
+    ['https://www.sonicwire.com/', 'SONICWIRE'],
+    ['https://sonicwire.com.example.test/', null],
     ['https://bilibili.com.example.test/', null],
     ['https://notbooth.pm/', null],
     ['https://vcpedia.cn@example.test/', null],

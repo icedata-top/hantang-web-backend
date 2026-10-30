@@ -1,11 +1,11 @@
 .vocal-detail-page { max-width: 1080px; margin: 0 auto; padding: 12px 24px; color: var(--text-primary); font-size: var(--font-size-body); line-height: var(--line-height-body); }
 .vocal-detail-breadcrumb { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; color: var(--text-secondary); font-size: var(--font-size-caption); }
 .vocal-detail-breadcrumb a { display: inline-flex; align-items: center; gap: 8px; }
-.vocal-hero { --vocal-artwork-height: min(760px, calc(100svh - 128px)); position: relative; isolation: isolate; display: grid; grid-template-columns: minmax(240px, 320px) minmax(0, calc(var(--vocal-artwork-height) * 0.75)); grid-template-areas: 'intro artwork' 'info artwork'; justify-content: center; column-gap: 12px; min-width: 0; margin-top: 8px; }
+.vocal-hero { --vocal-artwork-height: min(760px, calc(100svh - 128px)); position: relative; isolation: isolate; display: grid; grid-template-columns: minmax(240px, max-content) minmax(0, calc(var(--vocal-artwork-height) * 0.75)); grid-template-areas: 'intro artwork' 'info artwork'; justify-content: center; column-gap: 12px; min-width: 0; margin-top: 8px; }
 .vocal-hero-intro { position: relative; z-index: 1; grid-area: intro; align-self: end; min-width: 0; }
 .vocal-hero-eyebrow { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 0 0 8px; color: var(--text-secondary); font-size: var(--font-size-caption); letter-spacing: 0.14em; }
 .vocal-hero-eyebrow > span { width: 7px; height: 7px; border-radius: 50%; background: var(--vocal-accent); }
-.vocal-hero h1 { margin: 0; font-size: var(--font-size-vocal-name); font-weight: var(--font-weight-semibold); line-height: var(--line-height-vocal-name); letter-spacing: 0.06em; overflow-wrap: anywhere; }
+.vocal-hero h1 { margin: 0; font-size: var(--font-size-vocal-name); font-weight: var(--font-weight-semibold); line-height: var(--line-height-vocal-name); letter-spacing: 0.06em; white-space: nowrap; }
 .vocal-hero-collection { margin: 8px 0 0; color: var(--text-secondary); font-size: var(--font-size-heading); font-weight: var(--font-weight-regular); }
 .vocal-hero-tags { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .vocal-profile-tag.ant-tag { margin: 0; padding: 2px 8px; border: 0; border-radius: var(--radius-control); background: var(--vocal-accent-bg); color: var(--vocal-accent-text); font-size: var(--font-size-caption); font-weight: var(--font-weight-medium); line-height: var(--line-height-body); }
@@ -13,9 +13,9 @@
 .vocal-profile-heading { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 .vocal-profile-heading > span { width: 24px; height: 2px; background: var(--vocal-accent); }
 .vocal-profile-heading h2 { margin: 0; color: var(--text-secondary); font-size: var(--font-size-caption); font-weight: var(--font-weight-medium); letter-spacing: 0.1em; }
-.vocal-profile-facts.ant-descriptions .ant-descriptions-item-label { min-width: 4em; padding-inline-end: 16px; color: var(--text-secondary); font-size: var(--font-size-body); }
-.vocal-profile-facts.ant-descriptions .ant-descriptions-item-content { min-width: 0; color: var(--text-primary); font-size: var(--font-size-body); font-weight: var(--font-weight-medium); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
-.vocal-profile-facts.ant-descriptions .ant-descriptions-row > td { padding-bottom: 8px; }
+.vocal-profile-facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); column-gap: 16px; row-gap: 8px; align-items: baseline; margin: 0; }
+.vocal-profile-facts dt { margin: 0; color: var(--text-secondary); font-size: var(--font-size-caption); font-weight: var(--font-weight-regular); white-space: nowrap; }
+.vocal-profile-facts dd { margin: 0; min-width: 0; color: var(--text-primary); font-size: var(--font-size-body); font-weight: var(--font-weight-medium); text-align: left; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .vocal-profile-caption, .vocal-profile-note { margin: 10px 0 0; color: var(--text-secondary); font-size: var(--font-size-body); }
 .vocal-support-colors { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; margin-top: 10px; color: var(--text-secondary); font-size: var(--font-size-caption); }
 .vocal-support-colors > span { display: inline-flex; align-items: center; gap: 6px; }
@@ -42,7 +42,7 @@
 .vocal-hero-eyebrow,
 .vocal-hero-collection,
 .vocal-profile-heading h2,
-.vocal-profile-facts.ant-descriptions .ant-descriptions-item-label,
+.vocal-profile-facts dt,
 .vocal-profile-caption,
 .vocal-profile-note,
 .vocal-support-colors,
@@ -59,9 +59,8 @@
   .vocal-hero-tags { display: inline-flex; margin-top: 6px; vertical-align: middle; }
   .vocal-hero-info { padding: 16px 0 0; }
   .vocal-profile-heading { margin-bottom: 8px; }
-  .vocal-profile-facts.ant-descriptions .ant-descriptions-item-label { min-width: 0; max-width: 5em; padding-inline-end: 10px; font-size: var(--font-size-caption); }
-  .vocal-profile-facts.ant-descriptions .ant-descriptions-item-content { font-size: var(--font-size-caption); }
-  .vocal-profile-facts.ant-descriptions .ant-descriptions-row > td { padding-bottom: 6px; }
+  .vocal-profile-facts { column-gap: 10px; row-gap: 6px; }
+  .vocal-profile-facts dd { font-size: var(--font-size-caption); }
   .vocal-support-colors { gap: 6px 10px; }
   .vocal-detail-organization { margin-top: 10px; }
   .vocal-artwork { height: clamp(220px, calc(100svh - 280px), 400px); margin-top: 8px; }
