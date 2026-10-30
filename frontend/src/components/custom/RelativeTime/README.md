@@ -25,4 +25,4 @@ import RelativeTime from './components/custom/RelativeTime/RelativeTime.jsx';
 - 相对：时间差 ≤120 秒显示「刚才」/「马上」；不足 1 小时显示整数分钟；其后按北京时间日历显示今天、昨天、前天及明天、后天，加上 `HH:mm`。其余同年显示 `MM-dd`，跨年显示 `yyyy-MM-dd`。
 - 英文对应 `Just now` / `In a moment`、`N minutes ago` / `In N minutes`、`Today`、`Yesterday`、`Tomorrow`。前天与后天直接显示日期。
 
-悬停或键盘聚焦显示四项详情：绝对时间、相对时间、距离现在（完整天数与剩余小时，均向下取整）、秒级 UNIX 时间戳。详情使用单列、小尺寸、无边框的 Ant Design `Descriptions`，标签列统一宽度并右对齐，内容列左对齐；悬浮背景及文字沿用当前主题的 Surface 配色。详情始终使用同一个固定参考时刻。
+悬停或键盘聚焦显示四项详情：绝对时间、相对时间、距离现在（完整天数与剩余小时，均向下取整）、秒级 UNIX 时间戳。详情使用单列、小尺寸、无边框的 Ant Design `Descriptions`，气泡随内容收缩并限制在视口内，标签列统一宽度并右对齐，内容列左对齐；悬浮背景及文字沿用当前主题的 Surface 配色。详情始终使用同一个固定参考时刻。

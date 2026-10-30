@@ -1,6 +1,8 @@
 .relative-time { font-variant-numeric: tabular-nums; }
 .relative-time:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; border-radius: 2px; }
 .relative-time-tooltip { max-width: min(360px, calc(100vw - 24px)); }
+.relative-time-details.ant-descriptions { width: max-content; max-width: 100%; }
+.relative-time-details.ant-descriptions .ant-descriptions-view > table { width: auto; table-layout: auto; }
 .relative-time-details.ant-descriptions .ant-descriptions-row > th,
 .relative-time-details.ant-descriptions .ant-descriptions-row > td { padding-bottom: 6px; }
 .relative-time-details.ant-descriptions .ant-descriptions-row:last-child > th,
