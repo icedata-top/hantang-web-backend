@@ -1,20 +1,18 @@
 import { useMemo } from 'react';
 import {
-  LikeOutlined,
-  PlayCircleOutlined,
-  StarOutlined,
   TeamOutlined,
   VideoCameraOutlined,
 } from '@ant-design/icons';
 import { Card, Tag, Tooltip, Typography } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { formatNumber, NUMBER_FORMAT } from '../../../utils/formatNumber.js';
-import { splitHighlightParts } from '../highlightText.js';
+import { splitHighlightParts } from '../../../utils/highlightText.js';
+import VideoCard from '../../../components/custom/VideoCard/VideoCard.jsx';
+import { videoCardFromSearchItem } from '../../../components/custom/VideoCard/videoCardData.js';
 
 const { Text } = Typography;
 
 const typeLabelMap = {
-  video: { zh: '歌曲', en: 'Song' },
   vocal: { zh: '虚拟歌手', en: 'Vocal' },
   producer: { zh: '创作者', en: 'Producer' },
 };
@@ -76,21 +74,19 @@ export default function UniSeekItem({ item, keyword = '' }) {
   const numFormat = isZh ? NUMBER_FORMAT.ZH : NUMBER_FORMAT.EN;
   const t = (zh, en) => (isZh ? zh : en);
 
+  if (item.type === 'video') return <VideoCard video={videoCardFromSearchItem(item)} keyword={keyword} />;
+
   const typeLabels = typeLabelMap[item.type];
   const tagText = typeLabels ? t(typeLabels.zh, typeLabels.en) : item.type;
   const typeClass =
-    item.type === 'video' || item.type === 'vocal' || item.type === 'producer'
+    item.type === 'vocal' || item.type === 'producer'
       ? `uniseek-item-tag--${item.type}`
       : '';
   const mediaTypeClass =
-    item.type === 'video'
-      ? 'uniseek-item-media--video'
-      : item.type === 'producer'
-        ? 'uniseek-item-media--producer'
-        : 'uniseek-item-media--vocal';
+    item.type === 'producer' ? 'uniseek-item-media--producer' : 'uniseek-item-media--vocal';
 
   return (
-    <Card className="uniseek-item-card" bordered={false}>
+    <Card className="uniseek-item-card" variant="borderless">
       <div className={`uniseek-item-media-wrap ${mediaTypeClass}`}>
         {item.coverUrl ? (
           <img src={item.coverUrl} alt={item.title} className="uniseek-item-media-image" />
@@ -109,34 +105,8 @@ export default function UniSeekItem({ item, keyword = '' }) {
 
       <HighlightText text={item.title} keyword={keyword} className="uniseek-item-title" />
 
-      {item.type !== 'video' && item.subTitle ? (
+      {item.subTitle ? (
         <HighlightText text={item.subTitle} keyword={keyword} className="uniseek-item-subtitle" />
-      ) : null}
-
-      {item.type === 'video' ? (
-        <div className="uniseek-item-meta">
-          <MetricStat
-            icon={<PlayCircleOutlined aria-hidden />}
-            value={item.play}
-            labelZh="播放"
-            labelEn="Views"
-            numFormat={numFormat}
-          />
-          <MetricStat
-            icon={<StarOutlined aria-hidden />}
-            value={item.favorite}
-            labelZh="收藏"
-            labelEn="Favorites"
-            numFormat={numFormat}
-          />
-          <MetricStat
-            icon={<LikeOutlined aria-hidden />}
-            value={item.like}
-            labelZh="点赞"
-            labelEn="Likes"
-            numFormat={numFormat}
-          />
-        </div>
       ) : null}
 
       {item.type === 'vocal' ? (

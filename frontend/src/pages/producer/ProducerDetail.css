@@ -38,6 +38,10 @@
 .producer-detail-pagination .ds-pagination-size { margin-left: auto; }
 .producer-detail-error { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 .producer-detail-error > span { flex: 1; min-width: 0; }
+.producer-videos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr)); align-items: stretch; gap: 16px; padding: 0; margin: 0; list-style: none; }
+.producer-videos-grid > li { min-width: 0; }
+.producer-videos-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-height: var(--table-empty-height); color: var(--text-secondary); font-size: var(--font-size-body); }
+.producer-videos-state .ant-empty-description { color: var(--text-secondary); }
 @media (max-width: 680px) {
   .producer-detail-page { padding: 16px 16px 40px; }
   .producer-detail-profile { grid-template-columns: 64px minmax(0, 1fr); gap: 16px; padding: 20px; }

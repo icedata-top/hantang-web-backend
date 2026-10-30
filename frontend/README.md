@@ -20,7 +20,7 @@
 - BV 入口：例如 `/videos/BV1Qs411k7Qv`，前端本地转换后以 `replace` 跳到 `/videos/6009789`，保留查询参数和锚点；不使用 HTTP 301/308，API 始终只接收数字 aid。
 - 创作者详情：`/producers/:userId`，例如 `/producers/396194`。
 
-视频详情已接入基本信息与最新日快照两个接口，展示标题、分区、投稿时间、封面、投稿人、七项累计指标、简介及标签；创作者详情接入账号资料与分页投稿表格，支持第一作者 / 参与作者切换、按播放量 / 投稿时间排序及升降序，默认每页 20 条。接口及数据口径见[创作者详情 API](src/services/Producer/producer.md)。详情页分别选中「歌曲」和「创作者」导航项。视频 ID 接受不带前导零的正整数 AV 号或完整 BV 号，格式错误显示「你输入的ID不合法」；基本信息无记录显示「你输入的ID，在哔哩哔哩不存在或者冰数据未收录」，不调用哔哩哔哩 API 区分这两种情况。创作者 ID 只接受不带前导零的正 64 位整数。`/videos`、`/producers` 保留原有列表待开发入口。
+视频详情已接入基本信息与最新日快照两个接口，展示标题、分区、投稿时间、封面、投稿人、七项累计指标、简介及标签；创作者详情接入账号资料与分页投稿，支持图标切换列表 / 卡片（默认卡片）、第一作者 / 参与作者切换、按播放量 / 投稿时间排序及升降序，默认每页 20 条。接口及数据口径见[创作者详情 API](src/services/Producer/producer.md)。详情页分别选中「歌曲」和「创作者」导航项。视频 ID 接受不带前导零的正整数 AV 号或完整 BV 号，格式错误显示「你输入的ID不合法」；基本信息无记录显示「你输入的ID，在哔哩哔哩不存在或者冰数据未收录」，不调用哔哩哔哩 API 区分这两种情况。创作者 ID 只接受不带前导零的正 64 位整数。`/videos`、`/producers` 保留原有列表待开发入口。
 
 运行 `npm test` 检查视频 ID 格式、BV 转换、大整数精度、播放荣誉阈值及历史指标的差分与缺失数据处理。
 
@@ -131,10 +131,10 @@ icedata-web-react/
 │   │   ├── Home/
 │   │   ├── About/
 │   │   ├── Overview/
-│   │   ├── UniSeek/           # 统一搜索结果页（独立 Item，不复用列表 Item）
+│   │   ├── UniSeek/           # 统一搜索结果页（歌曲复用共享 VideoCard）
 │   │   ├── video/             # VideoDetail：视频详情、最新日快照与展示格式化
 │   │   ├── vocal/             # 虚拟歌手：VocalList / VocalDetail
-│   │   ├── producer/          # ProducerDetail：创作者资料、排序及分页投稿表格
+│   │   ├── producer/          # ProducerDetail：创作者资料、排序及分页投稿，列表 / 卡片切换
 │   │   └── …
 │   ├── services/              # API / MOCK
 │   ├── hooks/
@@ -258,19 +258,20 @@ UI 规范页 `/admin/design/spec` 同步展示这条约定。共用分页器的�
 
 ## 路由与页面约定
 
-导航进入「歌曲 / 虚拟歌手 / 创作者」均为**列表页**（复数路径）；从列表或 UniSeek 结果点击某一 Item，进入对应**详情页**（单数路径 + ID）。  
-详情 ID 使用**路径参数**（如 `/video/123456`），**不使用**查询串（避免 `/video?id=123456`）。
+导航进入「歌曲 / 虚拟歌手 / 创作者」均为**列表页**（复数路径）；从列表或 UniSeek 结果点击某一 Item，进入对应**详情页**（资源路径 + ID）。
+
+详情 ID 使用**路径参数**（如 `/videos/123456`），**不使用**查询串（避免 `/video?id=123456`）。
 
 ### URL 一览
 
 | 页面 | URL | 说明 |
 |------|-----|------|
 | 歌曲列表 | `/videos` | 导航「歌曲」入口 |
-| 歌曲详情 | `/video/:id` | `:id` 为作品标识（如 aid；具体以详情契约为准） |
+| 歌曲详情 | `/videos/:aid` | 接受 AV / BV 入口，统一为数字 aid 路径 |
 | 虚拟歌手列表 | `/vocals` | 导航「虚拟歌手」入口 |
-| 虚拟歌手详情 | `/vocal/:id` | `:id` 为虚拟歌手标识 |
+| 虚拟歌手详情 | 尚未注册 | 保留规划，当前无可用详情路径 |
 | 创作者列表 | `/producers` | 导航「创作者」入口 |
-| 创作者详情 | `/producer/:id` | `:id` 为创作者标识（如 uid） |
+| 创作者详情 | `/producers/:userId` | `userId` 为创作者的数字用户 ID |
 | 统一搜索 | `/uniseek` | 首页搜索跳转；可带 `?keyword=` |
 | 总览 | `/overview` | |
 | 关于 | `/about` | |
@@ -280,11 +281,10 @@ UI 规范页 `/admin/design/spec` 同步展示这条约定。共用分页器的�
 
 ```text
 /videos
-/video/2129461
+/videos/2129461
 /vocals
-/vocal/luotianyi
 /producers
-/producer/123456
+/producers/123456
 /uniseek?keyword=普通DISCO
 ```
 
@@ -296,7 +296,7 @@ UI 规范页 `/admin/design/spec` 同步展示这条约定。共用分页器的�
   ├─ 虚拟歌手  → /vocals         （VocalList）
   └─ 创作者    → /producers      （ProducerList）
 
-列表页 Item 点击 → /video/:id · /vocal/:id · /producer/:id  （Detail）
+列表 / 投稿 Item 点击 → /videos/:aid · /producers/:userId  （已实现详情）
 
 首页搜索 → /uniseek?keyword=…   （UniSeek 结果页）
   └─ 结果 Item 点击 → 同上详情页 URL
@@ -304,17 +304,18 @@ UI 规范页 `/admin/design/spec` 同步展示这条约定。共用分页器的�
 
 ### 组件约定
 
-- 列表页 Item 与 UniSeek 结果 Item **不复用**：搜索结果有独立展示与排序语义，目录在 `src/pages/UniSeek/components/`；列表 Item 归属各自 `video` / `vocal` / `producer` 页面目录。
-- 详情页为两边共用落点：列表与 UniSeek 均可 `Link` / `navigate` 到 `/video/:id` 等形式。
-- 源码目录（占位已建，路由待挂载）：
+- 歌曲卡片复用 `src/components/custom/VideoCard/VideoCard.jsx`：UniSeek 的歌曲分支与创作者详情的卡片模式使用同一组件。搜索页继续独立管理关键词、类型、相关性与查询，通过适配器传入展示数据，不复制第二套卡片。歌手和创作者搜索 Item 仍由 `UniSeekItem` 管理。
+- 创作者详情的投稿支持图标 Segmented 切换列表 / 卡片，默认卡片；桌面端按宽度展示多列，窄屏减列。切换展示保留身份、排序、页码与每页条数，不额外请求数据。加载、空数据和错误均有对应展示。组件参数与预览见 [VideoCard](src/components/custom/VideoCard/README.md)。
+- 视频与创作者详情为共用落点：歌曲卡片跳到 `/videos/:aid`，创作者跳到 `/producers/:userId`，以当前已注册路由为准。
+- 已实现的详情页面与共享卡片：
 
 ```text
-src/pages/video/VideoList | VideoDetail
-src/pages/vocal/VocalList | VocalDetail
-src/pages/producer/ProducerList | ProducerDetail
+src/pages/video/VideoDetail.jsx
+src/pages/producer/ProducerDetail.jsx
+src/components/custom/VideoCard/VideoCard.jsx
 ```
 
-> 说明：导航列表路径与现有 `menuPaths.js`（`/videos`、`/vocals`、`/producers`）一致；实现时挂上详情路由 `/video/:id` 等即可。
+> 路由以 `src/App.jsx` 为准。三个导航列表页仍为待开发占位；虚拟歌手详情尚未注册。歌曲卡片已用于统一搜索及创作者详情的投稿区。
 
 ## 使用的第三方组件/素材
 

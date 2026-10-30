@@ -16,7 +16,7 @@
 
 输入框直接使用 Ant Design 输入框本体，不再额外包一层相同外观的圆角矩形。图标优先复用 `@ant-design/icons`；装饰图标跟随文字色，纯图标操作提供可访问的名称。
 
-项目已有的 `ProducerInfo`、`VideoInfo`、`RelativeTime`、`VideoHonor` 和 `DsTabs` / `DsTable` / `DsPagination` 按适用场景直接复用，业务页面不复制其请求、弹层或分页交互。`ds-*` 是已有的共享样式与兼容层，新增基础控件仍优先使用 Ant Design；语义化 HTML 可用于组织页面内容。
+项目已有的 `ProducerInfo`、`VideoInfo`、`VideoCard`、`RelativeTime`、`VideoHonor` 和 `DsTabs` / `DsTable` / `DsPagination` 按适用场景直接复用，业务页面不复制其请求、弹层或分页交互。`ds-*` 是已有的共享样式与兼容层，新增基础控件仍优先使用 Ant Design；语义化 HTML 可用于组织页面内容。
 
 这条约定同时展示在 `/admin/design/spec`。保持控件原有的键盘、焦点、禁用和可访问性行为，样式通过项目主题变量适配，不重复实现基础交互。
 
@@ -213,6 +213,10 @@ RelativeTime 的四项悬停详情使用 Ant Design `Descriptions`，单列、�
 公共组件：`DsPagination`，接收正整数 `current` / `pageSize`、非负 `total`、`onChange`、`disabled`、`label`，可选 `pageSizeOptions` / `onPageSizeChange`。
 
 以上组件从 `frontend/src/components/design-system/DataDisplay.jsx` 导入，共享已全局加载的主题与样式。规范页的尺寸与颜色标注直接读取实际主题变量，保存 `theme.css` 后同步更新。
+
+## 歌曲卡片与展示切换
+
+歌曲卡片复用 [VideoCard](../../frontend/src/components/custom/VideoCard/README.md)，统一搜索和创作者详情共享封面、标题、标识与指标展示。创作者投稿用带图标及可访问名称的 Segmented 切换列表 / 卡片，桌面卡片一行多列、窄屏减列；两种视图保留同一查询和分页状态。未提供的额外指标不生成计数，明确缺失的指标显示 `—`，真实零仍为 `0`。
 
 ## 图表与数据状态
 

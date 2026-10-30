@@ -1,14 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
-import { Result, Segmented, Tooltip } from 'antd';
+import { Result } from 'antd';
 import { ArrowLeftOutlined, ExportOutlined, LoadingOutlined, ReloadOutlined, UserOutlined } from '@ant-design/icons';
-import { DsPagination, DsTable } from '../../components/design-system/DataDisplay.jsx';
-import ProducerInfo from '../../components/custom/ProducerInfo/ProducerInfo.jsx';
-import RelativeTime from '../../components/custom/RelativeTime/RelativeTime.jsx';
 import { fetchProducerInfo, fetchProducerVideos } from '../../services/Producer/producer.api.js';
 import { formatVideoText } from '../video/videoDetailFormat.js';
 import { formatNumber } from '../../utils/formatNumber.js';
+import ProducerVideos from './ProducerVideos.jsx';
 import './ProducerDetail.css';
 
 const DEFAULT_QUERY = { sortBy: 'pubdate', order: 'desc', role: 'uploader', page: 1, pageSize: 20 };
@@ -47,6 +45,7 @@ function ProducerDetailPage({ userId }) {
   const isZh = String(i18n?.language || 'zh').toLowerCase().startsWith('zh');
   const t = (zh, en) => isZh ? zh : en;
   const [query, setQuery] = useState(DEFAULT_QUERY);
+  const [viewMode, setViewMode] = useState('cards');
   const info = useProducerRequest(userId);
   const videos = useProducerRequest(userId, query);
   const producer = info.data;
@@ -69,21 +68,6 @@ function ProducerDetailPage({ userId }) {
     return Number.isNaN(date.getTime()) ? '—' : dateFormatter.format(date);
   }
   function updateQuery(next) { setQuery((current) => ({ ...current, ...next, page: 1 })); }
-  const columns = [
-    { key: 'title', title: t('视频', 'Video'), render: (value, row) => {
-      const title = formatVideoText(value) || `av${row.aid}`;
-      const hanging = /^[【（《〈「『〔［｛〖]/u.test(title.trimStart());
-      return <div className={`producer-video-title${hanging ? ' producer-video-title--hanging' : ''}`}>
-        <Link className="ds-link" to={`/videos/${row.aid}`} title={title}>{title}</Link>
-        <span className="producer-detail-caption">av{row.aid}</span>
-      </div>;
-    } },
-    { key: 'userId', title: t('投稿人', 'Contributor'), width: 200, render: (value) => value ? <ProducerInfo userId={value} showAvatar={query.role === 'staff'} /> : '—' },
-    { key: 'view', title: t('播放量', 'Views'), width: 130, align: 'right', sortable: true, render: (value, row) => <Tooltip title={row.recordDate ? t(`统计日期：${row.recordDate}`, `Recorded on ${row.recordDate}`) : t('暂无日快照', 'No daily snapshot')}>
-      <span>{value == null ? '—' : formatNumber(value, 'comma')}</span>
-    </Tooltip> },
-    { key: 'pubdate', title: t('投稿时间', 'Published'), width: 160, sortable: true, render: (value) => <RelativeTime value={value} /> },
-  ];
 
   return <main className="producer-detail-page">
     <header className="producer-detail-header">
@@ -118,31 +102,8 @@ function ProducerDetailPage({ userId }) {
       </div>
     </section>
 
-    <section className="ds-surface producer-detail-videos" aria-labelledby="producer-detail-videos-title">
-      <div className="producer-detail-toolbar">
-        <h2 id="producer-detail-videos-title">{t('投稿', 'Videos')}</h2>
-        <Segmented className="ds-segmented producer-detail-role" aria-label={t('作者身份', 'Author role')} value={query.role} onChange={(role) => updateQuery({ role })}
-          options={[{ value: 'uploader', label: t('第一作者', 'Primary Author') }, { value: 'staff', label: t('参与作者', 'Contributing Author') }]} />
-        <div className="producer-detail-sort">
-          <div className="producer-detail-sort-field"><span>{t('排序', 'Sort by')}</span><Segmented
-            aria-label={t('排序依据', 'Sort by')} value={query.sortBy} onChange={(sortBy) => updateQuery({ sortBy })}
-            options={[{ value: 'pubdate', label: t('投稿时间', 'Published') }, { value: 'view', label: t('播放量', 'Views') }]} /></div>
-          <Segmented aria-label={t('排序方向', 'Sort order')} value={query.order} onChange={(order) => updateQuery({ order })}
-            options={[{ value: 'desc', label: t('降序 ↓', 'Descending ↓') }, { value: 'asc', label: t('升序 ↑', 'Ascending ↑') }]} />
-        </div>
-      </div>
-      <p className="producer-detail-list-hint">{t('仅展示冰数据已收录的投稿。播放量为各视频最新一次收录的累计值。', 'Only videos indexed by icedata are shown. Views are the latest collected cumulative totals for each video.')}</p>
-      {videos.status === 'error' || videos.status === 'missing' ? <div className="ds-alert producer-detail-error" data-variant="error" role="alert">
-        <span>{t('投稿列表加载失败，请稍后重试。', 'Could not load videos. Please try again.')}</span>
-        <button className="ds-button" type="button" data-variant="secondary" onClick={videos.retry}><ReloadOutlined />{t('重试', 'Retry')}</button>
-      </div> : <DsTable columns={columns} rows={(videos.data?.rows ?? []).map((row) => ({ ...row, id: row.aid }))}
-        caption={t('创作者投稿列表', 'Producer videos')} loading={videos.status === 'loading'} sortKey={query.sortBy} sortDirection={query.order}
-        onSort={(sortBy, order) => updateQuery({ sortBy, order })}
-        emptyText={query.role === 'staff' ? t('暂无收录的参与投稿', 'No indexed contributions') : t('暂无收录的第一作者投稿', 'No indexed primary-author videos')} />}
-      <div className="producer-detail-pagination"><DsPagination current={query.page} pageSize={query.pageSize} total={total}
-        disabled={videos.status !== 'ready'} pageSizeOptions={[10, 20, 50, 100]}
-        onChange={(page) => setQuery((current) => ({ ...current, page }))} onPageSizeChange={(pageSize) => updateQuery({ pageSize })} /></div>
-    </section>
+    <ProducerVideos videos={videos} query={query} viewMode={viewMode} onViewModeChange={setViewMode}
+      onQueryChange={updateQuery} onPageChange={(page) => setQuery((current) => ({ ...current, page }))} />
   </main>;
 }
 

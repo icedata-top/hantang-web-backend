@@ -26,6 +26,7 @@
 .video-info-live-preview { margin-top: 20px; padding: 20px; border-radius: var(--radius-card); background: var(--button-secondary-bg); }
 .video-info-preview-content { min-width: 0; max-width: 100%; font-size: var(--font-size-heading); }
 .video-info-preview-label { display: block; margin-bottom: 8px; color: var(--text-secondary); font-size: var(--font-size-caption); }
+.components-video-card-preview { width: 320px; max-width: 100%; }
 @media (max-width: 767px) {
   .design-components { padding: 8px 0 24px; }
   .components-card { padding: 20px; }
