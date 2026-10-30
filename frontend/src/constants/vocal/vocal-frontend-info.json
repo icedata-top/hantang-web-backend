@@ -46,7 +46,8 @@
             "id": 101,
             "name": "洛天依",
             "group_id": 1,
-            "image_path": "",
+            "image_path": "/public/vocals/luotianyi.webp",
+            "image_source_url": "https://vcpedia.cn/File:%E6%B4%9B%E5%A4%A9%E4%BE%9D.png",
             "support_color_list": ["#66CCFF"],
             "official_producer_id": 0,
             "official_persona": {
@@ -61,7 +62,8 @@
             "id": 102,
             "name": "言和",
             "group_id": 1,
-            "image_path": "",
+            "image_path": "/public/vocals/yanhe.webp",
+            "image_source_url": "https://vcpedia.cn/File:Yanhe.jpg",
             "support_color_list": ["#00FFCC"],
             "official_producer_id": 0,
             "official_persona": {
@@ -75,7 +77,8 @@
             "id": 103,
             "name": "乐正绫",
             "group_id": 1,
-            "image_path": "",
+            "image_path": "/public/vocals/yuezhengling.webp",
+            "image_source_url": "https://vcpedia.cn/File:YUEZHENGLING.jpg",
             "support_color_list": ["#EE0000"],
             "official_producer_id": 0,
             "official_persona": {
@@ -90,7 +93,8 @@
             "id": 104,
             "name": "乐正龙牙",
             "group_id": 1,
-            "image_path": "",
+            "image_path": "/public/vocals/yuezhenglongya.webp",
+            "image_source_url": "https://vcpedia.cn/File:YUEZHENGLONGYA.jpg",
             "support_color_list": ["#006666"],
             "official_producer_id": 0,
             "official_persona": {
