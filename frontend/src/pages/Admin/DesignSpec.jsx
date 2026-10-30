@@ -191,7 +191,7 @@ function Typography({ t }) {
           </div>
         ))}
         <div className="spec-type-row">
-          <p className="spec-type-body"><strong>{t('重点文字使用 600 字重。', 'Use weight 600 for emphasis.')}</strong></p>
+          <p className="spec-type-body"><strong>{t('重点文字引用强调字重变量。', 'Use the emphasis weight token for important text.')}</strong></p>
           <span className="spec-type-meta"><TypeMetrics size="body" weight="semibold" /><Token name="text-primary" /></span>
         </div>
         <div className="spec-type-row">
@@ -316,10 +316,13 @@ export default function DesignSpec() {
         <div className="spec-source-note"><span className="spec-source-dot" />{t('沿用现有品牌色与卡片规范，补齐组件状态。', 'Built on the existing brand and surface styles, with complete component states.')}</div>
       </header>
 
-      <aside className="ds-alert spec-component-policy" data-variant="info" aria-label={t('基础组件使用约定', 'Basic component policy')}>
+      <aside className="ds-alert spec-component-policy" data-variant="info" aria-label={t('组件与配色使用约定', 'Component and color policy')}>
         <strong>{t('基础组件优先使用 Ant Design', 'Use Ant Design for basic components')}</strong>
         <p>{t('输入、选择、开关等基础控件，Ant Design 已提供的就直接复用，不自行重写，也不使用原生 HTML 表单控件替代。主题与业务组合按项目规范扩展。', 'Reuse Ant Design inputs, selectors, switches, and other available controls instead of rebuilding them or using native HTML form controls. Apply project themes and business composition on top.')}</p>
         <p>{t('少量简短选项（通常 2–4 个）用 Segmented 或 Radio.Group 横排；选项较多用 Select；独立布尔设置用 Switch，多选用 Checkbox。', 'Show a few short options (usually 2–4) inline with Segmented or Radio.Group; use Select for longer lists, Switch for independent boolean settings, and Checkbox for multiple selections.')}</p>
+        <p>{t('输入框直接使用组件本体，无需额外包一层相同外观的圆角矩形。业务组件复用现有请求、浮层与分页能力。', 'Use input components directly without adding a second rounded frame. Reuse existing business components for requests, popovers, and pagination.')}</p>
+        <strong>{t('配色统一引用主题变量', 'Use shared theme tokens for colors')}</strong>
+        <p>{t('业务强调色从现有九种 highlight 派生，在 theme.css 维护语义变量；组件和图表不硬编码颜色，也不使用 Ant Design 预设色替代项目主题。日夜主题分别适配，Tag / Chip 均无边框。', 'Derive business highlights from the nine existing highlight colors and maintain semantic tokens in theme.css. Components and charts must use theme tokens instead of hardcoded or Ant Design preset colors. Support both themes and keep tags borderless.')}</p>
       </aside>
 
       <div className="spec-toolbar">

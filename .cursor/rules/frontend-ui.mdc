@@ -1,0 +1,15 @@
+---
+description: 前端复用现有组件，使用项目主题与 highlight 配色
+globs: "frontend/src/**/*.{js,jsx,css}"
+alwaysApply: false
+---
+
+# 前端 UI 与配色
+
+前端改动遵循 [冰数据视觉规范](../../doc/design/visual-spec.md)。
+
+- 优先复用项目公共组件和 Ant Design 基础控件；少量选项横排，较多选项用 Select，独立布尔设置用 Switch。
+- 颜色和排版等主题参数集中维护在 `theme.css`；组件引用语义变量，强调色使用既有 `--highlight-*`，不硬编码业务色。
+- Tag / Chip 无边框；数字右对齐；图表缺失值保留缺口，真实零和负增量保留。
+- 界面同时适配日夜主题、窄屏与键盘；新业务组件提供预览入口。
+- 常规视觉验收遵循 [验收方式](verification.mdc)，不默认启动浏览器。

@@ -148,7 +148,11 @@ icedata-web-react/
 
 ## 基础组件选型
 
+开发约定见 [Git commit 规范](../doc/rule/commit-conventions.md)与 [UI 与配色规范](../doc/design/visual-spec.md)。提交标题统一使用 `type(scope): 中文摘要`，文档类型为 `doc`。
+
 Ant Design 已提供的基础组件应直接复用，不重复实现，也不使用原生 HTML 表单控件替代。输入框使用 `Input` / `InputNumber` / `Input.TextArea`，日期使用 `DatePicker`；主题样式及业务组合在现有组件上扩展。
+
+输入框直接使用组件本体，不额外包一层相同外观的圆角矩形。新业务组件复用已有基础能力并注册到 `/admin/design/components`；VideoInfo、ProducerInfo、RelativeTime、VideoHonor 等直接复用现有实现。
 
 - 少量简短选项（通常 2–4 个）使用 `Segmented` 或 `Radio.Group` 横排展示，避免放进下拉框。
 - 选项较多时使用 Ant Design `Select`；需要搜索时启用搜索，不使用原生 `<select>` / `<option>`。
@@ -167,6 +171,8 @@ UI 规范页 `/admin/design/spec` 同步展示这条约定。共用分页器的�
 白天文字链接、行内「查看」和可用 Tab 文字直接使用 100% 品牌蓝，悬停加深；夜间沿用现有链接派生色。
 
 业务色通过 `color-mix()` 从基础色推导：Primary / Info 使用品牌蓝，Danger / Error / 上涨色统一使用 `--highlight-red`，Warning 使用 `--highlight-orange`。日夜主题分别设置混色比例，正文与辅助、禁用文字也由基础文本色和背景色混合生成。只改基础色即可联动全部相关组件；深浅程度可单独调整 `*-strength` 比例。
+
+强调色从现有九种 `--highlight-*` 中选择，再按业务定义语义变量。组件 CSS、行内样式及图表配置均不硬编码颜色，也不用 Ant Design 的预设色代替项目主题色。品牌主色在日夜一致，highlight 有独立的日夜色值；字号、字重等同样引用变量，不按变量名称猜测数值。完整色板名称、语义映射与维护方法见[视觉规范](../doc/design/visual-spec.md#highlight-与业务配色)。
 
 ### 品牌色（冰数据）
 
@@ -219,7 +225,7 @@ UI 规范页 `/admin/design/spec` 同步展示这条约定。共用分页器的�
 
 导航栏 `Card`、总览页 `Card` 等使用上述变量，并在 `:hover` 时切换为 `--shadow-card-hover` 与 `--bg-hover`。可选工具类：`.app-card-surface` / `.app-card-surface:hover`（定义在 `global.css`）。
 
-深色下部分卡片边框仍会使用组件级 `#343840`（与导航栏一致），以保证与深灰背景对比度。
+既有样式里的独立色值属于遗留适配，不作为新增组件的配色来源；修改对应样式时使用主题语义变量。新 Surface 默认无边框，需要分割线时引用 `--surface-border`。
 
 浅色下导航条外层背景与 `--bg` 一致，不再使用向白色混合的渐变，避免出现卡片背后类似 `#fafafa` 的色带；Ant Design `Card` 的默认填充色已通过局部样式覆盖为 `var(--navbar-bg)`。
 
@@ -227,6 +233,10 @@ UI 规范页 `/admin/design/spec` 同步展示这条约定。共用分页器的�
 
 - 新增样式时优先使用 `var(--theme-primary)`、`var(--text)`、`var(--bg-hover)` 等变量；**同环比涨跌**使用 `var(--trend-up)` / `var(--trend-down)` / `var(--trend-flat)`，勿在组件内写死红绿色值。
 - 新建「卡片式」块时优先复用 `--radius-card`、`--shadow-card`、`--shadow-card-hover`，避免写死圆角与阴影。
+- Tag / Chip 无边框；过线值等数字标签保持单行并随数值列右对齐。Tooltip / Popover 随内容收缩并限制在视口内，避免简短内容右侧留白。
+- 表格在常规桌面宽度下优先适应容器，名称列伸缩、数值列按内容分配；窄屏再使用局部滚动。七项视频图表共用 `src/constants/video/metrics.js` 的顺序与 highlight 配色。
+- 数据缺失明确展示暂缺，折线断开，不补零或跨缺口计算增量；真实零和负增量保留。加载失败与查询成功但暂无数据分开提示。
+- 移动端顶栏使用 Ant Design Drawer；详情、菜单等操作同时考虑点击与键盘，不能仅依赖鼠标悬停。具体布局、配色和验收约定见[视觉规范](../doc/design/visual-spec.md)。
 
 ## 术语约定
 

@@ -13,6 +13,12 @@
 | `sql/` | 数据库 DDL、表文档、查询示例与实例数据 |
 | `doc/todo/`、`doc/design/`、`doc/rule/` | 待办、设计、约定 |
 
+## 开发规范
+
+- [Git commit 规范](doc/rule/commit-conventions.md)：使用 `type(scope): 中文摘要`；文档类型为 `doc`，无关功能及其他 Agent 的独立工作分开提交。
+- [UI 与配色规范](doc/design/visual-spec.md)：复用 Ant Design 与项目公共组件，主题参数集中在 `theme.css`，业务强调色使用既有 highlight 派生变量，不硬编码色值。预览入口为 `/admin/design/spec` 与 `/admin/design/components`。
+- [验收方式](.cursor/rules/verification.mdc)：按改动完成必要检查、测试或构建，常规界面由用户手动验收。
+
 ## 视频与创作者数据
 
 视频静态信息（标题、投稿时间、简介、封面、上传者等）统一来自 PostgreSQL 的 `hantang_dynamic.processed_videos`；如无必要，不得使用 `hantang_dynamic.video_static`，也不得将其作为默认回退来源。创作者账号信息来自 `hantang_dynamic.discovered_users`，上传者关联为 `processed_videos.user_id = discovered_users.user_id`。
