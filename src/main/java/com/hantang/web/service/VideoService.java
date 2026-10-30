@@ -4,13 +4,19 @@ import com.alibaba.fastjson2.JSON;
 import com.hantang.web.dao.VideoDao;
 import com.hantang.web.dos.video.VideoInfoResponse;
 import com.hantang.web.dos.video.VideoLatestMetricsResponse;
+import com.hantang.web.dos.video.VideoDailyMetricsRequest;
+import com.hantang.web.dos.video.VideoDailyMetricsResponse;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 public class VideoService {
+    public static final List<String> DAILY_METRICS = List.of("view", "like", "coin", "favorite", "share", "reply", "danmaku");
     private final VideoDao videoDao;
 
     public VideoService() {
@@ -40,6 +46,26 @@ public class VideoService {
                 aid, text(row, "record_date"), number(row, "view"), number(row, "like"),
                 number(row, "coin"), number(row, "favorite"), number(row, "share"),
                 number(row, "reply"), number(row, "danmaku")));
+    }
+
+    public VideoDailyMetricsResponse getDailyMetrics(VideoDailyMetricsRequest request) {
+        Map<LocalDate, Map<String, Object>> byDate = new LinkedHashMap<>();
+        for (Map<String, Object> row : videoDao.findDailyMetrics(request)) {
+            LocalDate date = LocalDate.parse(text(row, "record_date"));
+            if (byDate.putIfAbsent(date, row) != null) {
+                throw new IllegalStateException("Duplicate daily snapshots for aid=" + request.aid() + ", date=" + date);
+            }
+        }
+        var rows = new ArrayList<VideoDailyMetricsResponse.DailySnapshot>();
+        for (LocalDate date = request.startDate(); !date.isAfter(request.endDate()); date = date.plusDays(1)) {
+            Map<String, Object> snapshot = byDate.get(date);
+            Map<String, Long> indicators = new LinkedHashMap<>();
+            for (String metric : DAILY_METRICS) {
+                indicators.put(metric, snapshot == null ? null : number(snapshot, metric));
+            }
+            rows.add(new VideoDailyMetricsResponse.DailySnapshot(date.toString(), snapshot == null, indicators));
+        }
+        return new VideoDailyMetricsResponse(request.aid(), request.startDate().toString(), request.endDate().toString(), rows);
     }
 
     private static List<String> tags(Map<String, Object> row) {

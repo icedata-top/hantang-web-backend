@@ -1,6 +1,7 @@
 package com.hantang.web.dao;
 
 import com.hantang.web.dao.foundation.PostgreDao;
+import com.hantang.web.dos.video.VideoDailyMetricsRequest;
 
 import java.util.List;
 import java.util.Map;
@@ -51,5 +52,15 @@ public class VideoDao {
             throw new IllegalStateException("Duplicate latest daily snapshots for aid=" + aid);
         }
         return rows.stream().findFirst();
+    }
+
+    public List<Map<String, Object>> findDailyMetrics(VideoDailyMetricsRequest request) {
+        return query.apply("""
+                SELECT record_date::text AS record_date,
+                       view, "like", coin, favorite, share, reply, danmaku
+                FROM hantang_dynamic.video_daily
+                WHERE aid = ? AND record_date BETWEEN ?::date AND ?::date
+                ORDER BY record_date ASC
+                """, List.of(request.aid(), request.startDate().toString(), request.endDate().toString()));
     }
 }

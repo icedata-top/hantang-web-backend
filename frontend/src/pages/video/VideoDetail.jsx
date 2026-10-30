@@ -17,6 +17,7 @@ import { formatNumber } from '../../utils/formatNumber.js';
 import { formatVideoText } from './videoDetailFormat.js';
 import { parseVideoIdentifier } from './videoIdentifier.js';
 import VideoResult from './VideoResult.jsx';
+import VideoMetricsHistory from './VideoMetricsHistory.jsx';
 import './VideoDetail.css';
 
 const METRICS = [
@@ -220,6 +221,7 @@ export function VideoDetailView({ aid, info, latest }) {
           {tags.map((tag) => <li className="ds-chip" data-variant="neutral" key={tag}>{tag}</li>)}
         </ul>}
     </section>}
+    {video && <VideoMetricsHistory key={aid} aid={aid} />}
   </main>;
 }
 

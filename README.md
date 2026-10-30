@@ -21,6 +21,8 @@
 
 创作者详情提供账号基本信息和分页投稿两个接口，支持以第一作者（`user_id`）或参与作者（`staff`）筛选，按播放量 / 投稿时间升降序排列；接口约定与验证方式见[创作者详情 API](frontend/src/services/Producer/producer.md)。
 
+单视频每日明细通过 `GET /videos/{aid}/daily-metrics?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD` 查询七项累计指标。按请求日期补齐行，未收录快照显式标记 `snapshotMissing`，缺失指标保留 `null`，不在后端计算增量。视频详情简介下方提供累计 / 增量图表与区间播放增长摘要；前端只对相邻有效快照作差。日期边界、日均及缺失数据口径见[单视频历史数据与趋势](doc/design/video-metrics-history.md)和[视频详情 API](frontend/src/services/Video/video.md)。
+
 ## 技术栈
 
 ### 前端

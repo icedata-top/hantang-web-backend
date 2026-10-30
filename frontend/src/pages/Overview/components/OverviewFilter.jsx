@@ -4,6 +4,12 @@ import { QuestionCircleOutlined } from '@ant-design/icons';
 import { DatePicker, Tooltip } from 'antd';
 import dayjs from 'dayjs';
 import 'dayjs/locale/zh-cn';
+import {
+  MIN_METRICS_DATE as MIN_OVERVIEW_DATE, getMaxSelectableDate as getOverviewMaxSelectableDate,
+  getDefaultDateRange as getDefaultOverviewFilter, getDateRangePresets as getOverviewRangePresets,
+  isDateRangeDisabled as isOverviewDateDisabled,
+} from '../../../utils/metricsDateRange.js';
+export { getOverviewMaxSelectableDate, getDefaultOverviewFilter, getOverviewRangePresets };
 
 const { RangePicker } = DatePicker;
 
@@ -31,91 +37,6 @@ function buildFilterTimeHints(startDate, endDate, isZh) {
     submissionLine: `新投稿视频、活跃创作者指 ${a0} 至 ${b0} 之间投稿的视频、创作者。`,
     videoStatsLine: `播放量、收藏量等视频数据指 ${a4} 至 ${b4} 产生的增幅。`,
   };
-}
-
-/** 可选数据的最早日期（含） */
-const MIN_OVERVIEW_DATE = dayjs('2025-10-01').startOf('day');
-
-/** 可选的最晚日期：昨天（含），不含今天 */
-export function getOverviewMaxSelectableDate() {
-  return dayjs().subtract(1, 'day').startOf('day');
-}
-
-/**
- * 页面初始筛选：最近 7 个自然日（以昨天为结束日，不含今天），并受 MIN 日期夹取。
- * @returns {{ startDate: string, endDate: string }}
- */
-export function getDefaultOverviewFilter() {
-  const end = getOverviewMaxSelectableDate();
-  let start = end.subtract(6, 'day');
-  if (start.isBefore(MIN_OVERVIEW_DATE, 'day')) {
-    start = MIN_OVERVIEW_DATE;
-  }
-  return {
-    startDate: start.format('YYYY-MM-DD'),
-    endDate: end.format('YYYY-MM-DD'),
-  };
-}
-
-/**
- * 不含今天的快捷范围：结束日为昨天，「最近7天」为昨天起往前共 7 天（含），「最近30天」同理。
- */
-export function getOverviewRangePresets(isZh = true) {
-  return [
-    {
-      label: isZh ? '最近7天' : 'Last 7 days',
-      value: () => {
-        const end = getOverviewMaxSelectableDate();
-        let start = end.subtract(6, 'day');
-        if (start.isBefore(MIN_OVERVIEW_DATE, 'day')) {
-          start = MIN_OVERVIEW_DATE;
-        }
-        return [start.startOf('day'), end.endOf('day')];
-      },
-    },
-    {
-      label: isZh ? '最近14天' : 'Last 14 days',
-      value: () => {
-        const end = getOverviewMaxSelectableDate();
-        let start = end.subtract(13, 'day');
-        if (start.isBefore(MIN_OVERVIEW_DATE, 'day')) {
-          start = MIN_OVERVIEW_DATE;
-        }
-        return [start.startOf('day'), end.endOf('day')];
-      },
-    },
-    {
-      label: isZh ? '最近30天' : 'Last 30 days',
-      value: () => {
-        const end = getOverviewMaxSelectableDate();
-        let start = end.subtract(29, 'day');
-        if (start.isBefore(MIN_OVERVIEW_DATE, 'day')) {
-          start = MIN_OVERVIEW_DATE;
-        }
-        return [start.startOf('day'), end.endOf('day')];
-      },
-    },
-  ];
-}
-
-/**
- * @param {import('dayjs').Dayjs} current
- * @param {{ from?: import('dayjs').Dayjs }} [info]
- */
-function isOverviewDateDisabled(current, info) {
-  const cur = current.startOf('day');
-  if (cur.isBefore(MIN_OVERVIEW_DATE, 'day')) return true;
-
-  const maxDay = getOverviewMaxSelectableDate();
-  if (cur.isAfter(maxDay, 'day')) return true;
-
-  const from = info?.from?.startOf('day');
-  if (from) {
-    if (cur.isBefore(from, 'day')) return true;
-    if (cur.diff(from, 'day') > 29) return true;
-  }
-
-  return false;
 }
 
 /**

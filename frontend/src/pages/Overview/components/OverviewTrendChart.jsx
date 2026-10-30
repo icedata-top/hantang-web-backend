@@ -4,6 +4,7 @@ import { Card, Spin, Tabs, Typography } from 'antd';
 import VChart from '@visactor/vchart';
 import { useDocThemeDark } from '../../../hooks/useDocThemeDark.js';
 import ZhongshuLabel from './ZhongshuLabel.jsx';
+import { VIDEO_METRICS } from '../../../constants/video/metrics.js';
 import './OverviewTrendChart.css';
 
 const { Text } = Typography;
@@ -19,29 +20,13 @@ const SUBMISSION_TREND_METRICS = [
 ];
 
 /** 视频数据 Tab：折线维度（与后端字段一致） */
-export const VIDEO_TREND_METRICS = [
-  { key: 'view', label: '播放量', labelEn: 'Views' },
-  { key: 'favorite', label: '收藏量', labelEn: 'Favorites' },
-  { key: 'like', label: '点赞量', labelEn: 'Likes' },
-  { key: 'coin', label: '硬币量', labelEn: 'Coins' },
-  { key: 'share', label: '分享量', labelEn: 'Shares' },
-  { key: 'reply', label: '评论量', labelEn: 'Comments' },
-  { key: 'danmaku', label: '弹幕量', labelEn: 'Danmaku' },
-];
+export const VIDEO_TREND_METRICS = VIDEO_METRICS;
 
 /**
  * 中术50 七条系列固定色板：自蓝起绕回，不含青/绿
  * 顺序对齐 VIDEO_TREND_METRICS
  */
-const VIDEO_STATS_HIGHLIGHT_VARS = [
-  '--highlight-blue',
-  '--highlight-indigo',
-  '--highlight-violet',
-  '--highlight-faint-purple',
-  '--highlight-red',
-  '--highlight-orange',
-  '--highlight-yellow',
-];
+const VIDEO_STATS_HIGHLIGHT_VARS = VIDEO_METRICS.map(({ color }) => color);
 
 function readTrendColors() {
   const styles = getComputedStyle(document.documentElement);
