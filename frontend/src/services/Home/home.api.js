@@ -8,6 +8,7 @@ import { postJson } from '../http/client.js';
 
 const MOCK_HOME_DATA = {
   videoCount: 554593,
+  // 首页不展示此占位值，收录歌手改用 vocal-frontend-info.json 的 vocal_list.length。
   singerCount: 30,
   userCount: 101086,
   spanDays: 543,

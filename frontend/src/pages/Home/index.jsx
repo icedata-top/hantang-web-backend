@@ -4,8 +4,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Input, Spin, Statistic, message } from 'antd';
 import { useMeshParallax } from '../../hooks/useMeshParallax.js';
 import { ApiError } from '../../services/http/client.js';
+import vocalCatalog from '../../constants/vocal/vocal-frontend-info.json';
 import { fetchHomeOverview, mapHomeDataToStats } from '../../services/Home/home.api.js';
 import './index.css';
+
+/** 收录歌手以本地角色目录为准。接口与 MOCK 的 singerCount 是固定占位，不用于展示。 */
+const indexedVocalCount = vocalCatalog.vocal_list.length;
 
 const { Search } = Input;
 
@@ -33,7 +37,7 @@ export default function Home() {
     fetchHomeOverview()
       .then((data) => {
         if (cancelled) return;
-        setStats(data ? mapHomeDataToStats(data) : []);
+        setStats(data ? mapHomeDataToStats({ ...data, singerCount: indexedVocalCount }) : []);
       })
       .catch((err) => {
         if (cancelled) return;
