@@ -121,9 +121,8 @@ function ProducerDetailPage({ userId }) {
     <section className="ds-surface producer-detail-videos" aria-labelledby="producer-detail-videos-title">
       <div className="producer-detail-toolbar">
         <h2 id="producer-detail-videos-title">{t('投稿', 'Videos')}</h2>
-        <div className="producer-detail-role" role="group" aria-label={t('作者身份', 'Author role')}>
-          {[['uploader', t('第一作者', 'Primary Author')], ['staff', t('参与作者', 'Contributing Author')]].map(([role, label]) => <button key={role} type="button" className="ds-button" data-variant={query.role === role ? 'secondary' : 'normal'} aria-pressed={query.role === role} onClick={() => updateQuery({ role })}>{label}</button>)}
-        </div>
+        <Segmented className="ds-segmented producer-detail-role" aria-label={t('作者身份', 'Author role')} value={query.role} onChange={(role) => updateQuery({ role })}
+          options={[{ value: 'uploader', label: t('第一作者', 'Primary Author') }, { value: 'staff', label: t('参与作者', 'Contributing Author') }]} />
         <div className="producer-detail-sort">
           <div className="producer-detail-sort-field"><span>{t('排序', 'Sort by')}</span><Segmented
             aria-label={t('排序依据', 'Sort by')} value={query.sortBy} onChange={(sortBy) => updateQuery({ sortBy })}

@@ -142,6 +142,16 @@ icedata-web-react/
 └── tests/
 ```
 
+## 基础组件选型
+
+Ant Design 已提供的基础组件应直接复用，不重复实现，也不使用原生 HTML 表单控件替代。输入框使用 `Input` / `InputNumber` / `Input.TextArea`，日期使用 `DatePicker`；主题样式及业务组合在现有组件上扩展。
+
+- 少量简短选项（通常 2–4 个）使用 `Segmented` 或 `Radio.Group` 横排展示，避免放进下拉框。
+- 选项较多时使用 Ant Design `Select`；需要搜索时启用搜索，不使用原生 `<select>` / `<option>`。
+- 独立布尔设置使用 `Switch`，多选使用 `Checkbox`，不使用原生复选框重新实现控件。
+
+UI 规范页 `/admin/design/spec` 同步展示这条约定。共用分页器的每页条数选项不超过 4 个时横排，更多时使用 `Select`，修改后仍由调用页面重置到第 1 页。
+
 ## 配色方案
 
 颜色、字体、字号、字重、圆角、阴影与边框宽度统一在 **`src/styles/theme.css`** 中手动编辑。公共参数同时影响两种主题，白天为 `:root` 或 `[data-theme='light']`，夜间为 `[data-theme='dark']`（与导航栏主题切换一致）。**品牌色在深浅主题下相同**。

@@ -1,5 +1,6 @@
 import { useId, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Segmented, Select } from 'antd';
 import { LeftOutlined, RightOutlined, LoadingOutlined } from '@ant-design/icons';
 
 function useCopy() {
@@ -75,6 +76,8 @@ function pageItems(page, count) {
 
 export function DsPagination({ current, pageSize, total, onChange, disabled = false, pageSizeOptions = [10, 20, 50], onPageSizeChange, label }) {
   const t = useCopy();
+  const sizeLabelId = useId();
+  const sizeOptions = pageSizeOptions.map((size) => ({ value: Number(size), label: t(`${size} 条 / 页`, `${size} / page`) }));
   const count = Math.max(1, Math.ceil(total / pageSize));
   const page = Math.max(1, Math.min(current, count));
   const inactive = disabled || total === 0;
@@ -89,12 +92,15 @@ export function DsPagination({ current, pageSize, total, onChange, disabled = fa
         <button className="ds-page-button" type="button" disabled={inactive || page === count} onClick={() => onChange(page + 1)} aria-label={t('下一页', 'Next page')}><RightOutlined aria-hidden="true" /></button>
       </nav>
       {onPageSizeChange && (
-        <label className="ds-pagination-size">
-          <span className="ds-sr-only">{t('每页条数', 'Items per page')}</span>
-          <select className="ds-page-size-select" aria-label={t('每页条数', 'Items per page')} value={pageSize} disabled={inactive} onChange={(event) => onPageSizeChange(Number(event.target.value))}>
-            {pageSizeOptions.map((size) => <option key={size} value={size}>{t(`${size} 条 / 页`, `${size} / page`)}</option>)}
-          </select>
-        </label>
+        <div className="ds-pagination-size">
+          <span id={sizeLabelId}>{t('每页条数', 'Items per page')}</span>
+          {sizeOptions.length <= 4
+            ? <Segmented className="ds-segmented ds-page-size-segmented" size="small" aria-labelledby={sizeLabelId} value={pageSize} disabled={inactive}
+              onChange={onPageSizeChange} options={sizeOptions.map(({ value }) => ({ value, label: String(value) }))} />
+            : <Select className="ds-page-size-select" size="small" variant="borderless" aria-labelledby={sizeLabelId} value={pageSize} disabled={inactive}
+              onChange={onPageSizeChange} options={sizeOptions} popupMatchSelectWidth={false}
+              classNames={{ popup: { root: 'ds-page-size-popup' } }} getPopupContainer={(trigger) => trigger.parentElement} />}
+        </div>
       )}
     </div>
   );

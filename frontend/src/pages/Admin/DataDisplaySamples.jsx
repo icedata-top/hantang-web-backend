@@ -75,7 +75,7 @@ export function PaginationSample({ t }) {
     <>
       <p className="spec-demo-label">{t('交互预览', 'Interactive preview')}</p>
       <div className="spec-pagination-live">
-        <DsPagination current={page} pageSize={size} total={total} onChange={setPage} onPageSizeChange={(next) => { setSize(next); setPage(1); }} label={t('交互分页样本', 'Interactive pagination sample')} />
+        <DsPagination current={page} pageSize={size} total={total} onChange={setPage} pageSizeOptions={[10, 20, 50, 100, 200]} onPageSizeChange={(next) => { setSize(next); setPage(1); }} label={t('交互分页样本', 'Interactive pagination sample')} />
         <p className="spec-pagination-range" role="status">{t(`第 ${page} 页 · 正在显示 ${(page - 1) * size + 1}–${Math.min(page * size, total)} 条`, `Page ${page} · Showing ${(page - 1) * size + 1}–${Math.min(page * size, total)}`)}</p>
       </div>
       <div className="spec-pagination-states">

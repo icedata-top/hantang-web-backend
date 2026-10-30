@@ -19,10 +19,9 @@
 .spec-section-nav { display: flex; flex-wrap: wrap; gap: 4px 16px; }
 .spec-section-nav a { color: var(--text-secondary); font-size: var(--font-size-label); text-decoration: none; }
 .spec-section-nav a:hover { color: var(--text-link); }
-.spec-mode-switch { display: inline-flex; gap: 3px; padding: 3px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface); }
-.spec-mode-switch button { display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 4px 10px; border: none; border-radius: 4px; background: transparent; color: var(--text-secondary); font: inherit; font-size: var(--font-size-caption); cursor: pointer; }
-.spec-mode-switch button[aria-pressed='true'] { background: var(--button-secondary-bg); color: var(--text-link); font-weight: var(--font-weight-semibold); }
-.spec-mode-switch button:focus-visible,
+.spec-component-policy { display: block; margin-bottom: 20px; }
+.spec-component-policy strong { display: block; font-weight: var(--font-weight-semibold); }
+.spec-component-policy p { margin: 8px 0 0; }
 .spec-section-nav a:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 
 .spec-section { margin-top: 32px; scroll-margin-top: 112px; }

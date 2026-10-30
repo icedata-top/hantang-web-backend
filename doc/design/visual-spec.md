@@ -4,6 +4,17 @@
 
 沿用 `frontend/README.md` 的品牌蓝、现有表面层级、8px 卡片圆角、普通与悬停阴影。规范覆盖按钮、文字、Tooltip、三种 Alert、Tabs、Table 与 Pagination。现有页面继续使用原来的样式，新规范通过语义变量、`ds-*` 样式与公共组件供后续页面采用。
 
+## 基础组件选型
+
+基础组件优先使用 Ant Design。已有的输入、选择、开关、日期等组件直接复用，不自行重写，也不使用原生 HTML 表单控件替代；项目主题和业务组合基于这些组件扩展。
+
+- 少量简短选项（通常 2–4 个）：用 `Segmented` 或 `Radio.Group` 横排展示。
+- 选项较多：用 Ant Design `Select`，需要时启用搜索，不使用原生 `<select>` / `<option>`。
+- 输入：用 `Input`、`InputNumber`、`Input.TextArea`；日期用 `DatePicker`。
+- 独立布尔设置用 `Switch`，多选用 `Checkbox`。
+
+这条约定同时展示在 `/admin/design/spec`。保持控件原有的键盘、焦点、禁用和可访问性行为，样式通过项目主题变量适配，不重复实现基础交互。
+
 ## 手动编辑与页面复用
 
 **主题值的唯一编辑入口是 `frontend/src/styles/theme.css`**，包含颜色、字体栈、字号、字重、行高、圆角、阴影及边框宽度。文件按公共参数、日夜基础色与混色比例、公共派生配方组织。保存后开发页面自动更新，预览中的色值、字号与字重标注也随实际变量同步；修改设计时同步维护本文档。
@@ -166,7 +177,7 @@ RelativeTime 的四项悬停详情使用 Ant Design `Descriptions`，单列、�
 
 所有状态均无边框，由 `--pagination-border-width: 0px` 控制。页码默认 32px、间距 4px、圆角 6px，正文 14px / 400，当前页为 600 字重。窄容器中页码缩小到 28px；对应尺寸由 `--pagination-item-size`、`--pagination-gap`、`--pagination-item-size-compact` 控制。
 
-当前页背景和文字直接引用 `--alert-info-bg` / `--alert-info-text`，每页条数选择框也沿用这两个变量；悬停背景将 Info 背景 60% 与 Surface 40% 混合，文字保持 Info 前景色。禁用文字引用 `--text-disabled`。没有另设硬编码业务颜色，日夜自动随 Info Alert 一起变化。
+当前页背景和文字直接引用 `--alert-info-bg` / `--alert-info-text`，每页条数控件的选中态也沿用这两个变量；悬停背景将 Info 背景 60% 与 Surface 40% 混合，文字保持 Info 前景色。禁用文字引用 `--text-disabled`。没有另设硬编码业务颜色，日夜自动随 Info Alert 一起变化。每页条数选项不超过 4 个时使用 Ant Design `Segmented` 横排展示，更多时使用无边框的 Ant Design `Select`；不使用原生下拉框。
 
 首尾禁用对应方向按钮，整体禁用时所有控件不可操作；空数据展示总数 0 和禁用的第 1 页。超过 7 页时保留首尾、当前页附近页码和省略号，省略号不进入焦点顺序。当前页通过 `aria-current="page"` 标注，每个分页区域有独立名称。修改每页条数后由页面重置到第 1 页，键盘聚焦显示 2px 外环。
 

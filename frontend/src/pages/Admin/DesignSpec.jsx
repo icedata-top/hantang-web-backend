@@ -1,5 +1,6 @@
 import { useId, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Segmented } from 'antd';
 import {
   InfoCircleOutlined,
   MoonOutlined,
@@ -305,19 +306,21 @@ export default function DesignSpec() {
         <div className="spec-source-note"><span className="spec-source-dot" />{t('沿用现有品牌色与卡片规范，补齐组件状态。', 'Built on the existing brand and surface styles, with complete component states.')}</div>
       </header>
 
+      <aside className="ds-alert spec-component-policy" data-variant="info" aria-label={t('基础组件使用约定', 'Basic component policy')}>
+        <strong>{t('基础组件优先使用 Ant Design', 'Use Ant Design for basic components')}</strong>
+        <p>{t('输入、选择、开关等基础控件，Ant Design 已提供的就直接复用，不自行重写，也不使用原生 HTML 表单控件替代。主题与业务组合按项目规范扩展。', 'Reuse Ant Design inputs, selectors, switches, and other available controls instead of rebuilding them or using native HTML form controls. Apply project themes and business composition on top.')}</p>
+        <p>{t('少量简短选项（通常 2–4 个）用 Segmented 或 Radio.Group 横排；选项较多用 Select；独立布尔设置用 Switch，多选用 Checkbox。', 'Show a few short options (usually 2–4) inline with Segmented or Radio.Group; use Select for longer lists, Switch for independent boolean settings, and Checkbox for multiple selections.')}</p>
+      </aside>
+
       <div className="spec-toolbar">
         <nav className="spec-section-nav" aria-label={t('规范章节', 'Specification sections')}>
           {SECTIONS.map(({ id, zh, en }) => <a key={id} href={`#spec-${id}`}>{t(zh, en)}</a>)}
         </nav>
-        <div className="spec-mode-switch" role="group" aria-label={t('预览模式', 'Preview mode')}>
-          {[
-            ['light', <SunOutlined />, t('白天', 'Light')],
-            ['dark', <MoonOutlined />, t('夜间', 'Dark')],
-            ['compare', null, t('对照', 'Compare')],
-          ].map(([value, icon, label]) => (
-            <button key={value} type="button" aria-pressed={mode === value} onClick={() => setMode(value)}>{icon}{label}</button>
-          ))}
-        </div>
+        <Segmented className="ds-segmented spec-mode-switch" aria-label={t('预览模式', 'Preview mode')} value={mode} onChange={setMode} options={[
+          { value: 'light', icon: <SunOutlined />, label: t('白天', 'Light') },
+          { value: 'dark', icon: <MoonOutlined />, label: t('夜间', 'Dark') },
+          { value: 'compare', label: t('对照', 'Compare') },
+        ]} />
       </div>
 
       {SECTIONS.map(({ id, zh, en, description, Component }, index) => (
