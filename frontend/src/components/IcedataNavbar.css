@@ -124,14 +124,20 @@
 }
 
 .icedata-theme-toggle,
-.icedata-lang-toggle {
+.icedata-lang-toggle,
+.icedata-nav-options {
   flex: none;
   width: var(--control-height);
   padding: 0;
   border-radius: 50%;
 }
 
-.icedata-theme-toggle .anticon {
+.icedata-nav-options {
+  margin-left: auto;
+}
+
+.icedata-theme-toggle .anticon,
+.icedata-nav-options .anticon {
   font-size: var(--font-size-icon);
 }
 
@@ -184,4 +190,73 @@
 
 [data-theme='dark'] .ant-menu-submenu-popup .ant-menu-item-selected::after {
   border-bottom: none !important;
+}
+
+.icedata-nav-drawer-root .ant-drawer-content-wrapper {
+  max-width: min(320px, calc(100vw - 48px));
+}
+
+.ant-drawer.icedata-nav-drawer-root .ant-drawer-close {
+  color: var(--text) !important;
+}
+
+.icedata-nav-drawer-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+}
+
+.icedata-nav-drawer-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.icedata-nav-drawer-label {
+  padding: 10px 12px 2px;
+  color: var(--text-secondary);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-body);
+}
+
+.icedata-nav-drawer-item,
+.icedata-nav-drawer-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: var(--font-size-body);
+  font-weight: 500;
+  line-height: var(--line-height-body);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.icedata-nav-drawer-link {
+  justify-content: flex-start;
+  padding-left: 24px;
+}
+
+.icedata-nav-drawer-item:hover,
+.icedata-nav-drawer-link:hover,
+.icedata-nav-drawer-item.is-active {
+  color: var(--theme-primary);
+  background: color-mix(in srgb, var(--theme-primary) 12%, transparent);
+}
+
+.icedata-nav-drawer-item:focus-visible,
+.icedata-nav-drawer-link:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
 }
