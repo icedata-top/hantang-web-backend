@@ -2,15 +2,15 @@ import { Fragment, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
 import { Button, Result, Tag } from 'antd';
-import { ArrowLeftOutlined, ExportOutlined, HeartOutlined, PictureOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, ExportOutlined, PictureOutlined } from '@ant-design/icons';
 import catalog from '../../constants/vocal/vocal-frontend-info.json';
-import { formatVocalBirthday, getVocalArtworkSource, resolveVocalProfile, vocalExternalUrl } from './vocalProfile.js';
+import { fanColorInk, formatVocalBirthday, getVocalArtworkSource, resolveVocalProfile, vocalExternalUrl } from './vocalProfile.js';
 import { useVocalDepth } from './useVocalDepth.js';
 import './VocalDetail.css';
 
 function VocalBackdrop() {
   const patternId = `vocal-hatch-${useId().replace(/:/g, '')}`;
-  return <svg className="vocal-hero-pattern" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+  return <svg className="vocal-hero-pattern" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
     <defs>
       <pattern id={patternId} width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(35)">
         <path className="vocal-pattern-line" d="M 0 0 V 10" />
@@ -26,15 +26,7 @@ function VocalBackdrop() {
 
 function VocalArtwork({ profile, t }) {
   const [failed, setFailed] = useState(false);
-  const { vocal, group, imageSrc } = profile;
-  const imageSourceUrl = vocalExternalUrl(vocal.image_source_url);
-  const imageSourceName = getVocalArtworkSource(imageSourceUrl);
-  const copyrightUrl = vocalExternalUrl(group?.copyright_website);
-  const actions = [
-    ['official', vocalExternalUrl(group?.official_website), t('官方', 'Official')],
-    ['source', imageSourceUrl, imageSourceName ? t(`立绘来源：${imageSourceName}`, `Artwork source: ${imageSourceName}`) : t('立绘来源', 'Artwork source')],
-    ['copyright', copyrightUrl !== imageSourceUrl ? copyrightUrl : null, t('版权说明', 'Usage guidelines')],
-  ].filter(([, url]) => url);
+  const { vocal, imageSrc } = profile;
   return <figure className="vocal-artwork">
     <div className="vocal-artwork-frame">
       {imageSrc && !failed ? <img className="vocal-artwork-image" src={imageSrc} alt={t(`${vocal.name}的角色立绘`, `${vocal.name} character illustration`)}
@@ -43,11 +35,24 @@ function VocalArtwork({ profile, t }) {
           <PictureOutlined aria-hidden="true" /><span>{t('立绘暂缺', 'Illustration unavailable')}</span>
         </div>}
     </div>
-    {actions.length > 0 && <figcaption className="vocal-artwork-actions">
-      {actions.map(([key, url, label]) => <Button key={key} type="text" className="ds-button" data-variant="normal" href={url}
-        target="_blank" rel="noopener noreferrer" icon={<ExportOutlined aria-hidden="true" />}>{label}</Button>)}
-    </figcaption>}
   </figure>;
+}
+
+function VocalLinks({ profile, t }) {
+  const { vocal, group } = profile;
+  const imageSourceUrl = vocalExternalUrl(vocal.image_source_url);
+  const imageSourceName = getVocalArtworkSource(imageSourceUrl);
+  const copyrightUrl = vocalExternalUrl(group?.copyright_website);
+  const actions = [
+    ['official', vocalExternalUrl(group?.official_website), t('官方', 'Official')],
+    ['source', imageSourceUrl, imageSourceName ? t(`立绘来源：${imageSourceName}`, `Artwork source: ${imageSourceName}`) : t('立绘来源', 'Artwork source')],
+    ['license', copyrightUrl && copyrightUrl !== imageSourceUrl ? copyrightUrl : null, t('授权许可', 'License')],
+  ].filter(([, url]) => url);
+  if (actions.length === 0) return null;
+  return <div className="vocal-detail-links">
+    {actions.map(([key, url, label]) => <Button key={key} type="text" className="ds-button" data-variant="normal" href={url}
+      target="_blank" rel="noopener noreferrer" icon={<ExportOutlined aria-hidden="true" />}>{label}</Button>)}
+  </div>;
 }
 
 export function VocalDetailView({ profile }) {
@@ -57,7 +62,6 @@ export function VocalDetailView({ profile }) {
   const { vocal, group, collectionName } = profile;
   const persona = vocal.official_persona ?? {};
   const birthday = formatVocalBirthday(persona.birthday, isZh);
-  const gender = ({ 女: t('女', 'Female'), 男: t('男', 'Male') })[persona.gender] || persona.gender;
   const zodiac = ({ 处女座: t('处女座', 'Virgo') })[persona.zodiac] || persona.zodiac;
   const origin = ({ 日本: t('日本', 'Japan') })[persona.origin] || persona.origin;
   const supportColors = (vocal.support_color_list ?? []).filter((color) => /^#[\da-f]{6}$/i.test(color));
@@ -70,8 +74,9 @@ export function VocalDetailView({ profile }) {
     ['weight', t('体重', 'Weight'), persona.weight != null ? `${persona.weight} kg` : null],
     ['origin', t('出身地区', 'Origin'), origin],
     ['representative', t('代表物', 'Motif'), persona.representative],
-    ['license', t('许可', 'License'), vocal.license],
   ].filter(([, , value]) => value != null && value !== '');
+  const license = typeof vocal.license === 'string' && vocal.license.trim() ? vocal.license.trim() : null;
+  const rightsText = group?.name ? t(`${group.name} 保留所有权利。`, `${group.name} retains all rights.`) : null;
 
   // Fan colors are profile data, used only for the swatches and geometric artwork texture.
   const heroRef = useRef(null);
@@ -90,20 +95,17 @@ export function VocalDetailView({ profile }) {
     <section ref={heroRef} className="vocal-hero" aria-label={t('角色档案', 'Character profile')}>
       <VocalBackdrop />
       <header className="vocal-hero-intro">
-        <p className="vocal-hero-eyebrow"><span aria-hidden="true" />{t('虚拟歌手', 'VIRTUAL SINGER')}</p>
         <h1 id="vocal-detail-name">{vocal.name}</h1>
         {collectionName && <p className="vocal-hero-collection">{collectionName}</p>}
-        <div className="vocal-hero-tags">
-          {gender && <Tag variant="filled" className="vocal-profile-tag">{gender}</Tag>}
+        {(persona.age != null || (persona.highlight_list ?? []).length > 0) && <div className="vocal-hero-tags">
           {persona.age != null && <Tag variant="filled" className="vocal-profile-tag">{t(`${persona.age}岁`, `${persona.age} years old`)}</Tag>}
           {(persona.highlight_list ?? []).map((trait) => <Tag variant="filled" className="vocal-profile-tag" key={trait}>{trait}</Tag>)}
-        </div>
+        </div>}
       </header>
 
       <VocalArtwork key={vocal.id} profile={profile} t={t} />
 
-      <section className="vocal-hero-info" aria-labelledby="vocal-profile-title">
-        <div className="vocal-profile-heading"><span aria-hidden="true" /><h2 id="vocal-profile-title">{t('角色资料', 'PROFILE')}</h2></div>
+      <section className="vocal-hero-info" aria-label={t('角色资料', 'Profile')}>
         {fields.length > 0 ? <dl className="vocal-profile-facts">
           {fields.map(([key, label, value]) => <Fragment key={key}><dt>{label}</dt><dd>{value}</dd></Fragment>)}
         </dl>
@@ -111,13 +113,17 @@ export function VocalDetailView({ profile }) {
         {persona.personality && <p className="vocal-profile-note">{persona.personality}</p>}
         {persona.appearance && <p className="vocal-profile-note">{persona.appearance}</p>}
         {supportColors.length > 0 && <div className="vocal-support-colors">
-          <span><HeartOutlined aria-hidden="true" />{t('应援色', 'Fan colors')}</span>
-          {supportColors.map((color) => <span className="vocal-support-color" key={color}>
-            <span className="vocal-support-swatch" style={{ '--vocal-swatch-color': color }} aria-hidden="true" />
-            <code>{color.toUpperCase()}</code>
+          {supportColors.map((color) => <span className="vocal-support-mark" key={color} style={{ '--vocal-swatch-color': color, '--vocal-swatch-ink': fanColorInk(color) }}>
+            <span className="vocal-support-corner" aria-hidden="true" />
+            <span className="vocal-support-corner" aria-hidden="true" />
+            <span className="vocal-support-corner" aria-hidden="true" />
+            <span className="vocal-support-corner" aria-hidden="true" />
+            <span className="vocal-support-swatch"><code>{color.toUpperCase()}</code></span>
           </span>)}
         </div>}
-        {group && <div className="vocal-detail-organization"><span>{group.type === 'personal' ? t('所属企划', 'Project') : t('所属机构', 'Organization')}</span><span>{group.name}</span></div>}
+        {rightsText && <p className="vocal-detail-rights">{rightsText}</p>}
+        {license && <p className="vocal-detail-license">{license}</p>}
+        <VocalLinks profile={profile} t={t} />
       </section>
     </section>
   </main>;

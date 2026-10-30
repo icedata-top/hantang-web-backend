@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
-import { formatVocalBirthday, getVocalArtworkSource, normalizeVocalImagePath, resolveVocalProfile, vocalExternalUrl } from '../src/pages/vocal/vocalProfile.js';
+import { fanColorInk, formatVocalBirthday, getVocalArtworkSource, normalizeVocalImagePath, resolveVocalProfile, vocalExternalUrl } from '../src/pages/vocal/vocalProfile.js';
 
 const catalog = JSON.parse(readFileSync(new URL('../src/constants/vocal/vocal-frontend-info.json', import.meta.url), 'utf8'));
 
@@ -49,6 +49,13 @@ test('public image paths normalize without allowing external or traversing asset
   for (const value of ['', null, 'https://example.test/image.png', '/public/vocals/../image.png', '/vocals/a.svg', '//example.test/a.png']) {
     assert.equal(normalizeVocalImagePath(value), null);
   }
+});
+
+test('fan color ink picks the higher-contrast of black and white', () => {
+  assert.equal(fanColorInk('#ffffff'), '#000000');
+  assert.equal(fanColorInk('#66CCFF'), '#000000');
+  assert.equal(fanColorInk('#121212'), '#ffffff');
+  assert.equal(fanColorInk('#000000'), '#ffffff');
 });
 
 test('recurring birthdays validate the date without inventing a birth year', () => {

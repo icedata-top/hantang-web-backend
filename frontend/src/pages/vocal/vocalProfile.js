@@ -41,6 +41,24 @@ export function getVocalArtworkSource(value) {
   return platforms.find(([domain]) => hostname === domain || hostname.endsWith(`.${domain}`))?.[1] ?? null;
 }
 
+/** Pick black or white ink so the code stays readable on the fan-color square. */
+export function fanColorInk(hex) {
+  const value = Number.parseInt(String(hex).slice(1), 16);
+  const channel = (component) => {
+    const s = component / 255;
+    return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  };
+  const luminance = 0.2126 * channel((value >> 16) & 255)
+    + 0.7152 * channel((value >> 8) & 255)
+    + 0.0722 * channel(value & 255);
+  const contrast = (ink) => {
+    const lighter = Math.max(luminance, ink);
+    const darker = Math.min(luminance, ink);
+    return (lighter + 0.05) / (darker + 0.05);
+  };
+  return contrast(0) >= contrast(1) ? '#000000' : '#ffffff';
+}
+
 /** A recurring birthday has no birth year; 2000 only validates month/day including leap day. */
 export function formatVocalBirthday(value, isZh = true) {
   if (typeof value !== 'string' || !/^\d{2}-\d{2}$/.test(value)) return null;

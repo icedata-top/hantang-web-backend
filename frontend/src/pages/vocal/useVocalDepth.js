@@ -6,17 +6,18 @@ export function vocalPointerOffset(clientX, width) {
   return Math.min(1, Math.max(-1, (clientX / width) * 2 - 1));
 }
 
-/** Every layer shifts with the pointer. Higher layers use a larger distance. */
+/** Every layer shifts with the pointer. Higher layers use a larger distance. Narrow screens stay still. */
 export function useVocalDepth(ref) {
   useEffect(() => {
     const node = ref.current;
     if (!node) return undefined;
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    if (reduceMotion.matches) return undefined;
+    const narrow = window.matchMedia('(max-width: 680px)');
 
     let target = 0;
     let current = 0;
     let frame = 0;
+    let listening = false;
 
     const tick = () => {
       current += (target - current) * 0.08;
@@ -31,19 +32,28 @@ export function useVocalDepth(ref) {
       if (!frame) frame = window.requestAnimationFrame(tick);
     };
 
-    const onReduce = () => {
-      if (!reduceMotion.matches) return;
-      target = 0;
-      if (!frame) frame = window.requestAnimationFrame(tick);
+    const sync = () => {
+      const enabled = !reduceMotion.matches && !narrow.matches;
+      if (enabled === listening) return;
+      if (enabled) {
+        window.addEventListener('pointermove', onMove, { passive: true });
+      } else {
+        window.removeEventListener('pointermove', onMove);
+        target = 0;
+        if (!frame) frame = window.requestAnimationFrame(tick);
+      }
+      listening = enabled;
     };
 
-    window.addEventListener('pointermove', onMove, { passive: true });
-    reduceMotion.addEventListener('change', onReduce);
+    sync();
+    reduceMotion.addEventListener('change', sync);
+    narrow.addEventListener('change', sync);
 
     return () => {
       window.cancelAnimationFrame(frame);
-      window.removeEventListener('pointermove', onMove);
-      reduceMotion.removeEventListener('change', onReduce);
+      if (listening) window.removeEventListener('pointermove', onMove);
+      reduceMotion.removeEventListener('change', sync);
+      narrow.removeEventListener('change', sync);
       node.style.removeProperty('--vocal-px');
     };
   }, [ref]);

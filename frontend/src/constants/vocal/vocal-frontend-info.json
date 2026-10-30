@@ -59,7 +59,6 @@
             "support_color_list": ["#66CCFF"],
             "official_producer_id": 0,
             "official_persona": {
-                "gender": "女",
                 "age": 15,
                 "birthday": "07-12",
                 "height": 156,
@@ -75,7 +74,6 @@
             "support_color_list": ["#00FFCC"],
             "official_producer_id": 0,
             "official_persona": {
-                "gender": "女",
                 "birthday": "07-11",
                 "height": 170,
                 "cv": "刘婧荦"
@@ -90,7 +88,6 @@
             "support_color_list": ["#EE0000"],
             "official_producer_id": 0,
             "official_persona": {
-                "gender": "女",
                 "age": 16,
                 "birthday": "04-12",
                 "height": 160,
@@ -106,7 +103,6 @@
             "support_color_list": ["#006666"],
             "official_producer_id": 0,
             "official_persona": {
-                "gender": "男",
                 "age": 23,
                 "birthday": "10-02",
                 "height": 180,
@@ -122,7 +118,6 @@
             "support_color_list": ["#0080FF"],
             "official_producer_id": 0,
             "official_persona": {
-                "gender": "男",
                 "age": 14,
                 "birthday": "12-10",
                 "height": 150,
@@ -138,7 +133,6 @@
             "support_color_list": ["#FFFF00"],
             "official_producer_id": 0,
             "official_persona": {
-                "gender": "女",
                 "age": 17,
                 "birthday": "05-20",
                 "height": 171,
@@ -155,7 +149,6 @@
             "official_producer_id": 0,
             "official_persona": {
                 "creator": "VOFAN",
-                "gender": "女",
                 "age": 16,
                 "birthday": "02-10",
                 "height": 160,
@@ -171,7 +164,6 @@
             "support_color_list": ["#9999FF", "#FFFF00"],
             "official_producer_id": 0,
             "official_persona": {
-                "gender": "女",
                 "age": 16,
                 "birthday": "08-12",
                 "height": 160,
@@ -188,7 +180,6 @@
             "support_color_list": ["#3399FF"],
             "official_producer_id": 0,
             "official_persona": {
-                "gender": "女",
                 "age": 15,
                 "birthday": "07-22",
                 "height": 155,
@@ -204,7 +195,6 @@
             "support_color_list": [],
             "official_producer_id": 0,
             "official_persona": {
-                "gender": "女",
                 "age": 18,
                 "birthday": "05-20",
                 "height": 175,
@@ -220,7 +210,6 @@
             "support_color_list": ["#FF4004"],
             "official_producer_id": 0,
             "official_persona": {
-                "gender": "女",
                 "age": 17,
                 "birthday": "11-26",
                 "height": 158,
@@ -236,7 +225,6 @@
             "support_color_list": ["#F6BE71"],
             "official_producer_id": 0,
             "official_persona": {
-                "gender": "女",
                 "age": 14,
                 "birthday": "01-19",
                 "height": 148,
@@ -252,7 +240,6 @@
             "support_color_list": [],
             "official_producer_id": 0,
             "official_persona": {
-                "gender": "女",
                 "birthday": "12-08",
                 "cv": "Sawako碎花子"
             }
@@ -266,7 +253,6 @@
             "support_color_list": [],
             "official_producer_id": 0,
             "official_persona": {
-                "gender": "男",
                 "age": 14,
                 "birthday": "06-30",
                 "cv": "佑可猫"
@@ -287,9 +273,7 @@
                 "height": 158,
                 "weight": 42,
                 "cv": "藤田咲",
-                "creator": "KEI",
-                "zodiac": "处女座",
-                "origin": "日本"
+                "creator": "KEI"
             }
         },
         {
@@ -301,7 +285,6 @@
             "support_color_list": ["#FF0099"],
             "official_producer_id": 0,
             "official_persona": {
-                "gender": "女",
                 "birthday": "07-13",
                 "height": 140,
                 "cv": "悠茗月尘",
@@ -319,7 +302,6 @@
             "support_color_list": ["#99FF00"],
             "official_producer_id": 0,
             "official_persona": {
-                "gender": "男",
                 "birthday": "07-13",
                 "height": 142,
                 "cv": "这是一根手指",
@@ -338,7 +320,6 @@
             "official_producer_id": 0,
             "official_persona": {
                 "creator": "苍梧",
-                "gender": "女",
                 "age": 16.5,
                 "height": 161,
                 "weight": 45,
