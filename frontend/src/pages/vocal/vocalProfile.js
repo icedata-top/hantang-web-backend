@@ -37,7 +37,7 @@ export function getVocalArtworkSource(value) {
   const url = vocalExternalUrl(value);
   if (!url) return null;
   const hostname = new URL(url).hostname.toLowerCase();
-  const platforms = [['bilibili.com', 'Bilibili'], ['booth.pm', 'Booth'], ['vcpedia.cn', 'VCPeida']];
+  const platforms = [['bilibili.com', 'Bilibili'], ['booth.pm', 'Booth'], ['vcpedia.cn', 'VCPeida'], ['weibo.com', '微博']];
   return platforms.find(([domain]) => hostname === domain || hostname.endsWith(`.${domain}`))?.[1] ?? null;
 }
 

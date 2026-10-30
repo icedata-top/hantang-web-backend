@@ -156,7 +156,8 @@
             "id": 301,
             "name": "星尘",
             "group_id": 3,
-            "image_path": "",
+            "image_path": "/public/vocals/xingchen.jpg",
+            "image_source_url": "https://weibo.com/5599743152/DbswphZBO",
             "support_color_list": ["#9999FF", "#FFFF00"],
             "official_producer_id": 0,
             "official_persona": {
