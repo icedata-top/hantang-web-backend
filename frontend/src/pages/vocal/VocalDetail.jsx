@@ -1,10 +1,11 @@
-import { Fragment, useId, useState } from 'react';
+import { Fragment, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
 import { Button, Result, Tag } from 'antd';
 import { ArrowLeftOutlined, ExportOutlined, HeartOutlined, PictureOutlined } from '@ant-design/icons';
 import catalog from '../../constants/vocal/vocal-frontend-info.json';
 import { formatVocalBirthday, getVocalArtworkSource, resolveVocalProfile, vocalExternalUrl } from './vocalProfile.js';
+import { useVocalDepth } from './useVocalDepth.js';
 import './VocalDetail.css';
 
 function VocalBackdrop() {
@@ -35,11 +36,13 @@ function VocalArtwork({ profile, t }) {
     ['copyright', copyrightUrl !== imageSourceUrl ? copyrightUrl : null, t('版权说明', 'Usage guidelines')],
   ].filter(([, url]) => url);
   return <figure className="vocal-artwork">
-    {imageSrc && !failed ? <img className="vocal-artwork-image" src={imageSrc} alt={t(`${vocal.name}的角色立绘`, `${vocal.name} character illustration`)}
-      decoding="async" fetchpriority="high" onError={() => setFailed(true)} />
-      : <div className="vocal-artwork-missing" role="img" aria-label={t('角色立绘暂缺', 'Character illustration unavailable')}>
-        <PictureOutlined aria-hidden="true" /><span>{t('立绘暂缺', 'Illustration unavailable')}</span>
-      </div>}
+    <div className="vocal-artwork-frame">
+      {imageSrc && !failed ? <img className="vocal-artwork-image" src={imageSrc} alt={t(`${vocal.name}的角色立绘`, `${vocal.name} character illustration`)}
+        decoding="async" fetchpriority="high" onError={() => setFailed(true)} />
+        : <div className="vocal-artwork-missing" role="img" aria-label={t('角色立绘暂缺', 'Character illustration unavailable')}>
+          <PictureOutlined aria-hidden="true" /><span>{t('立绘暂缺', 'Illustration unavailable')}</span>
+        </div>}
+    </div>
     {actions.length > 0 && <figcaption className="vocal-artwork-actions">
       {actions.map(([key, url, label]) => <Button key={key} type="text" className="ds-button" data-variant="normal" href={url}
         target="_blank" rel="noopener noreferrer" icon={<ExportOutlined aria-hidden="true" />}>{label}</Button>)}
@@ -71,6 +74,8 @@ export function VocalDetailView({ profile }) {
   ].filter(([, , value]) => value != null && value !== '');
 
   // Fan colors are profile data, used only for the swatches and geometric artwork texture.
+  const heroRef = useRef(null);
+  useVocalDepth(heroRef);
   const fanColorStyle = supportColors.length > 0 ? {
     '--vocal-fan-color': supportColors[0],
     '--vocal-fan-color-secondary': supportColors[1] ?? supportColors[0],
@@ -82,7 +87,7 @@ export function VocalDetailView({ profile }) {
       <span aria-hidden="true">/</span><span>{vocal.name}</span>
     </nav>
 
-    <section className="vocal-hero" aria-label={t('角色档案', 'Character profile')}>
+    <section ref={heroRef} className="vocal-hero" aria-label={t('角色档案', 'Character profile')}>
       <VocalBackdrop />
       <header className="vocal-hero-intro">
         <p className="vocal-hero-eyebrow"><span aria-hidden="true" />{t('虚拟歌手', 'VIRTUAL SINGER')}</p>
