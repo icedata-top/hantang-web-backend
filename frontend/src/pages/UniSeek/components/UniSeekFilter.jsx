@@ -14,6 +14,7 @@ export default function UniSeekFilter({ keyword, loading = false, onKeywordChang
     <div className="uniseek-filter">
       <Search
         value={keyword}
+        maxLength={100}
         placeholder="搜索一首歌，一位虚拟歌手，或一位创作者"
         enterButton
         size="large"

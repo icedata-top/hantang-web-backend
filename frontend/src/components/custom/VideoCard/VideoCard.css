@@ -4,7 +4,7 @@
 .video-card-cover img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .video-card-cover-fallback { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; color: var(--text-secondary); font-size: var(--font-size-display); }
 .video-card-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
-.video-card-type.ant-tag { margin: 0; padding: 2px 8px; border: 0; border-radius: var(--radius-control); background: var(--button-secondary-bg); color: var(--text-link); font-size: var(--font-size-caption); font-weight: var(--font-weight-medium); line-height: var(--line-height-body); }
+.video-card-type.ant-tag { margin: 0; padding: 2px 8px; border: 0; border-radius: var(--radius-control); background: var(--entity-video-tag-bg); color: var(--entity-video-tag-text); font-size: var(--font-size-caption); font-weight: var(--font-weight-medium); line-height: var(--line-height-body); }
 .video-card-id { min-width: 0; color: var(--text-secondary); font-size: var(--font-size-caption); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .video-card-title-wrap { min-width: 0; margin-bottom: 12px; }
 .video-card-title { display: -webkit-box; min-height: calc(2 * var(--font-size-body) * var(--line-height-body)); overflow: hidden; -webkit-line-clamp: 2; -webkit-box-orient: vertical; color: var(--text-primary); font-size: var(--font-size-body); font-weight: var(--font-weight-semibold); line-height: var(--line-height-body); text-decoration: none; overflow-wrap: anywhere; }

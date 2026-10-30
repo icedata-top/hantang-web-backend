@@ -148,6 +148,8 @@ Primary 用于核心操作，Secondary 用于取消、重置等次要操作，No
 
 颜色在 `theme.css` 集中维护：`--chip-neutral-bg/text` 使用中性文本与 Surface 派生灰色；`--chip-orange-bg/text` 由 `--highlight-orange` 与 Surface/正文色派生。橙色文字的原色占比通过 `--chip-orange-text-strength` 调整，白天 55%、夜间 85%。
 
+实体类型 Tag 固定为虚拟歌手紫、创作者橙、歌曲绿，文字与底色引用 `--entity-{vocal|producer|video}-tag-{text|bg}`，由现有 highlight 色在 `theme.css` 派生；不使用品牌蓝区分实体类型。UniSeek 虚拟歌手卡片不展示内部 ID，创作者展示 UID，歌曲展示 av 号。
+
 播放荣誉复用 Ant Design `Tag variant="filled"`，统一使用 `TrophyOutlined` 奖杯图标，无边框。殿堂（≥10万）、传说（≥100万）、神话（≥1000万）分别从 `--highlight-blue`、`--highlight-orange`、`--highlight-violet` 派生颜色；背景和文字使用 `--honor-{hall|legend|myth}-bg/text`，不硬编码颜色。视频详情标题下只显示最高荣誉；本页三个日夜样本各自对应独立播放量。完整数据口径见[视频播放荣誉](video-view-honors.md)。
 
 视频封面悬停操作使用 `--media-overlay-bg` 的半透明黑色蒙层，按钮为无背景白字，文字引用 `--media-overlay-text`。键盘聚焦同样显示操作；移动端或无悬停设备常显底部操作，并使用 `--media-overlay-gradient`。这些媒体蒙层不随日夜主题变成浅色，以保证白字可读。

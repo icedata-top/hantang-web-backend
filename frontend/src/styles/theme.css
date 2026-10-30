@@ -49,6 +49,7 @@
   --surface-border-width: 0px;
   --alert-border-width: 0px;
   --honor-fill-strength: 16%;
+  --entity-tag-fill-strength: 16%;
 
   /* 导航与数据展示的尺寸 */
   --tabs-height: 40px;
@@ -106,6 +107,7 @@
   --secondary-hover-strength: 14%;
   --disabled-fill-strength: 6%;
   --chip-orange-text-strength: 55%;
+  --entity-tag-text-strength: 45%;
   --honor-text-strength: 45%;
   --vocal-accent-text-strength: 45%;
   --vocal-hatch-square-opacity: 0.2;
@@ -156,6 +158,7 @@
   --secondary-hover-strength: 28%;
   --disabled-fill-strength: 8%;
   --chip-orange-text-strength: 85%;
+  --entity-tag-text-strength: 85%;
   --honor-text-strength: 85%;
   --vocal-accent-text-strength: 85%;
   --vocal-hatch-square-opacity: 0.16;
@@ -193,6 +196,13 @@
   --chip-neutral-text: var(--text-secondary);
   --chip-orange-bg: color-mix(in srgb, var(--highlight-orange) 16%, var(--surface));
   --chip-orange-text: color-mix(in srgb, var(--highlight-orange) var(--chip-orange-text-strength), var(--text));
+  /* 实体类型：歌手紫、创作者橙、歌曲绿，避免与品牌蓝及文字链接混淆。 */
+  --entity-vocal-tag-bg: color-mix(in srgb, var(--highlight-violet) var(--entity-tag-fill-strength), var(--surface));
+  --entity-vocal-tag-text: color-mix(in srgb, var(--highlight-violet) var(--entity-tag-text-strength), var(--text));
+  --entity-producer-tag-bg: color-mix(in srgb, var(--highlight-orange) var(--entity-tag-fill-strength), var(--surface));
+  --entity-producer-tag-text: color-mix(in srgb, var(--highlight-orange) var(--entity-tag-text-strength), var(--text));
+  --entity-video-tag-bg: color-mix(in srgb, var(--highlight-green) var(--entity-tag-fill-strength), var(--surface));
+  --entity-video-tag-text: color-mix(in srgb, var(--highlight-green) var(--entity-tag-text-strength), var(--text));
   /* 播放荣誉：殿堂蓝、传说橙、神话紫，仅从既有 highlight 色派生。 */
   --honor-hall-bg: color-mix(in srgb, var(--highlight-blue) var(--honor-fill-strength), var(--surface));
   --honor-hall-text: color-mix(in srgb, var(--highlight-blue) var(--honor-text-strength), var(--text));

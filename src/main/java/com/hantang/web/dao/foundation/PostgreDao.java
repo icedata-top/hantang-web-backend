@@ -110,10 +110,22 @@ public class PostgreDao {
 
     // 查询列表（支持 ? 占位符，参数用 List<Object> 传入）
     public List<Map<String, Object>> queryList(String sql, List<Object> params) {
+        return queryList(sql, params, 0);
+    }
+
+    public List<Map<String, Object>> queryList(String sql, List<Object> params, int timeoutSeconds) {
         List<Map<String, Object>> list = new ArrayList<>();
 
         try (Connection conn = dataSource.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            if (timeoutSeconds > 0) {
+                conn.setReadOnly(true);
+                conn.setAutoCommit(false);
+                // Compressed-history estimates otherwise trigger costly JIT compilation for each search.
+                try (Statement settings = conn.createStatement()) { settings.execute("SET LOCAL jit = off"); }
+                ps.setQueryTimeout(timeoutSeconds);
+            }
 
             // 填充参数（自动对应 ? 占位符）
             if (params != null && !params.isEmpty()) {
@@ -138,6 +150,7 @@ public class PostgreDao {
                     list.add(row);
                 }
             }
+            if (timeoutSeconds > 0) conn.commit();
         } catch (SQLException e) {
             logger.error("queryList 执行错误", e);
             throw new RuntimeException(e);

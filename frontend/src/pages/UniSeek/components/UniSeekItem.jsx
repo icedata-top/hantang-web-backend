@@ -1,10 +1,11 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   TeamOutlined,
   VideoCameraOutlined,
 } from '@ant-design/icons';
 import { Card, Tag, Tooltip, Typography } from 'antd';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { formatNumber, NUMBER_FORMAT } from '../../../utils/formatNumber.js';
 import { splitHighlightParts } from '../../../utils/highlightText.js';
 import VideoCard from '../../../components/custom/VideoCard/VideoCard.jsx';
@@ -50,14 +51,14 @@ function HighlightText({ text, keyword, className }) {
  * @param {'zh' | 'en'} props.numFormat
  */
 function MetricStat({ icon, value, labelZh, labelEn, numFormat }) {
-  const n = value ?? 0;
-  const tip = `${labelZh} / ${labelEn} ${formatNumber(n, NUMBER_FORMAT.COMMA)}`;
+  const n = Number.isFinite(value) ? value : null;
+  const tip = `${labelZh} / ${labelEn} ${n == null ? '—' : formatNumber(n, NUMBER_FORMAT.COMMA)}`;
 
   return (
     <Tooltip title={tip}>
       <span className="uniseek-item-stat">
         {icon}
-        <span>{formatNumber(n, numFormat)}</span>
+        <span>{n == null ? '—' : formatNumber(n, numFormat)}</span>
       </span>
     </Tooltip>
   );
@@ -74,6 +75,10 @@ export default function UniSeekItem({ item, keyword = '' }) {
   const numFormat = isZh ? NUMBER_FORMAT.ZH : NUMBER_FORMAT.EN;
   const t = (zh, en) => (isZh ? zh : en);
 
+  const [failedSrc, setFailedSrc] = useState(null);
+  const field = (name) => Object.hasOwn(item.payload ?? {}, name) ? item.payload[name] : item[name];
+  const href = item.type === 'vocal' ? `/vocals/${item.id}` : `/producers/${item.id}`;
+
   if (item.type === 'video') return <VideoCard video={videoCardFromSearchItem(item)} keyword={keyword} />;
 
   const typeLabels = typeLabelMap[item.type];
@@ -86,34 +91,35 @@ export default function UniSeekItem({ item, keyword = '' }) {
     item.type === 'producer' ? 'uniseek-item-media--producer' : 'uniseek-item-media--vocal';
 
   return (
-    <Card className="uniseek-item-card" variant="borderless">
-      <div className={`uniseek-item-media-wrap ${mediaTypeClass}`}>
-        {item.coverUrl ? (
-          <img src={item.coverUrl} alt={item.title} className="uniseek-item-media-image" />
+    <Card className="ds-surface uniseek-item-card" variant="borderless">
+      <Link to={href} aria-label={item.title} className={`uniseek-item-media-wrap ${mediaTypeClass}`}>
+        {item.coverUrl && failedSrc !== item.coverUrl ? (
+          <img src={item.coverUrl} alt="" loading="lazy" referrerPolicy="no-referrer"
+            onError={() => setFailedSrc(item.coverUrl)} className="uniseek-item-media-image" />
         ) : (
           <div className="uniseek-item-media-placeholder" aria-hidden />
         )}
         <div className="uniseek-item-media-overlay" aria-hidden />
-      </div>
+      </Link>
 
       <div className="uniseek-item-top">
-        <Tag className={`uniseek-item-tag ${typeClass}`}>{tagText}</Tag>
-        <Text type="secondary" className="uniseek-item-id">
-          ID {item.id}
-        </Text>
+        <Tag variant="filled" className={`uniseek-item-tag ${typeClass}`}>{tagText}</Tag>
+        {item.type === 'producer' ? <Text type="secondary" className="uniseek-item-id">
+          UID {item.id}
+        </Text> : null}
       </div>
 
-      <HighlightText text={item.title} keyword={keyword} className="uniseek-item-title" />
+      <Link to={href} className="uniseek-item-title-link"><HighlightText text={item.title} keyword={keyword} className="uniseek-item-title" /></Link>
 
       {item.subTitle ? (
         <HighlightText text={item.subTitle} keyword={keyword} className="uniseek-item-subtitle" />
       ) : null}
 
-      {item.type === 'vocal' ? (
+      {item.type === 'vocal' && field('songCount') != null ? (
         <div className="uniseek-item-meta">
           <MetricStat
             icon={<VideoCameraOutlined aria-hidden />}
-            value={item.songCount}
+            value={field('songCount')}
             labelZh="相关投稿"
             labelEn="Related videos"
             numFormat={numFormat}
@@ -125,16 +131,16 @@ export default function UniSeekItem({ item, keyword = '' }) {
         <div className="uniseek-item-meta">
           <MetricStat
             icon={<TeamOutlined aria-hidden />}
-            value={item.fanCount}
+            value={field('fanCount')}
             labelZh="粉丝"
             labelEn="Fans"
             numFormat={numFormat}
           />
           <MetricStat
             icon={<VideoCameraOutlined aria-hidden />}
-            value={item.videoCount}
-            labelZh="投稿"
-            labelEn="Videos"
+            value={field('videoCount')}
+            labelZh="收录投稿"
+            labelEn="Indexed videos"
             numFormat={numFormat}
           />
         </div>

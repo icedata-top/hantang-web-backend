@@ -1,0 +1,161 @@
+[
+  {
+    "id": "101",
+    "name": "洛天依",
+    "aliases": [
+      "Luo Tianyi"
+    ],
+    "image": "/vocals/luotianyi.webp",
+    "description": "禾念 · 虚拟歌手"
+  },
+  {
+    "id": "102",
+    "name": "言和",
+    "aliases": [
+      "Yan He"
+    ],
+    "image": "/vocals/yanhe.webp",
+    "description": "禾念 · 虚拟歌手"
+  },
+  {
+    "id": "103",
+    "name": "乐正绫",
+    "aliases": [
+      "Yuezheng Ling"
+    ],
+    "image": "/vocals/yuezhengling.webp",
+    "description": "禾念 · 虚拟歌手"
+  },
+  {
+    "id": "104",
+    "name": "乐正龙牙",
+    "aliases": [
+      "Yuezheng Longya"
+    ],
+    "image": "/vocals/yuezhenglongya.webp",
+    "description": "禾念 · 虚拟歌手"
+  },
+  {
+    "id": "105",
+    "name": "徵羽摩柯",
+    "aliases": [
+      "Zhiyu Moke"
+    ],
+    "image": "/vocals/zhiyunmoke.webp",
+    "description": "禾念 · 虚拟歌手"
+  },
+  {
+    "id": "106",
+    "name": "墨清弦",
+    "aliases": [
+      "Mo Qingxian"
+    ],
+    "image": "/vocals/moqingxian.webp",
+    "description": "禾念 · 虚拟歌手"
+  },
+  {
+    "id": "201",
+    "name": "心华",
+    "aliases": [
+      "Xin Hua"
+    ],
+    "image": "/vocals/xinhua.webp",
+    "description": "GYNOID · 虚拟歌手"
+  },
+  {
+    "id": "301",
+    "name": "星尘",
+    "aliases": [
+      "Stardust"
+    ],
+    "image": "/vocals/xingchen.jpg",
+    "description": "福托 · 虚拟歌手"
+  },
+  {
+    "id": "302",
+    "name": "海伊",
+    "aliases": [
+      "Haiyi"
+    ],
+    "image": "/vocals/haiyi.png",
+    "description": "福托 · 虚拟歌手"
+  },
+  {
+    "id": "303",
+    "name": "苍穹",
+    "aliases": [
+      "Cangqiong"
+    ],
+    "image": "/vocals/cangqiong.png",
+    "description": "福托 · 虚拟歌手"
+  },
+  {
+    "id": "304",
+    "name": "赤羽",
+    "aliases": [
+      "Chiyu"
+    ],
+    "image": "/vocals/chiyu.png",
+    "description": "福托 · 虚拟歌手"
+  },
+  {
+    "id": "305",
+    "name": "诗岸",
+    "aliases": [
+      "Shian"
+    ],
+    "image": "/vocals/shian.png",
+    "description": "福托 · 虚拟歌手"
+  },
+  {
+    "id": "306",
+    "name": "永夜Minus",
+    "aliases": [
+      "Minus",
+      "永夜"
+    ],
+    "image": "/vocals/yongye.webp",
+    "description": "福托 · 虚拟歌手"
+  },
+  {
+    "id": "307",
+    "name": "牧心",
+    "aliases": [
+      "Muxin"
+    ],
+    "image": "/vocals/muxin.webp",
+    "description": "福托 · 虚拟歌手"
+  },
+  {
+    "id": "401",
+    "name": "初音未来",
+    "aliases": [
+      "Hatsune Miku",
+      "初音ミク",
+      "Miku"
+    ],
+    "image": "/vocals/hatsunemiku.png",
+    "description": "Crypton · 虚拟歌手"
+  },
+  {
+    "id": "1101",
+    "name": "起礼",
+    "aliases": [],
+    "image": "/vocals/qili.png",
+    "description": "风铃 · 虚拟歌手"
+  },
+  {
+    "id": "1102",
+    "name": "起复",
+    "aliases": [],
+    "image": "/vocals/qifu.png",
+    "description": "风铃 · 虚拟歌手"
+  },
+  {
+    "id": "1201",
+    "name": "潋妤",
+    "aliases": [],
+    "image": "/vocals/lianyu.webp",
+    "description": "玖蝶 · 虚拟歌手"
+  }
+]

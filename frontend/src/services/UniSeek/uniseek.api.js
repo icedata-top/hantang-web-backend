@@ -1,23 +1,11 @@
 import { isMockEnv } from '../../config/runtimeEnv.js';
-import { postJson } from '../http/client.js';
+import { getJson } from '../http/client.js';
+import catalog from '../../constants/vocal/vocal-search-info.json';
+import { matchVocals } from './uniseekLocal.js';
 
 /**
- * SeekItem 元素统一契约（草案）
- *
- * 所有类型都必须有同样的公共字段：
- * - type: 'video' | 'vocal' | 'producer'
- * - id: string | number
- * - title: string
- * - subTitle: string
- * - score?: number
- * - coverUrl?: string
- * - jumpUrl?: string
- * - payload: object        // 类型差异化字段统一放在 payload 内
- *
- * payload 示例：
- * - video: { bvid, play, favorite, like, coin, publishDate, durationSec, producerId, vocalIdList }
- * - vocal: { alias, songCount, representativeWorks }
- * - producer: { uid, fanCount, totalView, videoCount, recentWork }
+ * @typedef {{ type: 'video'|'vocal'|'producer', id: string, title: string,
+ * subTitle?: string, coverUrl?: string, jumpUrl?: string, payload: Record<string, unknown> }} SeekItem
  */
 
 const MOCK_VIDEO_ROWS = [
@@ -53,59 +41,6 @@ const MOCK_VIDEO_ROWS = [
   ['26659364', '【2018洛天依庆生会】一花依世界', 4145601],
 ];
 
-/**
- * @param {string} keyword
- * @returns {SeekVideoItem[]}
- */
-function buildVideoMockList(keyword) {
-  const q = (keyword ?? '').trim();
-  if (!q) return [];
-
-  return MOCK_VIDEO_ROWS.map(([aid, title, view]) => ({
-    type: 'video',
-    id: aid,
-    title,
-    subTitle: `播放 ${view.toLocaleString()}`,
-    payload: {
-      bvid: aid,
-      play: view,
-      favorite: Math.round(view * 0.06),
-      like: Math.round(view * 0.11),
-      coin: Math.round(view * 0.03),
-    },
-    // 兼容字段（页面当前仍在读取）
-    bvid: aid,
-    play: view,
-    favorite: Math.round(view * 0.06),
-    like: Math.round(view * 0.11),
-    coin: Math.round(view * 0.03),
-  })).filter((item) => item.title.includes(q) || String(item.id).includes(q) || q.includes('洛天依'));
-}
-
-/** @type {SeekVocalItem} */
-const MOCK_VOCAL_LUO_TIANYI = {
-  type: 'vocal',
-  id: 'vocal-luo-tianyi',
-  title: '洛天依',
-  subTitle: 'Vsinger旗下虚拟歌手，世界首位中文V家虚拟歌手',
-  payload: {
-    alias: ['Luo Tianyi'],
-    songCount: 4600,
-    representativeWorks: [
-      { id: '2129461', title: '普通DISCO' },
-      { id: '43426592', title: '勾指起誓' },
-    ],
-  },
-  // 兼容字段（页面当前仍在读取）
-  alias: ['Luo Tianyi'],
-  songCount: 4600,
-  representativeWorks: [
-    { id: '2129461', title: '普通DISCO' },
-    { id: '43426592', title: '勾指起誓' },
-  ],
-};
-
-/** @type {SeekProducerItem[]} */
 const MOCK_PRODUCERS = [
   {
     type: 'producer',
@@ -143,190 +78,42 @@ const MOCK_PRODUCERS = [
   },
 ];
 
-/**
- * @param {SeekItem} item
- * @param {string} keyword
- */
-function matchAndRankItem(item, keyword) {
-  const q = (keyword ?? '').trim();
-  if (!q) return { matched: false, rank: 99 };
+export function searchVocals(keyword) { return matchVocals(keyword, catalog); }
 
-  const exactTitle = item.title === q;
-  const fuzzyMatched =
-    item.title.includes(q) || item.subTitle.includes(q) || String(item.id).includes(q);
-
-  if (!fuzzyMatched) return { matched: false, rank: 99 };
-
-  if ((item.type === 'vocal' || item.type === 'producer') && exactTitle) return { matched: true, rank: 0 };
-  if (item.type === 'vocal' || item.type === 'producer') return { matched: true, rank: 1 };
-  if (item.type === 'video' && exactTitle) return { matched: true, rank: 2 };
-  return { matched: true, rank: 3 };
+/** Each request can resolve independently. Only videos have subsequent pages. */
+export async function searchVideos({ keyword, page = 1, pageSize = 30 }, options) {
+  if (!isMockEnv()) {
+    const query = new URLSearchParams({ keyword, page, pageSize });
+    return getJson(`/uniseek/videos?${query}`, options);
+  }
+  const q = keyword.trim().toLowerCase();
+  const matches = MOCK_VIDEO_ROWS.filter(([, title]) => title.toLowerCase().includes(q));
+  const start = (page - 1) * pageSize;
+  const hasMore = start + pageSize < matches.length;
+  return { keyword, page, pageSize, hasMore, nextPage: hasMore ? page + 1 : null, videoLimit: 1000,
+    list: matches.slice(start, start + pageSize).map(([id, title, play]) => ({
+      type: 'video', id, title, jumpUrl: `/videos/${id}`, payload: { play },
+    })) };
+}
+export async function searchProducers(keyword, options) {
+  if (!isMockEnv()) return getJson(`/uniseek/producers?${new URLSearchParams({ keyword })}`, options);
+  const q = keyword.trim().toLowerCase();
+  return { keyword, list: MOCK_PRODUCERS.filter(item => item.payload.videoCount > 0 && Boolean(item.coverUrl?.trim()) && item.title.toLowerCase().includes(q))
+    .sort((a, b) => Number(b.title === keyword.trim()) - Number(a.title === keyword.trim())
+      || (b.payload.fanCount ?? -1) - (a.payload.fanCount ?? -1))
+    .slice(0, 20).map(item => ({ ...item, id: String(item.id), jumpUrl: `/producers/${item.id}` })) };
 }
 
-/**
- * UniSeek（大搜）契约草案
- *
- * 请求体建议：
- * {
- *   keyword: string,                     // 必填
- *   types?: ('video'|'vocal'|'producer')[], // 可选，不传则全搜
- *   page?: number,                       // 可选，默认 1
- *   pageSize?: number                    // 可选，默认 20
- * }
- *
- * 响应体建议（仅 data）：
- * {
- *   keyword: string,
- *   total: number,
- *   page: number,
- *   pageSize: number,
- *   list: SeekItem[]
- * }
- */
-
-/**
- * @typedef {'video'|'vocal'|'producer'} SeekItemType
- */
-
-/**
- * 各类型通用字段
- * @typedef {Object} SeekItemBase
- * @property {SeekItemType} type
- * @property {string|number} id
- * @property {string} title
- * @property {string} subTitle
- * @property {number} [score] 相关性分，方便前端排序（可选）
- * @property {string} [coverUrl] 封面/头像
- * @property {string} [jumpUrl] 前端跳转链接（可选）
- * @property {Record<string, unknown>} payload 差异化字段容器
- */
-
-/**
- * 视频结果（歌曲）
- * @typedef {SeekItemBase & {
- *   type: 'video',
- *   payload: {
- *     bvid?: string,
- *     play?: number,
- *     favorite?: number,
- *     like?: number,
- *     coin?: number,
- *     publishDate?: string,
- *     durationSec?: number,
- *     producerId?: string|number,
- *     vocalIdList?: Array<string|number>,
- *   },
- *   // 兼容字段（后续前端迁移完成后可移除）
- *   bvid?: string,
- *   play?: number,
- *   favorite?: number,
- *   like?: number,
- *   coin?: number,
- *   publishDate?: string, // YYYY-MM-DD
- *   durationSec?: number,
- *   producerId?: string|number,
- *   vocalIdList?: Array<string|number>,
- * }} SeekVideoItem
- */
-
-/**
- * 虚拟歌手结果
- * @typedef {SeekItemBase & {
- *   type: 'vocal',
- *   payload: {
- *     alias?: string[],
- *     songCount?: number,
- *     representativeWorks?: Array<{ id: string|number, title: string }>,
- *   },
- *   // 兼容字段（后续前端迁移完成后可移除）
- *   alias?: string[],
- *   songCount?: number,
- *   representativeWorks?: Array<{ id: string|number, title: string }>,
- * }} SeekVocalItem
- */
-
-/**
- * 创作者结果
- * @typedef {SeekItemBase & {
- *   type: 'producer',
- *   payload: {
- *     uid?: string|number,
- *     fanCount?: number,
- *     totalView?: number,
- *     videoCount?: number,
- *     recentWork?: { id: string|number, title: string, publishDate?: string },
- *   },
- *   // 兼容字段（后续前端迁移完成后可移除）
- *   uid?: string|number,
- *   fanCount?: number,
- *   totalView?: number,
- *   videoCount?: number,
- *   recentWork?: { id: string|number, title: string, publishDate?: string },
- * }} SeekProducerItem
- */
-
-/**
- * 联合搜索结果项
- * @typedef {SeekVideoItem | SeekVocalItem | SeekProducerItem} SeekItem
- */
-
-/**
- * @typedef {Object} UniSeekRequest
- * @property {string} keyword
- * @property {SeekItemType[]} [types]
- * @property {number} [page]
- * @property {number} [pageSize]
- */
-
-/**
- * @typedef {Object} UniSeekResponseData
- * @property {string} keyword
- * @property {number} total
- * @property {number} page
- * @property {number} pageSize
- * @property {SeekItem[]} list
- */
-
-/**
- * @param {UniSeekRequest} request
- * @returns {Promise<UniSeekResponseData>}
- */
-export function seek(request) {
-  const req = {
-    keyword: request?.keyword ?? '',
-    types: request?.types,
-    page: request?.page ?? 1,
-    pageSize: request?.pageSize ?? 20,
-  };
-
-  if (!isMockEnv()) {
-    return postJson('/uniseek/search', req);
-  }
-
-  /** @type {SeekItem[]} */
-  const mixedMockList = [
-    ...buildVideoMockList(req.keyword),
-    MOCK_VOCAL_LUO_TIANYI,
-    ...MOCK_PRODUCERS,
-  ];
-  const filteredByType = mixedMockList.filter((item) => !req.types?.length || req.types.includes(item.type));
-  const matchedAndSorted = filteredByType
-    .map((item) => {
-      const { matched, rank } = matchAndRankItem(item, req.keyword);
-      return { item, matched, rank };
-    })
-    .filter((row) => row.matched)
-    .sort((a, b) => a.rank - b.rank)
-    .map((row) => row.item);
-
-  const startIdx = Math.max(0, (req.page - 1) * req.pageSize);
-  const list = matchedAndSorted.slice(startIdx, startIdx + req.pageSize);
-
-  return Promise.resolve({
-    keyword: req.keyword,
-    total: matchedAndSorted.length,
-    page: req.page,
-    pageSize: req.pageSize,
-    list,
-  });
+export function searchVideoById(aid, options) {
+  if (!isMockEnv()) return getJson(`/uniseek/videos/${encodeURIComponent(aid)}`, options);
+  const mock = isMockEnv() ? MOCK_VIDEO_ROWS.find(([id]) => id === aid) : null;
+  if (mock) return Promise.resolve({ list: [{ type: 'video', id: aid, title: mock[1],
+    jumpUrl: `/videos/${aid}`, payload: { play: mock[2] } }] });
+  return Promise.resolve({ list: [] });
+}
+export function searchProducerById(userId, options) {
+  if (!isMockEnv()) return getJson(`/uniseek/producers/${encodeURIComponent(userId)}`, options);
+  const mock = isMockEnv() ? MOCK_PRODUCERS.find(item => item.payload.videoCount > 0 && Boolean(item.coverUrl?.trim()) && String(item.id) === userId) : null;
+  if (mock) return Promise.resolve({ list: [{ ...mock, id: userId, jumpUrl: `/producers/${userId}` }] });
+  return Promise.resolve({ list: [] });
 }

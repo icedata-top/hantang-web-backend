@@ -246,3 +246,7 @@ POST `/hantang/metric-achieved-time`
     "target": 3000000
 }
 ```
+
+### UniSeek beta
+
+统一搜索入口 `/uniseek`，接入 PostgreSQL 视频、创作者和轻量配置歌手。歌手在前端即时匹配；歌曲、UP 主关键词和 AV/BV/UID 精确查询并发调用，按到达顺序追加，后续只分页加载歌曲。接口、临时排序及部署前置见 [UniSeek 说明](frontend/src/services/UniSeek/uniseek.md)；[搜索索引 SQL](sql/uniseek_search_indexes.sql) 由开发者手动执行，应用不自动创建索引。

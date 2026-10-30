@@ -1,6 +1,7 @@
 package com.hantang.web;
 
 import com.hantang.web.controller.BaseController;
+import com.hantang.web.controller.UniSeekController;
 import com.hantang.web.config.Zhongshu50Config;
 import com.hantang.web.controller.DataReaderController;
 import com.hantang.web.controller.HomeController;
@@ -34,7 +35,8 @@ public class App {
                 new HomeController(),
                 new OverviewController(),
                 new VideoController(),
-                new ProducerController()
+                new ProducerController(),
+                new UniSeekController()
         };
 
         for (BaseController controller : controllers) {
