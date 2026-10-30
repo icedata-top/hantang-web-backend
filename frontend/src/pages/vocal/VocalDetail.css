@@ -1,0 +1,71 @@
+.vocal-detail-page { max-width: 1080px; margin: 0 auto; padding: 12px 24px; color: var(--text-primary); font-size: var(--font-size-body); line-height: var(--line-height-body); }
+.vocal-detail-breadcrumb { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; color: var(--text-secondary); font-size: var(--font-size-caption); }
+.vocal-detail-breadcrumb a { display: inline-flex; align-items: center; gap: 8px; }
+.vocal-hero { --vocal-artwork-height: min(760px, calc(100svh - 128px)); position: relative; isolation: isolate; display: grid; grid-template-columns: minmax(240px, 320px) minmax(0, calc(var(--vocal-artwork-height) * 0.75)); grid-template-areas: 'intro artwork' 'info artwork'; justify-content: center; column-gap: 12px; min-width: 0; margin-top: 8px; }
+.vocal-hero-intro { position: relative; z-index: 1; grid-area: intro; align-self: end; min-width: 0; }
+.vocal-hero-eyebrow { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 0 0 8px; color: var(--text-secondary); font-size: var(--font-size-caption); letter-spacing: 0.14em; }
+.vocal-hero-eyebrow > span { width: 7px; height: 7px; border-radius: 50%; background: var(--vocal-accent); }
+.vocal-hero h1 { margin: 0; font-size: var(--font-size-vocal-name); font-weight: var(--font-weight-semibold); line-height: var(--line-height-vocal-name); letter-spacing: 0.06em; overflow-wrap: anywhere; }
+.vocal-hero-collection { margin: 8px 0 0; color: var(--text-secondary); font-size: var(--font-size-heading); font-weight: var(--font-weight-regular); }
+.vocal-hero-tags { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.vocal-profile-tag.ant-tag { margin: 0; padding: 2px 8px; border: 0; border-radius: var(--radius-control); background: var(--vocal-accent-bg); color: var(--vocal-accent-text); font-size: var(--font-size-caption); font-weight: var(--font-weight-medium); line-height: var(--line-height-body); }
+.vocal-hero-info { position: relative; z-index: 1; grid-area: info; align-self: start; min-width: 0; max-width: 360px; padding: 20px 0 12px; }
+.vocal-profile-heading { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.vocal-profile-heading > span { width: 24px; height: 2px; background: var(--vocal-accent); }
+.vocal-profile-heading h2 { margin: 0; color: var(--text-secondary); font-size: var(--font-size-caption); font-weight: var(--font-weight-medium); letter-spacing: 0.1em; }
+.vocal-profile-facts.ant-descriptions .ant-descriptions-item-label { min-width: 4em; padding-inline-end: 16px; color: var(--text-secondary); font-size: var(--font-size-body); }
+.vocal-profile-facts.ant-descriptions .ant-descriptions-item-content { min-width: 0; color: var(--text-primary); font-size: var(--font-size-body); font-weight: var(--font-weight-medium); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.vocal-profile-facts.ant-descriptions .ant-descriptions-row > td { padding-bottom: 8px; }
+.vocal-profile-caption, .vocal-profile-note { margin: 10px 0 0; color: var(--text-secondary); font-size: var(--font-size-body); }
+.vocal-support-colors { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; margin-top: 10px; color: var(--text-secondary); font-size: var(--font-size-caption); }
+.vocal-support-colors > span { display: inline-flex; align-items: center; gap: 6px; }
+.vocal-support-colors .anticon { color: var(--vocal-accent-text); }
+.vocal-support-colors code { font-family: var(--font-family-mono); }
+.vocal-support-swatch { display: inline-block; flex: none; width: 36px; height: 12px; border-radius: 1px; background: var(--vocal-swatch-color); }
+.vocal-detail-organization { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 14px; color: var(--text-secondary); font-size: var(--font-size-caption); }
+.vocal-artwork { position: relative; grid-area: artwork; display: flex; align-items: center; justify-content: center; width: 100%; min-width: 0; height: var(--vocal-artwork-height); margin: 0; overflow: hidden; overflow: clip; isolation: isolate; }
+.vocal-hero-pattern { position: absolute; top: 0; left: 50%; z-index: -1; width: min(1400px, calc(100vw - 32px)); height: 100%; transform: translateX(-50%); pointer-events: none; }
+.vocal-pattern-square { opacity: var(--vocal-hatch-square-opacity); }
+.vocal-pattern-circle { opacity: var(--vocal-hatch-circle-opacity); }
+.vocal-pattern-line { stroke: var(--vocal-fan-color, var(--vocal-accent)); stroke-width: var(--vocal-hatch-square-width); }
+.vocal-pattern-line--secondary { stroke: var(--vocal-fan-color-secondary, var(--vocal-fan-color, var(--vocal-accent))); stroke-width: var(--vocal-hatch-circle-width); }
+.vocal-artwork-image { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center; animation: vocal-artwork-arrive 600ms ease both; }
+.vocal-artwork-missing { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; min-height: 200px; color: var(--text-secondary); font-size: var(--font-size-body); }
+.vocal-artwork-missing .anticon { font-size: var(--font-size-display); }
+.vocal-artwork-actions { position: absolute; z-index: 2; right: 10px; bottom: 12px; display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 6px; max-width: calc(100% - 20px); }
+.vocal-artwork-actions .ant-btn.ds-button { max-width: 100%; height: auto; border: var(--button-border-width) solid var(--surface-border); background: var(--button-normal-bg); color: var(--button-normal-text); box-shadow: none; white-space: normal; }
+.vocal-artwork-actions .ant-btn.ds-button > span:last-child { min-width: 0; overflow-wrap: anywhere; }
+.vocal-artwork-actions .ant-btn.ds-button:not(:disabled):is(:hover, :active) { background: var(--button-normal-hover); color: var(--button-normal-text); }
+.vocal-artwork-actions .ant-btn.ds-button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
+
+/* The larger texture can sit under copy; keep small text legible over its colored lines. */
+.vocal-hero-eyebrow,
+.vocal-hero-collection,
+.vocal-profile-heading h2,
+.vocal-profile-facts.ant-descriptions .ant-descriptions-item-label,
+.vocal-profile-caption,
+.vocal-profile-note,
+.vocal-support-colors,
+.vocal-detail-organization { color: var(--text-primary); }
+
+@keyframes vocal-artwork-arrive { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 680px) {
+  .vocal-detail-page { padding: 12px 16px 16px; }
+  .vocal-hero { grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.35fr); grid-template-areas: 'intro intro' 'info artwork'; column-gap: 0; }
+  .vocal-hero-intro { padding-top: 8px; }
+  .vocal-hero-eyebrow { margin-bottom: 6px; }
+  .vocal-hero-collection { display: inline-block; margin-top: 6px; margin-inline-end: 12px; font-size: var(--font-size-body); }
+  .vocal-hero-tags { display: inline-flex; margin-top: 6px; vertical-align: middle; }
+  .vocal-hero-info { padding: 16px 0 0; }
+  .vocal-profile-heading { margin-bottom: 8px; }
+  .vocal-profile-facts.ant-descriptions .ant-descriptions-item-label { min-width: 0; max-width: 5em; padding-inline-end: 10px; font-size: var(--font-size-caption); }
+  .vocal-profile-facts.ant-descriptions .ant-descriptions-item-content { font-size: var(--font-size-caption); }
+  .vocal-profile-facts.ant-descriptions .ant-descriptions-row > td { padding-bottom: 6px; }
+  .vocal-support-colors { gap: 6px 10px; }
+  .vocal-detail-organization { margin-top: 10px; }
+  .vocal-artwork { height: clamp(220px, calc(100svh - 280px), 400px); margin-top: 8px; }
+  .vocal-artwork-actions { right: 0; bottom: 4px; max-width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) { .vocal-artwork-image { animation: none; } }

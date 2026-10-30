@@ -267,6 +267,7 @@
                 "gender": "女",
                 "birthday": "07-13",
                 "height": 140,
+                "cv": "悠茗月尘",
                 "weight": 30,
                 "representative": "凤凰",
                 "highlight_list": ["姐姐", "绿瞳", "四条长发"]
@@ -284,6 +285,7 @@
                 "gender": "男",
                 "birthday": "07-13",
                 "height": 142,
+                "cv": "这是一根手指",
                 "weight": 31,
                 "representative": "笛子",
                 "highlight_list": ["弟弟", "红瞳", "四条眉毛"]
@@ -294,6 +296,7 @@
             "name": "潋妤",
             "group_id": 12,
             "image_path": "/public/vocals/lianyu.webp",
+            "image_source_url": "https://vcpedia.cn/File:Cwgg%E6%BD%8B%E5%A6%A4%E7%AB%8B%E7%BB%98.png",
             "support_color_list": ["#A4DCDC", "#F4ACAC"],
             "official_producer_id": 0,
             "official_persona": {

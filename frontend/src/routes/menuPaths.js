@@ -26,5 +26,8 @@ export function getMenuKeyFromPathname(pathname) {
   if (matchPath('/producers/:userId', pathname)) {
     return 'producers';
   }
+  if (matchPath('/vocals/:vocalId', pathname)) {
+    return 'vocals';
+  }
   return PATH_TO_MENU_KEY[pathname];
 }

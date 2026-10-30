@@ -25,6 +25,8 @@
   --font-size-label: 13px;
   --font-size-display: 30px;
   --font-size-display-compact: 26px;
+  --font-size-vocal-name: clamp(44px, 5.5vw, 78px);
+  --line-height-vocal-name: 1.15;
   --font-size-button: var(--font-size-body);
   --font-size-icon: 16px;
   --media-action-icon-size: 36px;
@@ -105,6 +107,11 @@
   --disabled-fill-strength: 6%;
   --chip-orange-text-strength: 55%;
   --honor-text-strength: 45%;
+  --vocal-accent-text-strength: 45%;
+  --vocal-hatch-square-opacity: 0.2;
+  --vocal-hatch-circle-opacity: 0.32;
+  --vocal-hatch-square-width: 1.5;
+  --vocal-hatch-circle-width: 3;
   --alert-fill-strength: 20%;
   --alert-border-strength: 28%;
   --alert-text-strength: 60%;
@@ -150,6 +157,11 @@
   --disabled-fill-strength: 8%;
   --chip-orange-text-strength: 85%;
   --honor-text-strength: 85%;
+  --vocal-accent-text-strength: 85%;
+  --vocal-hatch-square-opacity: 0.16;
+  --vocal-hatch-circle-opacity: 0.28;
+  --vocal-hatch-square-width: 1;
+  --vocal-hatch-circle-width: 2.5;
   --alert-fill-strength: 16%;
   --alert-border-strength: 35%;
   --alert-text-strength: 70%;
@@ -245,4 +257,16 @@
   --picker-body-text: var(--text-primary);
   --selection-bg: color-mix(in srgb, var(--theme-primary) 20%, transparent);
   --selection-text: var(--color-white);
+}
+
+/* 角色档案：标签使用 highlight；应援色仅以局部数据变量用于色块和斜线几何底纹。 */
+[data-vocal-accent='blue'] { --vocal-accent: var(--highlight-blue); }
+[data-vocal-accent='red'] { --vocal-accent: var(--highlight-red); }
+
+:root,
+[data-theme='light'],
+[data-theme='dark'],
+[data-vocal-accent] {
+  --vocal-accent-bg: color-mix(in srgb, var(--vocal-accent) 12%, var(--surface));
+  --vocal-accent-text: color-mix(in srgb, var(--vocal-accent) var(--vocal-accent-text-strength), var(--text));
 }

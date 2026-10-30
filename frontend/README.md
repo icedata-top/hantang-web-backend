@@ -22,9 +22,11 @@
 
 视频详情已接入基本信息与最新日快照两个接口，展示标题、分区、投稿时间、封面、投稿人、七项累计指标、简介及标签；创作者详情接入账号资料与分页投稿，支持图标切换列表 / 卡片（默认卡片）、第一作者 / 参与作者切换、按播放量 / 投稿时间排序及升降序，默认每页 20 条。接口及数据口径见[创作者详情 API](src/services/Producer/producer.md)。详情页分别选中「歌曲」和「创作者」导航项。视频 ID 接受不带前导零的正整数 AV 号或完整 BV 号，格式错误显示「你输入的ID不合法」；基本信息无记录显示「你输入的ID，在哔哩哔哩不存在或者冰数据未收录」，不调用哔哩哔哩 API 区分这两种情况。创作者 ID 只接受不带前导零的正 64 位整数。`/videos`、`/producers` 保留原有列表待开发入口。
 
-运行 `npm test` 检查视频 ID 格式、BV 转换、大整数精度、播放荣誉阈值及历史指标的差分与缺失数据处理。
+运行 `npm test` 检查视频 ID 格式、BV 转换、大整数精度、播放荣誉阈值、历史指标的差分与缺失数据，以及虚拟歌手编号和素材路径。
 
 视频标题下展示当前最高播放荣誉：10万为「殿堂」、100万为「传说」、1000万为「神话」，阈值含等号。荣誉按最新收录快照的累计播放量判定，使用奖杯图标及 highlight 蓝 / 橙 / 紫派生的无边框标签；未达到门槛或播放数据暂缺时不展示。完整规则见[视频播放荣誉](../doc/design/video-view-honors.md)，三个等级的日夜预览位于 `/admin/design/spec` 的「Tag / Chip」。
+
+虚拟歌手详情已注册 `/vocals/:vocalId`，赤羽示例为 `/vocals/304`。角色资料与立绘直接读取 `src/constants/vocal/vocal-frontend-info.json`，在 DEV / PROD / MOCK 均无需后端；立绘直接放在 Canvas 上，配合大标题、轻量装饰与 Ant Design 资料展示。仅展示已配置的基本信息、应援色色号和来源链接，不查询或生成歌曲关联与统计。布局、素材路径和编号说明见[虚拟歌手详情](../doc/design/vocal-detail.md)。
 
 视频简介下方的「数据趋势」支持日期范围筛选与累计值 / 增量切换，默认最近 7 天的累计值，七项指标使用与总览相同的 highlight 配色。后端每日明细 API 只返回累计快照，前端仅对相邻自然日的有效值作差；缺失处断线，并可展开具体缺失日期及指标。摘要显示所选区间的播放增长和按完整天数计算的日均，端点缺失时明确暂缺。日期范围采用与总览一致的 S 至 E+1 快照口径，详情见[单视频历史数据与趋势](../doc/design/video-metrics-history.md)。
 
@@ -133,7 +135,7 @@ icedata-web-react/
 │   │   ├── Overview/
 │   │   ├── UniSeek/           # 统一搜索结果页（歌曲复用共享 VideoCard）
 │   │   ├── video/             # VideoDetail：视频详情、最新日快照与展示格式化
-│   │   ├── vocal/             # 虚拟歌手：VocalList / VocalDetail
+│   │   ├── vocal/             # VocalDetail：本地角色资料与立绘，无后端请求
 │   │   ├── producer/          # ProducerDetail：创作者资料、排序及分页投稿，列表 / 卡片切换
 │   │   └── …
 │   ├── services/              # API / MOCK
@@ -269,7 +271,7 @@ UI 规范页 `/admin/design/spec` 同步展示这条约定。共用分页器的�
 | 歌曲列表 | `/videos` | 导航「歌曲」入口 |
 | 歌曲详情 | `/videos/:aid` | 接受 AV / BV 入口，统一为数字 aid 路径 |
 | 虚拟歌手列表 | `/vocals` | 导航「虚拟歌手」入口 |
-| 虚拟歌手详情 | 尚未注册 | 保留规划，当前无可用详情路径 |
+| 虚拟歌手详情 | `/vocals/:vocalId` | 前端配置中的稳定 ID；赤羽为 304 |
 | 创作者列表 | `/producers` | 导航「创作者」入口 |
 | 创作者详情 | `/producers/:userId` | `userId` 为创作者的数字用户 ID |
 | 统一搜索 | `/uniseek` | 首页搜索跳转；可带 `?keyword=` |
@@ -283,6 +285,7 @@ UI 规范页 `/admin/design/spec` 同步展示这条约定。共用分页器的�
 /videos
 /videos/2129461
 /vocals
+/vocals/304
 /producers
 /producers/123456
 /uniseek?keyword=普通DISCO
@@ -296,7 +299,8 @@ UI 规范页 `/admin/design/spec` 同步展示这条约定。共用分页器的�
   ├─ 虚拟歌手  → /vocals         （VocalList）
   └─ 创作者    → /producers      （ProducerList）
 
-列表 / 投稿 Item 点击 → /videos/:aid · /producers/:userId  （已实现详情）
+列表 / 投稿 Item 点击 → /videos/:aid · /producers/:userId
+虚拟歌手角色资料 → /vocals/:vocalId
 
 首页搜索 → /uniseek?keyword=…   （UniSeek 结果页）
   └─ 结果 Item 点击 → 同上详情页 URL
@@ -312,10 +316,11 @@ UI 规范页 `/admin/design/spec` 同步展示这条约定。共用分页器的�
 ```text
 src/pages/video/VideoDetail.jsx
 src/pages/producer/ProducerDetail.jsx
+src/pages/vocal/VocalDetail.jsx
 src/components/custom/VideoCard/VideoCard.jsx
 ```
 
-> 路由以 `src/App.jsx` 为准。三个导航列表页仍为待开发占位；虚拟歌手详情尚未注册。歌曲卡片已用于统一搜索及创作者详情的投稿区。
+> 路由以 `src/App.jsx` 为准。三个导航列表页仍为待开发占位；虚拟歌手详情仅展示本地配置，暂不展示歌曲关联。歌曲卡片已用于统一搜索及创作者详情的投稿区。
 
 ## 使用的第三方组件/素材
 
