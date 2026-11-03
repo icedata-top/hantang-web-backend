@@ -2,7 +2,7 @@ package com.hantang.web.dos.uniseek;
 
 import java.util.List;
 
-/** Keyword search only. Exact AV/BV/UID lookups use the existing detail endpoints. */
+/** Keyword search only. Exact AV/BV/UID lookups use dedicated search endpoints. */
 public record UniSeekRequest(String keyword, Integer page, Integer pageSize) {
     public static final int VIDEO_LIMIT = 1000;
 

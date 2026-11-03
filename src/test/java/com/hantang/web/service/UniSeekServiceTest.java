@@ -12,13 +12,13 @@ class UniSeekServiceTest {
     private Map<String, Object> video(String aid, double score) {
         var row = new HashMap<String, Object>();
         row.put("aid", aid); row.put("title", "洛天依"); row.put("score", score);
-        row.put("pic", "http://i0.hdslb.com/cover.jpg"); row.put("view", null); row.put("like", 0);
+        row.put("pic", "http://i0.hdslb.com/cover.jpg"); row.put("view", null); row.put("like", 101); row.put("favorite", 0);
+        row.put("record_date", "2026-11-02"); row.put("batch_id", "a");
         return row;
     }
     @Test void videosNeverQueryProducersAndRetainSqlOrderAndMissingMetrics() {
         var dao = new UniSeekDao((sql, params) -> {
-            if (sql.startsWith("SELECT to_regclass")) return List.of();
-            if (sql.startsWith("SELECT max")) return List.of(java.util.Map.of("record_date", "2026-10-28"));
+            if (sql.startsWith("SELECT batch_id::text")) return List.of(Map.of("batch_id", "a"));
             assertFalse(sql.contains("discovered_users"));
             return List.of(video("9007199254740993", 400), video("2", 900));
         });
@@ -27,13 +27,13 @@ class UniSeekServiceTest {
         assertTrue(result.hasMore()); assertEquals(2, result.nextPage());
         var item = result.list().getFirst();
         assertEquals("9007199254740993", item.id()); assertNull(item.payload().get("play"));
-        assertEquals(0, item.payload().get("like")); assertEquals("https://i0.hdslb.com/cover.jpg", item.coverUrl());
+        assertEquals(101, item.payload().get("like")); assertEquals(0, item.payload().get("favorite"));
+        assertEquals("2026-11-02", item.payload().get("recordDate")); assertEquals("https://i0.hdslb.com/cover.jpg", item.coverUrl());
     }
     @Test void secondPageOnlyReturnsTheNextVideosWithoutSortingAgain() {
         var calls = new AtomicInteger();
         var dao = new UniSeekDao((sql, params) -> {
-            if (sql.startsWith("SELECT to_regclass")) return List.of();
-            if (sql.startsWith("SELECT max")) return List.of(java.util.Map.of("record_date", "2026-10-28"));
+            if (sql.startsWith("SELECT batch_id::text")) return List.of(Map.of("batch_id", "a"));
             calls.incrementAndGet(); assertFalse(sql.contains("discovered_users"));
             var rows = new ArrayList<Map<String, Object>>();
             for (int i = 0; i < 30; i++) rows.add(video("skip" + i, 900));

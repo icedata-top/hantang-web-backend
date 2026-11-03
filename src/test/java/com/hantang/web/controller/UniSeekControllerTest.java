@@ -19,8 +19,7 @@ class UniSeekControllerTest {
         var queries = new AtomicInteger();
         var service = new UniSeekService(new UniSeekDao((sql, params) -> {
             queries.incrementAndGet();
-            if (sql.startsWith("SELECT to_regclass")) return List.of();
-            if (sql.startsWith("SELECT max")) return List.of(Map.of("record_date", "2026-10-28"));
+            if (sql.startsWith("SELECT batch_id::text")) return List.of(Map.of("batch_id", "a"));
             if (params.contains("fail")) throw new IllegalStateException("private database error");
             return List.of();
         }), Runnable::run);
@@ -54,9 +53,8 @@ class UniSeekControllerTest {
         var releaseVideo = new CountDownLatch(1);
         try (var executor = Executors.newFixedThreadPool(2)) {
             var service = new UniSeekService(new UniSeekDao((sql, params) -> {
-                if (sql.startsWith("SELECT to_regclass")) return List.of();
-                if (sql.startsWith("SELECT max")) return List.of(java.util.Map.of("record_date", "2026-10-28"));
-                if (sql.contains("processed_videos")) {
+                if (sql.startsWith("SELECT batch_id::text")) return List.of(Map.of("batch_id", "a"));
+                if (sql.contains("ORDER BY score")) {
                     videoStarted.countDown();
                     try { if (!releaseVideo.await(5, TimeUnit.SECONDS)) throw new IllegalStateException("test timed out"); }
                     catch (InterruptedException e) { throw new RuntimeException(e); }

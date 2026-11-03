@@ -21,7 +21,7 @@
 
 ## 视频与创作者数据
 
-视频静态信息（标题、投稿时间、简介、封面、上传者等）统一来自 PostgreSQL 的 `hantang_dynamic.processed_videos`；如无必要，不得使用 `hantang_dynamic.video_static`，也不得将其作为默认回退来源。创作者账号信息来自 `hantang_dynamic.discovered_users`，上传者关联为 `processed_videos.user_id = discovered_users.user_id`。
+视频静态信息（标题、投稿时间、简介、封面、上传者等）的源表为 PostgreSQL 的 `hantang_dynamic.processed_videos`；UniSeek 歌曲搜索读取由它与指定日期 Daily 数据离线生成的 `hantang_dynamic.adm_uniseek_videos`。如无必要，不得使用 `hantang_dynamic.video_static`，也不得将其作为默认回退来源。创作者账号信息来自 `hantang_dynamic.discovered_users`，上传者关联为 `processed_videos.user_id = discovered_users.user_id`。
 
 字段含义、时间及缺失值口径见[视频与创作者表文档](sql/video_creator_reference.md)，可执行的只读 SQL 见[查询示例](sql/video_creator_queries.sql)，世末歌者（`aid=6009789`）与 COPY（`user_id=396194`）的完整实例见[实例数据说明](sql/examples/video_creator_sample.md)。
 
@@ -249,4 +249,10 @@ POST `/hantang/metric-achieved-time`
 
 ### UniSeek beta
 
-统一搜索入口 `/uniseek`，接入 PostgreSQL 视频、创作者和轻量配置歌手。歌手在前端即时匹配；歌曲、UP 主关键词和 AV/BV/UID 精确查询并发调用，按到达顺序追加，后续只分页加载歌曲。接口、临时排序及部署前置见 [UniSeek 说明](frontend/src/services/UniSeek/uniseek.md)；[搜索索引 SQL](sql/uniseek_search_indexes.sql) 由开发者手动执行，应用不自动创建索引。
+统一搜索入口 `/uniseek`。歌手在前端即时匹配；歌曲、UP 主关键词和 AV/BV/UID 精确查询并发调用，按到达顺序追加，后续只分页加载歌曲。
+
+歌曲关键词与 AV/BV 查询统一读取 `hantang_dynamic.adm_uniseek_videos`，在线不再 JOIN `processed_videos` 或 Daily，也不探测 Daily 最新日期。宽表按显式确认的数据日离线生成，只收录未删除、该日点赞数 **> 100** 的视频，直接提供封面、标签和累计指标。关键词支持一、二字标题子串及精确标签匹配；所有匹配项先按临时相关性与有上限的播放量加分排序，再保留最多 1,000 首供分页。排序结果按关键词和发布批次 UUID 缓存 60 秒，最多 16 个键，同日重新发布也会使旧缓存失效。
+
+开发者已完成首批宽表构建并实际运行新搜索，反馈首次视频响应约 **700 ms**、后续滚动分页约 **100 ms/次**；旧路径聊天记录中的热门二字词未缓存首查约 **3–4 秒**，粗略相当于首次提速约 4–6 倍。样本的关键词、负载和测量条件未统一，不作为 P50/P95。开发者提出宽表化方向并负责业务库操作，Codex 补充发布校验、查询迁移、批次缓存及回归；过程、分工与结果见 [技改复盘](doc/design/uniseek/adm-search-retrospective.md)。
+
+无需 `pg_trgm`，应用不建表、不注册 CRON；独立 Java 账号需授予 schema USAGE 和宽表 SELECT，后续每日同步仍须确认完整数据日。接口与回归说明见 [UniSeek 说明](frontend/src/services/UniSeek/uniseek.md)，部署及授权见 [ADM SQL 使用说明](sql/adm_uniseek_videos.md)，剩余调度、运行验收见 [ADM TODO](doc/todo/uniseek-adm-search-snapshot.md)。

@@ -12,6 +12,8 @@
 
 **视频静态信息统一来自 `hantang_dynamic.processed_videos`。如无必要，不得使用 `hantang_dynamic.video_static`。** 标题、投稿时间、简介、标签、封面、分区和上传者等均遵循此约定，后续页面、接口、查询、测试与设计示例应以此为准。
 
+UniSeek 歌曲搜索采用由 `processed_videos` 与显式确认日的 `video_daily` 离线生成的 `hantang_dynamic.adm_uniseek_videos`，关键词与 AV/BV 入口均只读该已发布搜索集，不在线 JOIN 源表。其静态字段仍以 `processed_videos` 为来源；详情接口继续使用原资料表。收录门槛、批次与同步操作见 [ADM 搜索宽表说明](adm_uniseek_videos.md)。
+
 - 不因为字段名称中有 `static` 就选用 `video_static`。
 - `processed_videos` 缺行或字段为 NULL 时，应保留缺失状态，不默认从 `video_static` 补齐。
 - 只有明确需要存量数据对账、排查差异或兼容已有逻辑时，才使用 `video_static`，并说明用途。本文保留其结构与实例仅用于存量对照。

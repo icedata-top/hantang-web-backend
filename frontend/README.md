@@ -308,6 +308,14 @@ UI 规范页 `/admin/design/spec` 同步展示这条约定。共用分页器的�
   └─ 结果 Item 点击 → 同上详情页 URL
 ```
 
+### UniSeek beta
+
+`/uniseek?keyword=天依` 独立展示本地虚拟歌手、创作者和歌曲，网络结果按到达顺序追加，后续只翻页加载歌曲。歌曲关键词及 AV/BV 精确查询已改读后端的 `hantang_dynamic.adm_uniseek_videos`：只展示已发布数据日点赞数 > 100 的收录视频，封面和累计指标直接来自宽表，`payload.recordDate` 为其来源日期。歌手本地匹配和创作者查询保持独立。
+
+接口和无限滚动契约保持不变：page 从 1 开始，默认每页 30 首、最多返回 1,000 首。短关键词也支持标题子串；后端结果缓存按发布批次区分，同日补算后重新读取新批次。跨批次翻页仍可能出现顺序变化，由前端去重，固定快照游标留作后续。详见 [搜索接口说明](src/services/UniSeek/uniseek.md)、[ADM 部署说明](../sql/adm_uniseek_videos.md) 与 [剩余 TODO](../doc/todo/uniseek-adm-search-snapshot.md)。
+
+开发者反馈新路径首次视频响应约 700 ms，第二次及后续下滑约 100 ms/次。与旧聊天记录首次约 3–4 秒粗比，体验已有改善；这些是不同条件的响应样本。宽表方案、开发者/Codex 分工和结果边界见 [技改复盘](../doc/design/uniseek/adm-search-retrospective.md)。
+
 ### 组件约定
 
 - 歌曲卡片复用 `src/components/custom/VideoCard/VideoCard.jsx`：UniSeek 的歌曲分支与创作者详情的卡片模式使用同一组件。搜索页继续独立管理关键词、类型、相关性与查询，通过适配器传入展示数据，不复制第二套卡片。歌手和创作者搜索 Item 仍由 `UniSeekItem` 管理。
