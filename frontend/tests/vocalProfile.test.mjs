@@ -26,7 +26,7 @@ test('all catalog profiles resolve and every configured image maps to an existin
       assert.equal(profile.imageSrc, null, vocal.name);
     }
   }
-  assert.equal(resolveVocalProfile('301', catalog).imageSrc, '/vocals/xingchen.jpg');
+  assert.equal(resolveVocalProfile('301', catalog).imageSrc, '/vocals/xingchen.webp');
   assert.equal(resolveVocalProfile('105', catalog).imageSrc, '/vocals/zhiyunmoke.webp');
   assert.equal(resolveVocalProfile('307', catalog).vocal.name, '牧心');
 });
