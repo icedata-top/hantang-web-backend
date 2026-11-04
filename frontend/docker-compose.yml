@@ -1,6 +1,6 @@
 services:
   icedata-web-react:
-    image: ${ICEDATA_WEB_IMAGE:-ghcr.io/icedata-top/icedata-web-react:main}
+    image: ${ICEDATA_WEB_IMAGE:-ghcr.io/icedata-top/hantang-web-frontend:main}
     pull_policy: always
     environment:
       ICEDATA_API_BASE_URL: /api
