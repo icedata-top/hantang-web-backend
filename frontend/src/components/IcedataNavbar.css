@@ -270,6 +270,15 @@
   transition: background-color 160ms ease, color 160ms ease;
 }
 
+/* Ant Design reapplies the border shorthand on hover/active; override those states too. */
+.icedata-language-trigger.ant-btn:not(:disabled):not(.ant-btn-disabled):hover,
+.icedata-language-trigger.ant-btn:not(:disabled):not(.ant-btn-disabled):active {
+  border: 0;
+  box-shadow: none;
+  background: var(--button-hover-bg);
+  color: var(--button-text);
+}
+
 .icedata-language-trigger.ant-btn:not(:disabled):focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 3px;
