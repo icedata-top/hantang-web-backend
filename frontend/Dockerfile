@@ -27,7 +27,7 @@ ARG VITE_APP_ENV=PROD
 ENV VITE_APP_ENV=$VITE_APP_ENV
 RUN pnpm run build
 
-FROM caddy:2.11.8-alpine
+FROM caddy:2.11-alpine
 
 COPY Caddyfile /etc/caddy/Caddyfile
 COPY docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
