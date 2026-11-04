@@ -14,6 +14,8 @@
 - 独立布尔设置用 `Switch`，多选用 `Checkbox`。
 - 按钮、标签、信息描述和浮层复用 `Button`、`Tag`、`Descriptions`、`Tooltip` / `Popover` / `Drawer` 等已有组件；日期范围使用 `DatePicker.RangePicker`。
 
+导航语言选择采用明确选项，顺序为「中文、English、日本語」，使用语言自身名称，不使用国旗或 Emoji。桌面端用无描边、无按钮阴影的 Ant Design 文本 Button 打开纵向 Dropdown 菜单，显示当前语言与选中状态，保留键盘焦点外环；移动端 Drawer 使用 Segmented，保留原生组件的键盘和焦点行为。语言选择与日夜主题切换独立。
+
 输入框直接使用 Ant Design 输入框本体，不再额外包一层相同外观的圆角矩形。图标优先复用 `@ant-design/icons`；装饰图标跟随文字色，纯图标操作提供可访问的名称。
 
 项目已有的 `ProducerInfo`、`VideoInfo`、`VideoCard`、`RelativeTime`、`VideoHonor` 和 `DsTabs` / `DsTable` / `DsPagination` 按适用场景直接复用，业务页面不复制其请求、弹层或分页交互。`ds-*` 是已有的共享样式与兼容层，新增基础控件仍优先使用 Ant Design；语义化 HTML 可用于组织页面内容。
@@ -114,7 +116,11 @@ Primary 用于核心操作，Secondary 用于取消、重置等次要操作，No
 
 ## 字体与文字颜色
 
-沿用系统无衬线字体栈。
+使用本机系统无衬线字体，按内容的 `lang` 选择字体栈，唯一配置入口为 `theme.css`：中文 `--font-family-zh` 优先 PingFang SC / Microsoft YaHei / Noto Sans SC，英文 `--font-family-en` 使用系统拉丁字体，日文 `--font-family-ja` 优先 Hiragino Sans / Yu Gothic UI / Meiryo / Noto Sans JP。`--font-family-sans` 随页面语言绑定，Ant Design 的 `fontFamily` token 使用同一个变量，浮层和控件保持一致。嵌入其他语言的内容须标注自身 `lang`；日夜主题预览同样遵循语言边界。
+
+`/admin/design/spec#spec-typography` 同时展示中文、English、日本語，包含标题、正文、拉丁字母、数字及相同码位的汉字「骨 直 令 返 角」，并展示各自配置的字体栈。三列保持相同的字号、字重与行高，窄容器纵向排列；在白天、夜间和对照模式均可查看。不加载网络字体，最终字形取决于本机已安装字体；字体栈标注不代表逐字实际使用的字体。不同语言下相同汉字的细节可能不同，参见 [W3C 的语言与字体选择说明](https://www.w3.org/International/questions/qa-lang-why#fontselection)。
+
+日文核心术语的选用、业务含义与官方参考资料见[日文本地化约定](localization-ja.md)。
 
 | 层级 | 字号 | 字重 | 行高 | 颜色变量 |
 | --- | --- | --- | --- | --- |

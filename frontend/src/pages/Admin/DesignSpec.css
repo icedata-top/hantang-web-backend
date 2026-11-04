@@ -74,6 +74,25 @@
 .spec-type-body,
 .spec-type-disabled { font-size: var(--font-size-body); font-weight: var(--font-weight-regular); line-height: var(--line-height-body); }
 .spec-type-body strong { font-weight: var(--font-weight-semibold); }
+.spec-font-comparison { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--surface-border); }
+.spec-font-comparison h3 { margin: 0; font-size: var(--font-size-heading); font-weight: var(--font-weight-semibold); }
+.spec-font-description { margin: 8px 0 16px; color: var(--text-secondary); font-size: var(--font-size-caption); line-height: var(--line-height-body); }
+.spec-font-language-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.spec-font-language { min-width: 0; padding: 16px; font-family: var(--font-family-sans); }
+.spec-font-language header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; color: var(--text-secondary); font-size: var(--font-size-caption); }
+.spec-font-language header strong { font-weight: var(--font-weight-medium); }
+.spec-font-language header code { font-family: var(--font-family-mono); font-size: var(--font-size-caption); }
+.spec-font-title { margin: 20px 0 8px; font-size: var(--font-size-heading); font-weight: var(--font-weight-semibold); line-height: var(--line-height-heading); }
+.spec-font-body, .spec-font-latin { margin: 8px 0; font-size: var(--font-size-body); font-weight: var(--font-weight-regular); line-height: var(--line-height-body); }
+.spec-font-latin { font-variant-numeric: tabular-nums; }
+.spec-font-glyphs, .spec-font-stack { margin-top: 16px; }
+.spec-font-glyphs > span, .spec-font-stack > span { display: block; color: var(--text-secondary); font-size: var(--font-size-caption); font-weight: var(--font-weight-regular); }
+.spec-font-glyphs p { margin: 4px 0 0; font-size: var(--font-size-title); font-weight: var(--font-weight-regular); line-height: var(--line-height-title); }
+.spec-font-stack .spec-token { display: block; margin-top: 4px; white-space: normal; overflow-wrap: anywhere; }
+
+@container (max-width: 680px) {
+  .spec-font-language-grid { grid-template-columns: minmax(0, 1fr); }
+}
 .spec-type-secondary { color: var(--text-secondary); font-size: var(--font-size-caption); font-weight: var(--font-weight-regular); line-height: var(--line-height-body); }
 .spec-type-disabled { color: var(--text-disabled); }
 .spec-type-row .ds-link { display: inline-block; margin-bottom: 6px; font-size: var(--font-size-body); font-weight: var(--font-weight-medium); }

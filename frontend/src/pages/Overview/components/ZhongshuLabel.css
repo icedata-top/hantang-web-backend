@@ -2,6 +2,14 @@
   cursor: help;
 }
 
+.overview-zhongshu-tooltip p {
+  margin: 0;
+}
+
+.overview-zhongshu-tooltip p + p {
+  margin-top: 8px;
+}
+
 .overview-zhongshu-label .anticon {
   margin-inline-start: 4px;
   font-size: 12px;

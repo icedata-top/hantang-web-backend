@@ -1,3 +1,4 @@
+import { getLanguageSettings } from '../../../locales/languages.js';
 import { useTranslation } from 'react-i18next';
 import { ArrowDownOutlined, ArrowUpOutlined, MinusOutlined } from '@ant-design/icons';
 import { Statistic } from 'antd';
@@ -6,10 +7,10 @@ import './IndicatorCell.css';
 
 /** 指标 name → 展示名（无映射时回退为 name） */
 const INDICATOR_TITLE = {
-  newVideoCount: ['新投稿视频数', 'New Videos'],
-  activeUserCount: ['活跃创作者数', 'Active Producers'],
-  view: ['中术50播放', 'Representative Videos · Views'],
-  favorite: ['中术50收藏', 'Representative Videos · Favorites'],
+  newVideoCount: '新投稿视频数',
+  activeUserCount: '活跃创作者数',
+  view: '中术50播放',
+  favorite: '中术50收藏',
 };
 
 /**
@@ -19,33 +20,33 @@ const INDICATOR_TITLE = {
  * @param {string} [props.title] 覆盖第一行标题
  */
 export default function IndicatorCell({ data, precision = 1, title }) {
-  const { i18n } = useTranslation();
-  const isZh = String(i18n?.language || 'zh').toLowerCase().startsWith('zh');
-  const t = (zh, en) => (isZh ? zh : en);
+  const { i18n, t } = useTranslation();
+  const language = i18n.resolvedLanguage || i18n.language;
+
   const { name, value, dod } = data;
-  const displayTitle = title ?? INDICATOR_TITLE[name]?.[isZh ? 0 : 1] ?? name;
+  const displayTitle = title ?? t(INDICATOR_TITLE[name] ?? name);
   const isZhongshuMetric = name === 'view' || name === 'favorite';
 
   return (
-    <div className="indicator-cell" lang={isZh ? 'zh-CN' : 'en'}>
+    <div className="indicator-cell" lang={getLanguageSettings(language).lang}>
       <div className="indicator-cell-title">
         {isZhongshuMetric ? <ZhongshuLabel>{displayTitle}</ZhongshuLabel> : displayTitle}
       </div>
 
       <div className="indicator-cell-main-row">
         {value == null ? (
-          <span className="indicator-cell-missing">{t('暂缺', 'N/A')}</span>
+          <span className="indicator-cell-missing">{t("暂缺")}</span>
         ) : (
           <Statistic className="indicator-cell-main" value={value} valueStyle={{ color: 'var(--text)' }} />
         )}
       </div>
 
-      <span className="indicator-cell-label" title={t('环比', 'Change from the previous period')}>{t('环比', 'Change')}</span>
+      <span className="indicator-cell-label" title={t("环比")}>{t("环比")}</span>
       <div className="indicator-cell-num">
         {value != null && dod != null ? (
           <DeltaRate value={dod} precision={precision} />
         ) : (
-          <span className="indicator-cell-label">{t('暂缺', 'N/A')}</span>
+          <span className="indicator-cell-label">{t("暂缺")}</span>
         )}
       </div>
     </div>

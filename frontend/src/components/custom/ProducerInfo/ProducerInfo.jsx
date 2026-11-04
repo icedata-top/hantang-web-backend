@@ -24,9 +24,8 @@ function ProducerAvatar({ src, large = false }) {
 }
 
 function ProducerInfoContent({ userId, showAvatar, className }) {
-  const { i18n } = useTranslation();
-  const isZh = String(i18n.language || 'zh').toLowerCase().startsWith('zh');
-  const t = (zh, en) => isZh ? zh : en;
+  const { t } = useTranslation();
+
   const [attempt, setAttempt] = useState(0);
   const [state, setState] = useState({ status: 'loading', data: null });
   const [open, setOpen] = useState(false);
@@ -69,7 +68,7 @@ function ProducerInfoContent({ userId, showAvatar, className }) {
   }
 
   const card = <div className="producer-info-card" id={cardId} ref={cardRef} role="dialog"
-    aria-label={t(`${name} 的创作者资料`, `Producer information for ${name}`)} onBlur={onBlur} onKeyDown={onKeyDown}>
+    aria-label={t("{{value0}} 的创作者资料", { value0: name })} onBlur={onBlur} onKeyDown={onKeyDown}>
     <div className="producer-info-header">
       <ProducerAvatar src={producer?.face} large />
       <div className="producer-info-account">
@@ -80,18 +79,18 @@ function ProducerInfoContent({ userId, showAvatar, className }) {
     </div>
     {state.status === 'ready' && <>
       {producer.officialTitle && <div className="producer-info-official"><span className="ds-chip" data-variant="orange">{producer.officialTitle}</span></div>}
-      <p className="producer-info-sign">{producer.sign?.trim() || t('暂无个人简介', 'No bio available')}</p>
-      <div className="producer-info-fans"><span>{t('粉丝', 'Followers')}</span><strong>{producer.fans == null ? '—' : formatNumber(producer.fans, 'comma')}</strong></div>
+      <p className="producer-info-sign">{producer.sign?.trim() || t("暂无个人简介")}</p>
+      <div className="producer-info-fans"><span>{t("粉丝")}</span><strong>{producer.fans == null ? '—' : formatNumber(producer.fans, 'comma')}</strong></div>
     </>}
-    {state.status === 'loading' && <p className="producer-info-status" role="status"><LoadingOutlined spin /> {t('正在加载创作者资料…', 'Loading producer information…')}</p>}
-    {state.status === 'missing' && <p className="producer-info-status" role="status">{t('暂未收录该创作者的资料', 'This producer’s information has not been indexed')}</p>}
+    {state.status === 'loading' && <p className="producer-info-status" role="status"><LoadingOutlined spin /> {t("正在加载创作者资料…")}</p>}
+    {state.status === 'missing' && <p className="producer-info-status" role="status">{t("暂未收录该创作者的资料")}</p>}
     {state.status === 'error' && <div className="producer-info-status" role="alert">
-      <span>{t('创作者资料加载失败', 'Could not load producer information')}</span>
-      <button type="button" className="ds-button" data-variant="normal" onClick={() => setAttempt((value) => value + 1)}><ReloadOutlined />{t('重试', 'Retry')}</button>
+      <span>{t("创作者资料加载失败")}</span>
+      <button type="button" className="ds-button" data-variant="normal" onClick={() => setAttempt((value) => value + 1)}><ReloadOutlined />{t("重试")}</button>
     </div>}
     <div className="producer-info-actions">
-      <a className="ds-button" data-variant="secondary" href={`https://space.bilibili.com/${userId}`} target="_blank" rel="noopener noreferrer">{t('访问 Bilibili', 'Visit Bilibili')} <ExportOutlined /></a>
-      <Link className="ds-button" data-variant="primary" to={`/producers/${userId}`} onClick={() => setOpen(false)}>{t('创作者详情', 'Producer details')}</Link>
+      <a className="ds-button" data-variant="secondary" href={`https://space.bilibili.com/${userId}`} target="_blank" rel="noopener noreferrer">{t("访问 Bilibili")} <ExportOutlined /></a>
+      <Link className="ds-button" data-variant="primary" to={`/producers/${userId}`} onClick={() => setOpen(false)}>{t("创作者详情")}</Link>
     </div>
   </div>;
 
@@ -116,8 +115,8 @@ function ProducerInfoContent({ userId, showAvatar, className }) {
 
 /** Inline producer name with a profile card. Pass large 64-bit IDs as decimal strings. */
 export default function ProducerInfo({ userId, showAvatar = false, className = '' }) {
-  const { i18n } = useTranslation();
+  const { t } = useTranslation();
   const id = normalizeUserId(userId);
-  if (!id) return <span className={`producer-info-invalid ${className}`.trim()}>{String(i18n.language || 'zh').toLowerCase().startsWith('zh') ? '无效的创作者ID' : 'Invalid producer ID'}</span>;
+  if (!id) return <span className={`producer-info-invalid ${className}`.trim()}>{t('无效的创作者ID')}</span>;
   return <ProducerInfoContent key={id} userId={id} showAvatar={showAvatar} className={className} />;
 }

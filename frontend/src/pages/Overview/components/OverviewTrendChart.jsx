@@ -5,6 +5,7 @@ import VChart from '@visactor/vchart';
 import { useDocThemeDark } from '../../../hooks/useDocThemeDark.js';
 import ZhongshuLabel from './ZhongshuLabel.jsx';
 import { VIDEO_METRICS } from '../../../constants/video/metrics.js';
+import { getTranslator } from '../../../i18n.js';
 import './OverviewTrendChart.css';
 
 const { Text } = Typography;
@@ -41,7 +42,8 @@ function readTrendColors() {
  * @param {TrendDay[]} trend
  * @param {{ submissions: string[], videoStats: string[] }} colors
  */
-function buildLineSpec(tab, trend, colors, isZh) {
+function buildLineSpec(tab, trend, colors, language) {
+  const t = getTranslator(language);
   if (!trend?.length) {
     return null;
   }
@@ -56,10 +58,10 @@ function buildLineSpec(tab, trend, colors, isZh) {
   const values = [];
   for (const row of trend) {
     const ind = row.indicators ?? {};
-    for (const { key, label, labelEn } of metrics) {
+    for (const { key, label } of metrics) {
       values.push({
         date: row.date,
-        series: isZh ? label : labelEn,
+        series: t(label),
         value: ind[key] ?? (isSubmissions ? 0 : null),
       });
     }
@@ -91,7 +93,7 @@ function buildLineSpec(tab, trend, colors, isZh) {
     crosshair: { xField: { visible: true } },
     axes: [
       { orient: 'bottom', type: 'band' },
-      { orient: 'left', title: { visible: true, text: isSubmissions ? (isZh ? '数量' : 'Count') : (isZh ? '数值' : 'Value') } },
+      { orient: 'left', title: { visible: true, text: isSubmissions ? (t("数量")) : (t("数值")) } },
     ],
   };
 }
@@ -104,17 +106,17 @@ function buildLineSpec(tab, trend, colors, isZh) {
  * @param {(tab: string) => void} [props.onTabChange]
  */
 export default function OverviewTrendChart({ trend, loading = false, activeTab = TAB_SUBMISSIONS, onTabChange }) {
-  const { i18n } = useTranslation();
-  const isZh = String(i18n?.language || 'zh').toLowerCase().startsWith('zh');
-  const t = (zh, en) => (isZh ? zh : en);
+  const { i18n, t } = useTranslation();
+  const language = i18n.resolvedLanguage || i18n.language;
+
   const hostRef = useRef(null);
   const chartRef = useRef(null);
   const isDark = useDocThemeDark();
 
   const colors = useMemo(() => readTrendColors(), [isDark]);
   const spec = useMemo(
-    () => loading ? null : buildLineSpec(activeTab, trend, colors, isZh),
-    [activeTab, trend, colors, loading, isZh],
+    () => loading ? null : buildLineSpec(activeTab, trend, colors, language),
+    [activeTab, trend, colors, loading, language],
   );
 
   useEffect(() => {
@@ -165,19 +167,19 @@ export default function OverviewTrendChart({ trend, loading = false, activeTab =
 
   const tabItems = useMemo(
     () => [
-      { key: TAB_SUBMISSIONS, label: isZh ? '投稿与作者' : 'Videos & Producers' },
+      { key: TAB_SUBMISSIONS, label: t("投稿与作者") },
       {
         key: TAB_VIDEO_STATS,
-        label: <ZhongshuLabel focusable={false}>{isZh ? '中术50视频数据' : 'Representative Videos'}</ZhongshuLabel>,
+        label: <ZhongshuLabel focusable={false}>{t("中术50视频数据")}</ZhongshuLabel>,
       },
     ],
-    [isZh],
+    [t],
   );
 
   const empty = !trend?.length;
 
   return (
-    <Card className="overview-panel ds-surface overview-section-card overview-panel--trend" variant="borderless" title={t('数据趋势', 'Data Trends')}>
+    <Card className="overview-panel ds-surface overview-section-card overview-panel--trend" variant="borderless" title={t("数据趋势")}>
       <div className="overview-trend-card-inner">
         <Tabs
           activeKey={activeTab}
@@ -191,15 +193,15 @@ export default function OverviewTrendChart({ trend, loading = false, activeTab =
             <div className="overview-trend-chart-loading" role="status" aria-live="polite" aria-busy="true">
               <div className="overview-trend-chart-loading-content">
                 <Spin />
-                <Text type="secondary">{t('正在加载趋势数据…', 'Loading trend data…')}</Text>
+                <Text type="secondary">{t("正在加载趋势数据…")}</Text>
               </div>
             </div>
           ) : empty ? (
             <div className="overview-trend-chart-empty">
-              <Text type="secondary">{t('暂无趋势数据，请先选择日期范围。', 'No trend data. Select a date range first.')}</Text>
+              <Text type="secondary">{t("暂无趋势数据，请先选择日期范围。")}</Text>
             </div>
           ) : (
-            <div className="overview-trend-chart-host" ref={hostRef} role="img" aria-label={t('指标趋势折线图', 'Metric trends line chart')} />
+            <div className="overview-trend-chart-host" ref={hostRef} role="img" aria-label={t("指标趋势折线图")} />
           )}
         </div>
       </div>

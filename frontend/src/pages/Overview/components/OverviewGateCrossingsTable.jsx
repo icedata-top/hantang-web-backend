@@ -1,9 +1,11 @@
+import { getLanguageSettings } from '../../../locales/languages.js';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, Table } from 'antd';
 import { DsPagination } from '../../../components/design-system/DataDisplay.jsx';
 import VideoInfo from '../../../components/custom/VideoInfo/VideoInfo.jsx';
 import RelativeTime from '../../../components/custom/RelativeTime/RelativeTime.jsx';
+import { getTranslator } from '../../../i18n.js';
 import './OverviewGateCrossingsTable.css';
 
 function formatNumber(value, locale) {
@@ -20,17 +22,18 @@ function formatDelta(row, locale) {
   return formatNumber(Number(row.currentView) - Number(row.previousView), locale);
 }
 
-function buildColumns(isZh) {
-  const locale = isZh ? 'zh-CN' : 'en-US';
+function buildColumns(language) {
+  const t = getTranslator(language);
+  const locale = getLanguageSettings(language).lang;
   return [
     {
-      title: isZh ? '视频' : 'Video',
+      title: t("视频"),
       dataIndex: 'aid',
       key: 'aid',
       render: (value) => <div className="overview-gate-crossings-video"><VideoInfo aid={value} /></div>,
     },
     {
-      title: isZh ? '过线值' : 'Milestone',
+      title: t("过线值"),
       dataIndex: 'gateValue',
       key: 'gateValue',
       className: 'overview-gate-crossings-value-cell',
@@ -38,7 +41,7 @@ function buildColumns(isZh) {
       render: (value) => <span className="ds-chip overview-gate-crossings-gate" data-variant="neutral">{formatNumber(value, locale)}</span>,
     },
     {
-      title: isZh ? '上次播放' : 'Previous Views',
+      title: t("上次播放"),
       dataIndex: 'previousView',
       key: 'previousView',
       className: 'overview-gate-crossings-value-cell',
@@ -46,7 +49,7 @@ function buildColumns(isZh) {
       render: (value) => formatNumber(value, locale),
     },
     {
-      title: isZh ? '当前播放' : 'Current Views',
+      title: t("当前播放"),
       dataIndex: 'currentView',
       key: 'currentView',
       className: 'overview-gate-crossings-value-cell',
@@ -54,14 +57,14 @@ function buildColumns(isZh) {
       render: (value) => formatNumber(value, locale),
     },
     {
-      title: isZh ? '增量' : 'Increase',
+      title: t("增量"),
       key: 'delta',
       className: 'overview-gate-crossings-value-cell',
       align: 'right',
       render: (_, row) => formatDelta(row, locale),
     },
     {
-      title: isZh ? '过线时间' : 'Reached At',
+      title: t("过线时间"),
       dataIndex: 'crossedAt',
       key: 'crossedAt',
       className: 'overview-gate-crossings-value-cell',
@@ -78,13 +81,13 @@ export default function OverviewGateCrossingsTable({
   loading,
   onPageChange,
 }) {
-  const { i18n } = useTranslation();
-  const isZh = String(i18n?.language || 'zh').toLowerCase().startsWith('zh');
-  const t = (zh, en) => (isZh ? zh : en);
-  const columns = useMemo(() => buildColumns(isZh), [isZh]);
+  const { i18n, t } = useTranslation();
+  const language = i18n.resolvedLanguage || i18n.language;
+
+  const columns = useMemo(() => buildColumns(language), [language]);
 
   return (
-    <Card className="overview-panel ds-surface overview-section-card overview-panel--gate-crossings" variant="borderless" title={t('播放过线记录', 'View Milestones')}>
+    <Card className="overview-panel ds-surface overview-section-card overview-panel--gate-crossings" variant="borderless" title={t("播放过线记录")}>
       <div className="overview-gate-crossings">
         <Table
           className="overview-gate-crossings-table"
@@ -95,7 +98,7 @@ export default function OverviewGateCrossingsTable({
           rowKey={(row) => row.id ?? `${row.aid}-${row.gateValue}-${row.crossedAt}`}
           size="small"
           tableLayout="auto"
-          locale={{ emptyText: t('暂无过线记录', 'No view milestones') }}
+          locale={{ emptyText: t("暂无过线记录") }}
         />
         <div className="overview-gate-crossings-footer">
           <DsPagination
@@ -104,7 +107,7 @@ export default function OverviewGateCrossingsTable({
             total={total}
             disabled={loading}
             onChange={onPageChange}
-            label={t('播放过线记录分页', 'View milestones pagination')}
+            label={t("播放过线记录分页")}
           />
         </div>
       </div>

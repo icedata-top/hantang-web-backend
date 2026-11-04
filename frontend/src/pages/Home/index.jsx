@@ -21,12 +21,10 @@ const STAT_LINKS = {
 };
 
 export default function Home() {
-  const { i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [stats, setStats] = useState([]);
   const [loading, setLoading] = useState(true);
-  const isZh = String(i18n?.language || 'zh').toLowerCase().startsWith('zh');
-  const t = (zh, en) => (isZh ? zh : en);
 
   useMeshParallax(true);
 
@@ -69,13 +67,13 @@ export default function Home() {
         <img
           className="home-logo"
           src="/png/icedata_logo_512x.png"
-          alt={t('冰数据', 'icedata')}
+          alt={t("冰数据")}
         />
 
         <div className="home-search">
           <Search
-            placeholder={t('搜索一首歌，一位虚拟歌手，或一位创作者', 'Search a Song, a Vocal, or a Producer')}
-            enterButton={t('搜索', 'Search')}
+            placeholder={t("搜索一首歌，一位虚拟歌手，或一位创作者")}
+            enterButton={t("搜索")}
             size="large"
             className="home-search-input"
             onSearch={handleSearch}
@@ -83,15 +81,15 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="home-stats-scroll" aria-label={t('数据概览', 'Data Overview')}>
+      <section className="home-stats-scroll" aria-label={t("数据概览")}>
         <Spin spinning={loading}>
           <div className="home-stats-row">
             {stats.map((item) => {
               const localized = {
-                songs: { title: t('收录歌曲', 'Songs Indexed'), suffix: t('首', '') },
-                artists: { title: t('收录歌手', 'Vocals Indexed'), suffix: t('位', '') },
-                creators: { title: t('收录创作者', 'Producers Indexed'), suffix: t('位', '') },
-                spanDays: { title: t('记录跨度', 'Timespan'), suffix: t('日', 'days') },
+                songs: { title: t("收录歌曲"), suffix: t("首") },
+                artists: { title: t("收录歌手"), suffix: t("位") },
+                creators: { title: t("收录创作者"), suffix: t("位") },
+                spanDays: { title: t("记录跨度"), suffix: t("日") },
               }[item.key] ?? { title: item.title, suffix: item.suffix };
               const link = STAT_LINKS[item.key];
 
@@ -108,7 +106,7 @@ export default function Home() {
                   />
                   {link ? (
                     <Link to={link.path} className="home-stat-action">
-                      {t(link.labelZh, link.labelEn)}
+                      {t(link.labelZh)}
                     </Link>
                   ) : null}
                 </div>
@@ -128,10 +126,10 @@ export default function Home() {
           苏ICP备2022012035
         </a>
         <span className="home-footer-sep">｜</span>
-        <span className="home-footer-text">{t('Copyright 2026', 'Copyright 2026')}</span>
+        <span className="home-footer-text">{t("Copyright 2026")}</span>
         <span className="home-footer-sep">｜</span>
         <Link to="/about" className="home-footer-link">
-          {t('关于冰数据', 'About icedata')}
+          {t("关于冰数据")}
         </Link>
       </footer>
     </div>

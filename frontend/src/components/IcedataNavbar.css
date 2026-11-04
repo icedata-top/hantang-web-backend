@@ -124,7 +124,6 @@
 }
 
 .icedata-theme-toggle,
-.icedata-lang-toggle,
 .icedata-nav-options {
   flex: none;
   width: var(--control-height);
@@ -203,7 +202,7 @@
 .icedata-nav-drawer-actions {
   display: flex;
   justify-content: flex-end;
-  align-items: center;
+  align-items: flex-end;
   gap: 12px;
 }
 
@@ -259,4 +258,88 @@
 .icedata-nav-drawer-link:focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
+}
+
+.icedata-language-trigger.ant-btn {
+  flex: none;
+  gap: 8px;
+  padding-inline: 12px;
+  border: 0;
+  box-shadow: none;
+  white-space: nowrap;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.icedata-language-trigger.ant-btn:not(:disabled):focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icedata-language-trigger.ant-btn {
+    transition: none;
+  }
+}
+
+.icedata-language-trigger .anticon {
+  font-size: var(--font-size-caption);
+}
+
+.icedata-language-dropdown.ant-dropdown .ant-dropdown-menu {
+  min-width: 160px;
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.icedata-language-dropdown.ant-dropdown .ant-dropdown-menu .ant-dropdown-menu-item {
+  min-height: var(--control-height);
+  border-radius: var(--radius-control);
+  color: var(--text-primary);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+}
+
+.icedata-language-dropdown.ant-dropdown .ant-dropdown-menu .ant-dropdown-menu-item-active,
+.icedata-language-dropdown.ant-dropdown .ant-dropdown-menu .ant-dropdown-menu-item:not(.ant-dropdown-menu-item-disabled):hover {
+  background: var(--button-normal-hover);
+}
+
+.icedata-language-dropdown.ant-dropdown .ant-dropdown-menu .ant-dropdown-menu-item-selected {
+  color: var(--button-secondary-text);
+  background: var(--button-secondary-bg);
+}
+
+.icedata-language-dropdown.ant-dropdown .ant-dropdown-menu .ant-dropdown-menu-item-selected:not(.ant-dropdown-menu-item-disabled):hover {
+  background: var(--button-secondary-hover);
+}
+
+.icedata-language-dropdown.ant-dropdown .ant-dropdown-menu .ant-dropdown-menu-item:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+
+.icedata-language-menu-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.icedata-nav-language-control {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  gap: 8px;
+}
+
+.icedata-nav-language-label {
+  color: var(--text-secondary);
+  font-size: var(--font-size-caption);
+}
+
+.icedata-language-segmented .ant-segmented-item-label {
+  padding-inline: 8px;
+  white-space: nowrap;
 }

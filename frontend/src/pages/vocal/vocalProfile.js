@@ -1,3 +1,5 @@
+import { normalizeLanguage } from '../../locales/languages.js';
+
 /** The current catalog is a frontend profile catalog, not a processed_videos relation. */
 export function resolveVocalProfile(identifier, catalog) {
   if ((typeof identifier !== 'string' && typeof identifier !== 'number')
@@ -60,10 +62,10 @@ export function fanColorInk(hex) {
 }
 
 /** A recurring birthday has no birth year; 2000 only validates month/day including leap day. */
-export function formatVocalBirthday(value, isZh = true) {
+export function formatVocalBirthday(value, language = 'zh') {
   if (typeof value !== 'string' || !/^\d{2}-\d{2}$/.test(value)) return null;
   const [month, day] = value.split('-').map(Number);
   const date = new Date(Date.UTC(2000, month - 1, day));
   if (date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return null;
-  return isZh ? `${month}月${day}日` : new Intl.DateTimeFormat('en', { month: 'long', day: 'numeric', timeZone: 'UTC' }).format(date);
+  return new Intl.DateTimeFormat(normalizeLanguage(language), { month: 'long', day: 'numeric', timeZone: 'UTC' }).format(date);
 }

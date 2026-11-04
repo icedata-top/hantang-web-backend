@@ -76,21 +76,20 @@ function Notice({ kind = 'info', children, retry, t }) {
     {kind === 'error' ? <WarningOutlined /> : <InfoCircleOutlined />}
     <span>{children}</span>
     {retry && <button type="button" className="ds-button" data-variant="secondary" onClick={retry}>
-      <ReloadOutlined />{t('重试', 'Retry')}
+      <ReloadOutlined />{t("重试")}
     </button>}
   </div>;
 }
 
 export function VideoDetailView({ aid, info, latest }) {
-  const { i18n } = useTranslation();
+  const { t } = useTranslation();
   const [downloadState, setDownloadState] = useState('idle');
-  const isZh = String(i18n?.language || 'zh').toLowerCase().startsWith('zh');
-  const t = (zh, en) => (isZh ? zh : en);
+
   if (info.status === 'missing') return <VideoResult reason="unavailable" />;
   const video = info.data;
   const uploader = video?.uploader;
   const uploaderId = /^[1-9]\d*$/.test(String(uploader?.userId ?? '')) ? uploader.userId : null;
-  const title = formatVideoText(video?.title) || `${t('视频', 'Video')} av${aid}`;
+  const title = formatVideoText(video?.title) || `${t("视频")} av${aid}`;
   const description = formatVideoText(video?.description);
   const tags = [...new Set((video?.tags ?? []).map(formatVideoText).filter(Boolean))];
   const duration = durationText(video?.duration);
@@ -120,57 +119,57 @@ export function VideoDetailView({ aid, info, latest }) {
   }
 
   return <main className="video-detail-page">
-    <nav className="video-detail-breadcrumb" aria-label={t('面包屑', 'Breadcrumb')}>
-      <Link className="ds-link" to="/videos"><ArrowLeftOutlined /> {t('歌曲', 'Songs')}</Link>
-      <span aria-hidden="true">/</span><span>{t('视频详情', 'Video Details')}</span>
+    <nav className="video-detail-breadcrumb" aria-label={t("面包屑")}>
+      <Link className="ds-link" to="/videos"><ArrowLeftOutlined /> {t("歌曲")}</Link>
+      <span aria-hidden="true">/</span><span>{t("视频详情")}</span>
     </nav>
 
     {video && <header className="video-detail-header">
       <h1 id="video-detail-title" className={/^[【（《〈「『〔［｛〖]/u.test(title.trimStart()) ? 'video-detail-title--hanging' : undefined}>{title}</h1>
       <div className="video-detail-meta">
-        <span className="ds-chip" data-variant="neutral">{getBilibiliSubPartitionName(video.typeId) || t('视频', 'Video')}</span>
+        <span className="ds-chip" data-variant="neutral">{getBilibiliSubPartitionName(video.typeId) || t("视频")}</span>
         <VideoHonor views={latest.status === 'ready' ? latest.data?.view : null} />
         <span className="video-detail-published">
-          <span className="ds-sr-only">{t('投稿时间', 'Published')}</span>
+          <span className="ds-sr-only">{t("投稿时间")}</span>
           <RelativeTime value={video.pubdate} mode="absolute-diff" />
         </span>
-        <span className="video-detail-id" aria-label={t('AV号', 'AV ID')}>av{aid}</span>
-        <span className="video-detail-id" aria-label={t('BV号', 'BV ID')}>{video.bvid || '—'}</span>
+        <span className="video-detail-id" aria-label={t("AV号")}>av{aid}</span>
+        <span className="video-detail-id" aria-label={t("BV号")}>{video.bvid || '—'}</span>
       </div>
     </header>}
 
     <div className="video-detail-content-grid">
       <div className="video-detail-cover-column">
         {info.status === 'loading' && <section className="video-detail-loading" aria-busy="true" role="status">
-          <LoadingOutlined spin /><span>{t('正在加载视频信息…', 'Loading video information…')}</span>
+          <LoadingOutlined spin /><span>{t("正在加载视频信息…")}</span>
         </section>}
         {info.status === 'error' && <Notice kind="error" retry={info.retry} t={t}>
-          {t('视频信息加载失败，请稍后重试。', 'Could not load video information. Please try again.')}
+          {t("视频信息加载失败，请稍后重试。")}
         </Notice>}
         {video &&
           <figure className="video-detail-cover-wrap">
-            <MediaImage className="video-detail-cover" src={video.pic} alt={t('视频封面', 'Video cover')} />
+            <MediaImage className="video-detail-cover" src={video.pic} alt={t("视频封面")} />
             {duration && <span className="video-detail-duration">{duration}</span>}
             <div className="video-detail-cover-overlay">
               <button type="button" className="video-detail-cover-action" onClick={downloadCover}
                 disabled={!video.pic || downloadState === 'loading'}>
                 {downloadState === 'loading' ? <LoadingOutlined spin /> : <DownloadOutlined />}
-                <span>{downloadState === 'loading' ? t('下载中…', 'Downloading…') : t('下载封面', 'Download cover')}</span>
+                <span>{downloadState === 'loading' ? t("下载中…") : t("下载封面")}</span>
               </button>
               <a className="video-detail-cover-action" href={`https://www.bilibili.com/video/av${aid}`}
                 target="_blank" rel="noopener noreferrer">
-                <ExportOutlined /><span>{t('在哔哩哔哩观看', 'Watch on Bilibili')}</span>
+                <ExportOutlined /><span>{t("在哔哩哔哩观看")}</span>
               </a>
             </div>
           </figure>}
       </div>
 
-      <aside className="video-detail-sidebar" aria-label={t('创作者与视频数据', 'Creator and video metrics')}>
+      <aside className="video-detail-sidebar" aria-label={t("创作者与视频数据")}>
         {video && <section className="ds-surface video-detail-creator" aria-labelledby="video-detail-creator-title">
-          <h2 id="video-detail-creator-title">{t('投稿人', 'Contributor')}</h2>
+          <h2 id="video-detail-creator-title">{t("投稿人")}</h2>
           {uploaderId
             ? <ProducerInfo userId={uploaderId} showAvatar className="video-detail-producer" />
-            : <p className="video-detail-caption">{t('账号资料暂缺', 'Account information unavailable')}</p>}
+            : <p className="video-detail-caption">{t("账号资料暂缺")}</p>}
           {uploader?.officialTitle && <div className="video-detail-uploader-meta">
             <span className="ds-chip" data-variant="orange">{uploader.officialTitle}</span>
           </div>}
@@ -184,40 +183,40 @@ export function VideoDetailView({ aid, info, latest }) {
 
     <section className="ds-surface video-detail-metrics" aria-labelledby="video-detail-metrics-title" aria-busy={latest.status === 'loading'}>
       <div className="video-detail-section-header">
-        <h2 id="video-detail-metrics-title">{t('最新数据', 'Latest Metrics')}</h2>
+        <h2 id="video-detail-metrics-title">{t("最新数据")}</h2>
       </div>
       {latest.status === 'error' && <Notice kind="error" retry={latest.retry} t={t}>
-        {t('最新数据加载失败，视频信息仍可查看。', 'Could not load the latest metrics. Video information is still available.')}
+        {t("最新数据加载失败，视频信息仍可查看。")}
       </Notice>}
       {latest.status === 'missing' && <Notice t={t}>
-        {t('该视频暂未收录数据快照。', 'No metrics snapshot has been collected for this video yet.')}
+        {t("该视频暂未收录数据快照。")}
       </Notice>}
-      {partialMetrics && <Notice t={t}>{t('部分指标暂缺，以「—」显示。', 'Some metrics are unavailable and shown as “—”.')}</Notice>}
+      {partialMetrics && <Notice t={t}>{t("部分指标暂缺，以「—」显示。")}</Notice>}
       <dl className="video-detail-metric-list">
         {METRICS.map(([key, zh, en, Icon]) => {
           const value = latest.data?.[key];
           return <div key={key} className={`video-detail-metric-row${key === 'view' ? ' video-detail-metric-row--views' : ''}`}>
-            <dt className="video-detail-metric-label"><Icon />{t(zh, en)}</dt>
+            <dt className="video-detail-metric-label"><Icon />{t(zh)}</dt>
             <dd className="video-detail-metric-value">{value == null ? '—' : formatNumber(value, 'comma')}</dd>
           </div>;
         })}
       </dl>
       <footer className="video-detail-snapshot-date">
-        {latest.status === 'loading' ? <span role="status"><LoadingOutlined spin /> {t('正在加载…', 'Loading…')}</span>
-          : latest.data?.recordDate && <time dateTime={latest.data.recordDate}>{t(`统计于 ${latest.data.recordDate} 凌晨`, `Recorded early on ${latest.data.recordDate}`)}</time>}
+        {latest.status === 'loading' ? <span role="status"><LoadingOutlined spin /> {t("正在加载…")}</span>
+          : latest.data?.recordDate && <time dateTime={latest.data.recordDate}>{t("统计于 {{value0}} 凌晨", { value0: latest.data.recordDate })}</time>}
       </footer>
     </section>
       </aside>
     </div>
 
     {downloadState === 'error' && <Notice kind="error" retry={downloadCover} t={t}>
-      {t('封面下载失败，请重试。', 'Could not download the cover. Please try again.')}
+      {t("封面下载失败，请重试。")}
     </Notice>}
 
     {video && <section className="ds-surface video-detail-description-panel" aria-labelledby="video-detail-description-title">
-        <h2 id="video-detail-description-title">{t('视频简介', 'Description')}</h2>
-        <p className="video-detail-description">{description || t('暂无简介', 'No description available')}</p>
-        {tags.length > 0 && <ul className="video-detail-tags" aria-label={t('标签', 'Tags')}>
+        <h2 id="video-detail-description-title">{t("视频简介")}</h2>
+        <p className="video-detail-description">{description || t("暂无简介")}</p>
+        {tags.length > 0 && <ul className="video-detail-tags" aria-label={t("标签")}>
           {tags.map((tag) => <li className="ds-chip" data-variant="neutral" key={tag}>{tag}</li>)}
         </ul>}
     </section>}

@@ -1,7 +1,9 @@
 import { VIDEO_METRICS } from '../../constants/video/metrics.js';
 import { formatNumber } from '../../utils/formatNumber.js';
+import { getTranslator } from '../../i18n.js';
 
-export function buildVideoMetricsChartSpec(rows, colors, isZh, mode) {
+export function buildVideoMetricsChartSpec(rows, colors, language, mode) {
+  const t = getTranslator(language);
   const byDate = new Map(rows.map((row) => [row.date, row]));
   return {
     type: 'line',
@@ -10,8 +12,8 @@ export function buildVideoMetricsChartSpec(rows, colors, isZh, mode) {
     stack: false,
     data: [{
       id: 'video-metrics',
-      values: rows.flatMap((row) => VIDEO_METRICS.map(({ key, label, labelEn }) => ({
-        date: row.date, series: isZh ? label : labelEn, value: row.indicators[key],
+      values: rows.flatMap((row) => VIDEO_METRICS.map(({ key, label }) => ({
+        date: row.date, series: t(label), value: row.indicators[key],
       }))),
       fields: { date: { type: 'ordinal', domain: rows.map((row) => row.date) } },
     }],
@@ -29,9 +31,9 @@ export function buildVideoMetricsChartSpec(rows, colors, isZh, mode) {
         // Include missing metrics in the date tooltip instead of silently omitting them.
         content: (data) => {
           const row = byDate.get(String(data?.[0]?.value));
-          return row ? VIDEO_METRICS.map(({ key, label, labelEn }, index) => ({
-            key: isZh ? label : labelEn,
-            value: row.indicators[key] == null ? (isZh ? '暂缺' : 'Unavailable') : formatNumber(row.indicators[key], 'comma'),
+          return row ? VIDEO_METRICS.map(({ key, label }, index) => ({
+            key: t(label),
+            value: row.indicators[key] == null ? (t("暂缺")) : formatNumber(row.indicators[key], 'comma'),
             hasShape: true, shapeType: 'circle', shapeFill: colors[index],
           })) : [];
         },
@@ -41,7 +43,7 @@ export function buildVideoMetricsChartSpec(rows, colors, isZh, mode) {
     crosshair: { xField: { visible: true } },
     axes: [
       { orient: 'bottom', type: 'band' },
-      { orient: 'left', title: { visible: true, text: mode === 'delta' ? (isZh ? '每日增量' : 'Daily change') : (isZh ? '累计值' : 'Cumulative value') } },
+      { orient: 'left', title: { visible: true, text: mode === 'delta' ? (t("每日增量")) : (t("累计值")) } },
     ],
   };
 }

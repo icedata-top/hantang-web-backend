@@ -1,20 +1,22 @@
 /**
  * 公共数字格式化
  *
- * @typedef {'zh' | 'en' | 'comma'} NumberFormatStyle
+ * @typedef {'zh' | 'en' | 'ja' | 'comma'} NumberFormatStyle
  *
  * - comma：千分位逗号（三位一组）
  * - zh：中文量级（万 / 亿 / 万亿），近似四舍五入
+ * - ja：日文量级（万 / 億 / 兆），有效数字规则同中文
  * - en：英文量级（K / M / B / T），近似四舍五入，最多三个有效数字
  *
  * 中文有效数字：整数部分恰好为 4 位或 8 位时用 4 个有效数字，其余用 3 个。
  * 舍入：基于 Number#toPrecision（IEEE 754 近似四舍五入）。
  */
 
-/** @type {Readonly<{ ZH: 'zh', EN: 'en', COMMA: 'comma' }>} */
+/** @type {Readonly<{ ZH: 'zh', EN: 'en', JA: 'ja', COMMA: 'comma' }>} */
 export const NUMBER_FORMAT = Object.freeze({
   ZH: 'zh',
   EN: 'en',
+  JA: 'ja',
   COMMA: 'comma',
 });
 
@@ -76,7 +78,7 @@ function formatScaled(value, sigFigs, unit) {
  * 中文：万 / 亿 / 万亿
  * @param {number} value
  */
-function formatZh(value) {
+function formatZh(value, units = ['万', '亿', '万亿']) {
   const abs = Math.abs(value);
   const sigFigs = countIntegerDigits(value) === 4 || countIntegerDigits(value) === 8 ? 4 : 3;
 
@@ -84,12 +86,12 @@ function formatZh(value) {
     return formatScaled(value, sigFigs, '');
   }
   if (abs < 1e8) {
-    return formatScaled(value / 1e4, sigFigs, '万');
+    return formatScaled(value / 1e4, sigFigs, units[0]);
   }
   if (abs < 1e12) {
-    return formatScaled(value / 1e8, sigFigs, '亿');
+    return formatScaled(value / 1e8, sigFigs, units[1]);
   }
-  return formatScaled(value / 1e12, sigFigs, '万亿');
+  return formatScaled(value / 1e12, sigFigs, units[2]);
 }
 
 /**
@@ -127,7 +129,7 @@ function formatComma(value) {
  * 数字格式化
  *
  * @param {unknown} value 数字本体
- * @param {NumberFormatStyle} format `'zh' | 'en' | 'comma'`
+ * @param {NumberFormatStyle} format `'zh' | 'en' | 'ja' | 'comma'`
  * @returns {string}
  *
  * @example
@@ -152,6 +154,8 @@ export function formatNumber(value, format = NUMBER_FORMAT.COMMA) {
     case NUMBER_FORMAT.EN:
     case 'en':
       return formatEn(n);
+    case NUMBER_FORMAT.JA:
+      return formatZh(n, ['万', '億', '兆']);
     case NUMBER_FORMAT.COMMA:
     case 'comma':
       return formatComma(n);

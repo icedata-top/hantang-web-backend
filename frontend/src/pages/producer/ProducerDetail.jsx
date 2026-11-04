@@ -1,3 +1,4 @@
+import { getLanguageSettings } from '../../locales/languages.js';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
@@ -41,15 +42,15 @@ function ProducerAvatar({ src, name }) {
 }
 
 function ProducerDetailPage({ userId }) {
-  const { i18n } = useTranslation();
-  const isZh = String(i18n?.language || 'zh').toLowerCase().startsWith('zh');
-  const t = (zh, en) => isZh ? zh : en;
+  const { i18n, t } = useTranslation();
+  const language = i18n.resolvedLanguage || i18n.language;
+
   const [query, setQuery] = useState(DEFAULT_QUERY);
   const [viewMode, setViewMode] = useState('cards');
   const info = useProducerRequest(userId);
   const videos = useProducerRequest(userId, query);
   const producer = info.data;
-  const name = producer?.name || t(`创作者 ${userId}`, `Producer ${userId}`);
+  const name = producer?.name || t("创作者 {{value0}}", { value0: userId });
   const total = videos.data?.total ?? 0;
 
   useEffect(() => {
@@ -58,10 +59,10 @@ function ProducerDetailPage({ userId }) {
     if (query.page > lastPage) setQuery((current) => ({ ...current, page: lastPage }));
   }, [videos.status, total, query.page, query.pageSize]);
 
-  const dateFormatter = useMemo(() => new Intl.DateTimeFormat(isZh ? 'zh-CN' : 'en-GB', {
+  const dateFormatter = useMemo(() => new Intl.DateTimeFormat(getLanguageSettings(language).lang, {
     timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit',
     hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
-  }), [isZh]);
+  }), [language]);
   function dateText(value, seconds = false) {
     if (value == null) return '—';
     const date = new Date(seconds ? value * 1000 : value);
@@ -71,11 +72,11 @@ function ProducerDetailPage({ userId }) {
 
   return <main className="producer-detail-page">
     <header className="producer-detail-header">
-      <nav className="producer-detail-breadcrumb" aria-label={t('面包屑', 'Breadcrumb')}>
-        <Link className="ds-link" to="/producers"><ArrowLeftOutlined /> {t('创作者', 'Producers')}</Link>
-        <span aria-hidden="true">/</span><span>{t('创作者详情', 'Producer Details')}</span>
+      <nav className="producer-detail-breadcrumb" aria-label={t("面包屑")}>
+        <Link className="ds-link" to="/producers"><ArrowLeftOutlined /> {t("创作者")}</Link>
+        <span aria-hidden="true">/</span><span>{t("创作者详情")}</span>
       </nav>
-      {producer?.lastUpdated && <time className="producer-detail-updated" dateTime={producer.lastUpdated}>{t('资料更新于 ', 'Updated ')}{dateText(producer.lastUpdated)}</time>}
+      {producer?.lastUpdated && <time className="producer-detail-updated" dateTime={producer.lastUpdated}>{t("资料更新于 ")}{dateText(producer.lastUpdated)}</time>}
     </header>
 
     <section className="ds-surface producer-detail-profile" aria-labelledby="producer-detail-name" aria-busy={info.status === 'loading'}>
@@ -87,18 +88,18 @@ function ProducerDetailPage({ userId }) {
           {producer?.level != null && <span className="ds-chip" data-variant="neutral">Lv.{producer.level}</span>}
           {producer?.officialTitle && <span className="ds-chip" data-variant="orange">{producer.officialTitle}</span>}
         </div>
-        {producer && <p className="producer-detail-sign">{formatVideoText(producer.sign) || t('暂无个人简介', 'No bio available')}</p>}
-        {info.status === 'loading' && <p className="producer-detail-caption" role="status"><LoadingOutlined spin /> {t('正在加载创作者资料…', 'Loading producer information…')}</p>}
-        {info.status === 'missing' && <p className="producer-detail-caption">{t('该创作者的账号资料暂未收录，仍可查看下方已关联的投稿。', 'Account information has not been indexed. Associated videos are still listed below.')}</p>}
+        {producer && <p className="producer-detail-sign">{formatVideoText(producer.sign) || t("暂无个人简介")}</p>}
+        {info.status === 'loading' && <p className="producer-detail-caption" role="status"><LoadingOutlined spin /> {t("正在加载创作者资料…")}</p>}
+        {info.status === 'missing' && <p className="producer-detail-caption">{t("该创作者的账号资料暂未收录，仍可查看下方已关联的投稿。")}</p>}
         {info.status === 'error' && <div className="ds-alert producer-detail-error" data-variant="error" role="alert">
-          <span>{t('创作者资料加载失败', 'Could not load producer information')}</span>
-          <button className="ds-button" data-variant="secondary" type="button" onClick={info.retry}><ReloadOutlined />{t('重试', 'Retry')}</button>
+          <span>{t("创作者资料加载失败")}</span>
+          <button className="ds-button" data-variant="secondary" type="button" onClick={info.retry}><ReloadOutlined />{t("重试")}</button>
         </div>}
       </div>
       <div className="producer-detail-summary">
-        <span className="producer-detail-caption">{t('粉丝', 'Followers')}</span>
+        <span className="producer-detail-caption">{t("粉丝")}</span>
         <strong>{producer?.fans == null ? '—' : formatNumber(producer.fans, 'comma')}</strong>
-        <a className="ds-link" href={`https://space.bilibili.com/${userId}`} target="_blank" rel="noopener noreferrer">{t('哔哩哔哩主页', 'Bilibili profile')} <ExportOutlined /></a>
+        <a className="ds-link" href={`https://space.bilibili.com/${userId}`} target="_blank" rel="noopener noreferrer">{t("哔哩哔哩主页")} <ExportOutlined /></a>
       </div>
     </section>
 
@@ -109,12 +110,12 @@ function ProducerDetailPage({ userId }) {
 
 export default function ProducerDetail() {
   const { userId } = useParams();
-  const { i18n } = useTranslation();
-  const isZh = String(i18n.language || 'zh').toLowerCase().startsWith('zh');
+  const { t } = useTranslation();
+
   if (!/^[1-9]\d*$/.test(userId ?? '') || userId.length > 19 || (userId.length === 19 && userId > '9223372036854775807')) {
-    return <main className="page-result"><Result status="warning" title={isZh ? '创作者ID不合法' : 'Invalid producer ID'}
-      subTitle={isZh ? '请输入不带前导零的正整数用户ID。' : 'Enter a positive numeric user ID without leading zeros.'}
-      extra={<Link className="ds-button" data-variant="primary" to="/">{isZh ? '返回首页' : 'Back to Home'}</Link>} /></main>;
+    return <main className="page-result"><Result status="warning" title={t("创作者ID不合法")}
+      subTitle={t("请输入不带前导零的正整数用户ID。")}
+      extra={<Link className="ds-button" data-variant="primary" to="/">{t("返回首页")}</Link>} /></main>;
   }
   return <ProducerDetailPage key={userId} userId={userId} />;
 }

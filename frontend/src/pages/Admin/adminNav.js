@@ -189,7 +189,7 @@ export function buildAdminMenuItems(nodes, t, icons) {
   return nodes.map((node) => {
     const item = {
       key: node.key,
-      label: t(node.zh, node.en),
+      label: t(node.zh),
     };
     if (icons?.[node.key]) item.icon = icons[node.key];
     if (node.children?.length) {

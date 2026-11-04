@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FilterOutlined } from '@ant-design/icons';
-import { Card, ConfigProvider, Drawer, Spin, Typography, message } from 'antd';
-import enUS from 'antd/locale/en_US';
-import zhCN from 'antd/locale/zh_CN';
+import { Card, Drawer, Spin, Typography, message } from 'antd';
 import OverviewFilter, { getDefaultOverviewFilter } from './components/OverviewFilter.jsx';
 import OverviewTrendChart, { TAB_SUBMISSIONS } from './components/OverviewTrendChart.jsx';
 import OverviewViewHistogramChart from './components/OverviewViewHistogramChart.jsx';
@@ -44,9 +42,8 @@ function useIsMobile() {
 }
 
 export default function Overview() {
-  const { i18n } = useTranslation();
-  const isZh = String(i18n?.language || 'zh').toLowerCase().startsWith('zh');
-  const t = (zh, en) => (isZh ? zh : en);
+  const { i18n, t } = useTranslation();
+
   useMeshParallax(true);
 
   const [filter, setFilter] = useState(() => getDefaultOverviewFilter());
@@ -73,8 +70,7 @@ export default function Overview() {
   const isMobile = useIsMobile();
 
   const showApiError = useCallback((err) => {
-    const isChinese = String(i18n.language || 'zh').toLowerCase().startsWith('zh');
-    const errorMessage = isChinese ? (err?.message || '请求失败') : 'Request failed. Please try again.';
+    const errorMessage = i18n.t('请求失败，请稍后重试。');
     if (err instanceof ApiError) {
       message.error(`[${err.code}] ${errorMessage}`);
       return;
@@ -206,12 +202,12 @@ export default function Overview() {
   );
 
   return (
-    <ConfigProvider locale={isZh ? zhCN : enUS}>
+    <>
       <div className="overview-page">
         <div className="overview-layout">
           {!isMobile && (
-            <aside className="overview-sidebar" aria-label={t('筛选条件', 'Filters')}>
-              <Card className="overview-panel ds-surface overview-panel--filter" variant="borderless" title={t('筛选条件', 'Filters')}>
+            <aside className="overview-sidebar" aria-label={t("筛选条件")}>
+              <Card className="overview-panel ds-surface overview-panel--filter" variant="borderless" title={t("筛选条件")}>
                 {filterBlock}
               </Card>
             </aside>
@@ -228,12 +224,12 @@ export default function Overview() {
                   aria-expanded={filterDrawerOpen}
                   aria-controls="overview-filter-drawer"
                 >
-                  <FilterOutlined />{t('筛选条件', 'Filters')}
+                  <FilterOutlined />{t("筛选条件")}
                 </button>
               </div>
               <Drawer
                 id="overview-filter-drawer"
-                title={t('筛选条件', 'Filters')}
+                title={t("筛选条件")}
                 placement="left"
                 width={320}
                 open={filterDrawerOpen}
@@ -248,10 +244,10 @@ export default function Overview() {
           )}
 
           <div className="overview-main-scroll">
-            <section className="overview-metrics" aria-label={t('指标数值', 'Metrics')} aria-live="polite" aria-busy={loading}>
+            <section className="overview-metrics" aria-label={t("指标数值")} aria-live="polite" aria-busy={loading}>
               <Spin spinning={loading}>
                 {!filter?.startDate || !filter?.endDate ? (
-                  <Text type="secondary">{t('请选择日期范围以查看指标。', 'Select a date range to view metrics.')}</Text>
+                  <Text type="secondary">{t("请选择日期范围以查看指标。")}</Text>
                 ) : payload?.indicators?.length ? (
                   <div className="overview-indicator-grid">
                     {payload.indicators.map((row) => (
@@ -261,7 +257,7 @@ export default function Overview() {
                     ))}
                   </div>
                 ) : (
-                  <Text type="secondary">{loading ? t('加载指标中…', 'Loading metrics…') : t('暂无数据', 'No data')}</Text>
+                  <Text type="secondary">{loading ? t("加载指标中…") : t("暂无数据")}</Text>
                 )}
               </Spin>
             </section>
@@ -293,6 +289,6 @@ export default function Overview() {
           </div>
         </div>
       </div>
-    </ConfigProvider>
+    </>
   );
 }

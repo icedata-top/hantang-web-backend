@@ -18,7 +18,11 @@
   --font-weight-medium: 400;
   --font-weight-semibold: 500;
   --line-height-body: 1.6;
-  --font-family-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  --font-family-latin: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  --font-family-zh: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', 'Noto Sans CJK SC', var(--font-family-latin);
+  --font-family-en: var(--font-family-latin);
+  --font-family-ja: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', 'Yu Gothic', Meiryo, 'Noto Sans JP', 'Noto Sans CJK JP', var(--font-family-latin);
+  --font-family-sans: var(--font-family-zh);
   --font-family-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --font-size-xs: 10px;
   --font-size-meta: 11px;
@@ -69,6 +73,25 @@
   --color-black: #000000;
   --theme-primary: #438bed;
   --scrollbar-size: 8px;
+}
+
+/* Bind at language boundaries and theme previews, so both global UI and mixed-language samples agree. */
+:root:lang(zh),
+[data-theme]:lang(zh),
+[lang]:lang(zh) {
+  --font-family-sans: var(--font-family-zh);
+}
+
+:root:lang(en),
+[data-theme]:lang(en),
+[lang]:lang(en) {
+  --font-family-sans: var(--font-family-en);
+}
+
+:root:lang(ja),
+[data-theme]:lang(ja),
+[lang]:lang(ja) {
+  --font-family-sans: var(--font-family-ja);
 }
 
 /* 白天：基础中性色、九种强调色，以及派生比例 */

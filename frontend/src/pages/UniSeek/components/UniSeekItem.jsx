@@ -1,3 +1,4 @@
+import { getLanguageSettings } from '../../../locales/languages.js';
 import { useMemo, useState } from 'react';
 import {
   TeamOutlined,
@@ -46,13 +47,13 @@ function HighlightText({ text, keyword, className }) {
  * @param {object} props
  * @param {React.ReactNode} props.icon
  * @param {number} [props.value]
- * @param {string} props.labelZh
- * @param {string} props.labelEn
- * @param {'zh' | 'en'} props.numFormat
+ * @param {string} props.label Translation resource key
+ * @param {'zh' | 'en' | 'ja'} props.numFormat
  */
-function MetricStat({ icon, value, labelZh, labelEn, numFormat }) {
+function MetricStat({ icon, value, label, numFormat }) {
+  const { t } = useTranslation();
   const n = Number.isFinite(value) ? value : null;
-  const tip = `${labelZh} / ${labelEn} ${n == null ? '—' : formatNumber(n, NUMBER_FORMAT.COMMA)}`;
+  const tip = `${t(label)} ${n == null ? '—' : formatNumber(n, NUMBER_FORMAT.COMMA)}`;
 
   return (
     <Tooltip title={tip}>
@@ -70,10 +71,9 @@ function MetricStat({ icon, value, labelZh, labelEn, numFormat }) {
  * @param {string} [props.keyword] 产生当前结果列表的关键词
  */
 export default function UniSeekItem({ item, keyword = '' }) {
-  const { i18n } = useTranslation();
-  const isZh = String(i18n?.language || 'zh').toLowerCase().startsWith('zh');
-  const numFormat = isZh ? NUMBER_FORMAT.ZH : NUMBER_FORMAT.EN;
-  const t = (zh, en) => (isZh ? zh : en);
+  const { i18n, t } = useTranslation();
+  const language = i18n.resolvedLanguage || i18n.language;
+  const numFormat = getLanguageSettings(language).numberFormat;
 
   const [failedSrc, setFailedSrc] = useState(null);
   const field = (name) => Object.hasOwn(item.payload ?? {}, name) ? item.payload[name] : item[name];
@@ -82,7 +82,7 @@ export default function UniSeekItem({ item, keyword = '' }) {
   if (item.type === 'video') return <VideoCard video={videoCardFromSearchItem(item)} keyword={keyword} />;
 
   const typeLabels = typeLabelMap[item.type];
-  const tagText = typeLabels ? t(typeLabels.zh, typeLabels.en) : item.type;
+  const tagText = typeLabels ? t(typeLabels.zh) : item.type;
   const typeClass =
     item.type === 'vocal' || item.type === 'producer'
       ? `uniseek-item-tag--${item.type}`
@@ -120,8 +120,7 @@ export default function UniSeekItem({ item, keyword = '' }) {
           <MetricStat
             icon={<VideoCameraOutlined aria-hidden />}
             value={field('songCount')}
-            labelZh="相关投稿"
-            labelEn="Related videos"
+            label="相关投稿"
             numFormat={numFormat}
           />
         </div>
@@ -132,15 +131,13 @@ export default function UniSeekItem({ item, keyword = '' }) {
           <MetricStat
             icon={<TeamOutlined aria-hidden />}
             value={field('fanCount')}
-            labelZh="粉丝"
-            labelEn="Fans"
+            label="粉丝"
             numFormat={numFormat}
           />
           <MetricStat
             icon={<VideoCameraOutlined aria-hidden />}
             value={field('videoCount')}
-            labelZh="收录投稿"
-            labelEn="Indexed videos"
+            label="收录投稿"
             numFormat={numFormat}
           />
         </div>

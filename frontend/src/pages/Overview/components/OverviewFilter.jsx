@@ -1,3 +1,5 @@
+import { getLanguageSettings } from '../../../locales/languages.js';
+import { getTranslator } from '../../../i18n.js';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { QuestionCircleOutlined } from '@ant-design/icons';
@@ -18,24 +20,15 @@ const { RangePicker } = DatePicker;
  * @param {string} startDate YYYY-MM-DD
  * @param {string} endDate YYYY-MM-DD
  */
-function buildFilterTimeHints(startDate, endDate, isZh) {
-  const start = dayjs(startDate).startOf('day');
-  const endNext = dayjs(endDate).add(1, 'day').startOf('day');
-  if (!isZh) {
-    const startDateLabel = start.locale('en').format('MMM D, YYYY');
-    const endDateLabel = endNext.locale('en').format('MMM D, YYYY');
-    return {
-      submissionLine: `New videos and active producers are counted from ${startDateLabel} at 00:00 to ${endDateLabel} at 00:00.`,
-      videoStatsLine: `Views, favorites, and other video metrics show increases from ${startDateLabel} at 04:00 to ${endDateLabel} at 04:00.`,
-    };
-  }
-  const a0 = `${start.format('YYYY年M月D日')}0时`;
-  const b0 = `${endNext.format('YYYY年M月D日')}0时`;
-  const a4 = `${start.format('YYYY年M月D日')}4时`;
-  const b4 = `${endNext.format('YYYY年M月D日')}4时`;
+function buildFilterTimeHints(startDate, endDate, language) {
+  const t = getTranslator(language);
+  const { dateLocale } = getLanguageSettings(language);
+  const dateFormat = t('date.filterFormat');
+  const start = dayjs(startDate).locale(dateLocale).format(dateFormat);
+  const end = dayjs(endDate).add(1, 'day').locale(dateLocale).format(dateFormat);
   return {
-    submissionLine: `新投稿视频、活跃创作者指 ${a0} 至 ${b0} 之间投稿的视频、创作者。`,
-    videoStatsLine: `播放量、收藏量等视频数据指 ${a4} 至 ${b4} 产生的增幅。`,
+    submissionLine: t('overview.submissionWindow', { start, end }),
+    videoStatsLine: t('overview.metricsWindow', { start, end }),
   };
 }
 
@@ -54,10 +47,10 @@ function getDefaultRangePanelMonths(locale) {
  * @param {(next: { startDate?: string, endDate?: string }) => void} [props.onFilterChange]
  */
 export default function OverviewFilter({ startDate, endDate, onFilterChange }) {
-  const { i18n } = useTranslation();
-  const isZh = String(i18n?.language || 'zh').toLowerCase().startsWith('zh');
-  const t = (zh, en) => (isZh ? zh : en);
-  const dateLocale = isZh ? 'zh-cn' : 'en';
+  const { i18n, t } = useTranslation();
+  const language = i18n.resolvedLanguage || i18n.language;
+
+  const dateLocale = getLanguageSettings(language).dateLocale;
   const initialRange = useMemo(() => {
     if (startDate && endDate) return [dayjs(startDate), dayjs(endDate)];
     return null;
@@ -85,8 +78,8 @@ export default function OverviewFilter({ startDate, endDate, onFilterChange }) {
 
   const timeHints = useMemo(() => {
     if (!startDate || !endDate) return null;
-    return buildFilterTimeHints(startDate, endDate, isZh);
-  }, [startDate, endDate, isZh]);
+    return buildFilterTimeHints(startDate, endDate, language);
+  }, [startDate, endDate, language]);
 
   const calendarYearMonth = dayjs().format('YYYY-MM');
   const defaultPickerValue = useMemo(() => getDefaultRangePanelMonths(dateLocale), [calendarYearMonth, dateLocale]);
@@ -121,7 +114,7 @@ export default function OverviewFilter({ startDate, endDate, onFilterChange }) {
     <div className="overview-filter">
       <div className="overview-filter-date-heading">
         <span className="overview-filter-date-label" id={dateLabelId}>
-          {t('日期范围', 'Date range')}
+          {t("日期范围")}
         </span>
         {timeHints ? (
           <Tooltip
@@ -137,7 +130,7 @@ export default function OverviewFilter({ startDate, endDate, onFilterChange }) {
               className="overview-filter-hint-trigger"
               role="button"
               tabIndex={0}
-              aria-label={t('指标时间范围说明', 'Metric time window details')}
+              aria-label={t("指标时间范围说明")}
             >
               <QuestionCircleOutlined />
             </span>
@@ -146,20 +139,20 @@ export default function OverviewFilter({ startDate, endDate, onFilterChange }) {
       </div>
       <RangePicker
         value={pickerRange}
-        presets={getOverviewRangePresets(isZh)}
+        presets={getOverviewRangePresets(language)}
         disabledDate={isOverviewDateDisabled}
         defaultPickerValue={defaultPickerValue}
         onChange={handleRangeChange}
         allowClear
         format="YYYY-MM-DD"
-        placeholder={[t('开始日期', 'Start date'), t('结束日期', 'End date')]}
+        placeholder={[t("开始日期"), t("结束日期")]}
         aria-labelledby={dateLabelId}
       />
       {dirty ? (
         <div className="overview-filter-actions">
-          <button type="button" className="ds-button" data-variant="secondary" onClick={handleReset}>{t('重置', 'Reset')}</button>
+          <button type="button" className="ds-button" data-variant="secondary" onClick={handleReset}>{t("重置")}</button>
           <button type="button" className="ds-button" data-variant="primary" onClick={handleConfirm}>
-            {t('确定', 'Apply')}
+            {t("确定")}
           </button>
         </div>
       ) : null}

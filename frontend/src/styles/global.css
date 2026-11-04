@@ -1,4 +1,9 @@
 /* 全局基础样式；主题值统一在 theme.css 中编辑。 */
+html,
+[lang] {
+  font-family: var(--font-family-sans);
+}
+
 body {
   margin: 0;
   font-family: var(--font-family-sans);

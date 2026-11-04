@@ -1,3 +1,6 @@
+import { getTranslator } from '../../../i18n.js';
+import { normalizeLanguage } from '../../../locales/languages.js';
+
 export const RELATIVE_TIME_MODES = Object.freeze({
   ABSOLUTE: 'absolute',
   RELATIVE: 'relative',
@@ -51,21 +54,23 @@ function parts(milliseconds) {
   return { year, monthDay, clock, date: `${String(year).padStart(4, '0')}-${monthDay}` };
 }
 
-function relativeLabel(timestamp, now, isZh, target, current) {
+const DAY_NAMES = {
+  zh: { '-2': '前天', '-1': '昨天', 0: '今天', 1: '明天', 2: '后天' },
+  en: { '-1': '昨天', 0: '今天', 1: '明天' },
+  ja: { '-2': '前天', '-1': '昨天', 0: '今天', 1: '明天', 2: '后天' },
+};
+
+function relativeLabel(timestamp, now, language, target, current) {
+  const t = getTranslator(language);
   const future = timestamp > now;
   const difference = Math.abs(timestamp - now);
-  if (difference <= 120 * SECOND) return future ? (isZh ? '马上' : 'In a moment') : (isZh ? '刚才' : 'Just now');
+  if (difference <= 120 * SECOND) return t(future ? '马上' : '刚才');
   if (difference < HOUR) {
-    const minutes = Math.floor(difference / MINUTE);
-    return isZh ? `${minutes}分钟${future ? '后' : '前'}` : future
-      ? `In ${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`
-      : `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
+    return t(future ? 'time.minutesFuture' : 'time.minutesPast', { count: Math.floor(difference / MINUTE) });
   }
   const dayDifference = Math.floor((timestamp + BEIJING_OFFSET) / DAY) - Math.floor((now + BEIJING_OFFSET) / DAY);
-  const dayNames = isZh
-    ? { '-2': '前天', '-1': '昨天', 0: '今天', 1: '明天', 2: '后天' }
-    : { '-1': 'Yesterday', 0: 'Today', 1: 'Tomorrow' };
-  if (dayNames[dayDifference]) return `${dayNames[dayDifference]} ${target.clock}`;
+  const dayName = DAY_NAMES[normalizeLanguage(language)][dayDifference];
+  if (dayName) return `${t(dayName)} ${target.clock}`;
   return target.year === current.year ? target.monthDay : target.date;
 }
 
@@ -76,19 +81,18 @@ export function getRelativeTimeDetails(value, now, language = 'zh') {
   const target = parts(timestamp);
   const current = parts(now);
   if (!target || !current) return null;
-  const isZh = String(language).toLowerCase().startsWith('zh');
+  const t = getTranslator(language);
   const future = timestamp > now;
   const totalHours = Math.floor(Math.abs(timestamp - now) / HOUR);
   const days = Math.floor(totalHours / 24);
   const hours = totalHours % 24;
-  const dayDifference = isZh ? `${days}天${future ? '后' : '前'}`
-    : future ? `in ${days} ${days === 1 ? 'day' : 'days'}` : `${days} ${days === 1 ? 'day' : 'days'} ago`;
+  const dayDifference = t(future ? 'time.daysFuture' : 'time.daysPast', { count: days });
   const absolute = `${target.date} ${target.clock}`;
   return {
     absolute,
-    relative: relativeLabel(timestamp, now, isZh, target, current),
-    absoluteDiff: isZh ? `${absolute} （${dayDifference}）` : `${absolute} (${dayDifference})`,
-    distance: isZh ? `${days}天${hours}小时` : `${days} ${days === 1 ? 'day' : 'days'} ${hours} ${hours === 1 ? 'hour' : 'hours'}`,
+    relative: relativeLabel(timestamp, now, language, target, current),
+    absoluteDiff: t('time.absoluteDiff', { absolute, difference: dayDifference }),
+    distance: t('time.distance', { days: t('time.days', { count: days }), hours: t('time.hours', { count: hours }) }),
     unix: Math.floor(timestamp / SECOND),
     iso: new Date(timestamp).toISOString(),
   };

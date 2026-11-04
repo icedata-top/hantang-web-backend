@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button, Empty, Masonry, Spin } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { useMeshParallax } from '../../hooks/useMeshParallax.js';
 import * as searchApi from '../../services/UniSeek/uniseek.api.js';
@@ -54,9 +54,8 @@ const sourceLabels = {
 };
 
 export default function UniSeek() {
-  const { i18n } = useTranslation();
-  const isZh = String(i18n?.language || 'zh').toLowerCase().startsWith('zh');
-  const t = (zh, en) => (isZh ? zh : en);
+  const { t } = useTranslation();
+
   const [searchParams, setSearchParams] = useSearchParams();
   const [keyword, setKeyword] = useState('');
   const [results, setResults] = useState(emptyResults);
@@ -128,19 +127,11 @@ export default function UniSeek() {
           <div className="uniseek-result-meta" aria-live="polite">
             {items.length ? (
               <p className="uniseek-result-count">
-                {isZh ? (
-                  <>
-                    已加载 <em>{items.length}</em> 条结果
-                  </>
-                ) : (
-                  <>
-                    Loaded <em>{items.length}</em> {items.length === 1 ? 'result' : 'results'}
-                  </>
-                )}
+                <Trans i18nKey="search.loaded" count={items.length} components={{ count: <em /> }} />
               </p>
             ) : (
               <p className="uniseek-result-count uniseek-result-count--empty">
-                {loading ? t('正在搜索…', 'Searching…') : hasErrors ? t('部分结果暂未加载，请重试', 'Some results failed to load. Please retry.') : t('未找到匹配结果', 'No matching results')}
+                {loading ? t("正在搜索…") : hasErrors ? t("部分结果暂未加载，请重试") : t("未找到匹配结果")}
               </p>
             )}
           </div>
@@ -160,7 +151,7 @@ export default function UniSeek() {
             <div className="uniseek-empty">
               <Empty
                 description={
-                  hasErrors ? t('部分结果暂未加载，请重试', 'Some results failed to load. Please retry.') : hasSearched ? '换个关键词试试吧' : '搜索一首歌、一位虚拟歌手或一位创作者'
+                  hasErrors ? t("部分结果暂未加载，请重试") : hasSearched ? t('换个关键词试试吧') : t('搜索一首歌、一位虚拟歌手或一位创作者')
                 }
               />
             </div>
@@ -169,23 +160,23 @@ export default function UniSeek() {
         {Object.keys(errors).length > 0 ? (
           <div className="uniseek-source-errors" role="status">
             {Object.keys(errors).map(source => <div key={source}>
-              <span>{t(...sourceLabels[source])}{t('加载失败', ' failed to load')}</span>
+              <span>{t((sourceLabels[source])[0])}{t("加载失败")}</span>
               <Button className="ds-button" data-variant="secondary"
-                onClick={() => searchRef.current?.retry(source)}>{t('重试', 'Retry')}</Button>
+                onClick={() => searchRef.current?.retry(source)}>{t("重试")}</Button>
             </div>)}
           </div>
         ) : null}
         <div ref={sentinelRef} className="uniseek-load-more" aria-live="polite" aria-busy={loading || loadingMore}>
-          {loading || loadingMore ? <><Spin size="small" /><span>{t('正在加载更多结果…', 'Loading more results…')}</span></> : null}
+          {loading || loadingMore ? <><Spin size="small" /><span>{t("正在加载更多结果…")}</span></> : null}
           {!waitingForVideos && !loadingMore && nextPage ? (
             <Button className="ds-button" data-variant="secondary" onClick={() => searchRef.current?.loadMore()}>
-              {moreError ? t('重试加载歌曲', 'Retry loading songs') : t('加载更多歌曲', 'Load more songs')}
+              {moreError ? t("重试加载歌曲") : t("加载更多歌曲")}
             </Button>
           ) : null}
           {!loading && !loadingMore && !hasErrors && !nextPage && items.length > 0 ? (
             <span>{items.filter(({ data }) => data.type === 'video').length >= videoLimit
-              ? t('Beta 最多展示 1,000 首歌曲，请缩小关键词范围', 'Beta shows up to 1,000 songs. Refine your search.')
-              : t('本次结果已加载完毕', 'All results for this search loaded')}</span>
+              ? t("Beta 最多展示 1,000 首歌曲，请缩小关键词范围")
+              : t("本次结果已加载完毕")}</span>
           ) : null}
         </div>
       </div>

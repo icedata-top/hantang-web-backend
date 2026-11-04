@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import { getTranslator } from '../i18n.js';
 
 /** 可选数据的最早日期（含） */
 export const MIN_METRICS_DATE = dayjs('2025-10-01').startOf('day');
@@ -27,10 +28,11 @@ export function getDefaultDateRange() {
 /**
  * 不含今天的快捷范围：结束日为昨天，「最近7天」为昨天起往前共 7 天（含），「最近30天」同理。
  */
-export function getDateRangePresets(isZh = true) {
+export function getDateRangePresets(language = 'zh') {
+  const t = getTranslator(language);
   return [
     {
-      label: isZh ? '最近7天' : 'Last 7 days',
+      label: t("最近7天"),
       value: () => {
         const end = getMaxSelectableDate();
         let start = end.subtract(6, 'day');
@@ -41,7 +43,7 @@ export function getDateRangePresets(isZh = true) {
       },
     },
     {
-      label: isZh ? '最近14天' : 'Last 14 days',
+      label: t("最近14天"),
       value: () => {
         const end = getMaxSelectableDate();
         let start = end.subtract(13, 'day');
@@ -52,7 +54,7 @@ export function getDateRangePresets(isZh = true) {
       },
     },
     {
-      label: isZh ? '最近30天' : 'Last 30 days',
+      label: t("最近30天"),
       value: () => {
         const end = getMaxSelectableDate();
         let start = end.subtract(29, 'day');

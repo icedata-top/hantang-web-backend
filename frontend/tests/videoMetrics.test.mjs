@@ -79,7 +79,7 @@ test('snapshot calendar arithmetic crosses leap days, months and years without t
 test('chart retains nulls and the full date domain; date tooltips explicitly name missing metrics', () => {
   const model = buildVideoMetricsModel([snapshot(0, 100), snapshot(1, 120, { like: null })], START, START);
   const colors = VIDEO_METRICS.map(({ color }) => color);
-  const spec = buildVideoMetricsChartSpec(model.cumulative, colors, true, 'cumulative');
+  const spec = buildVideoMetricsChartSpec(model.cumulative, colors, 'zh', 'cumulative');
   assert.equal(spec.invalidType, 'break');
   assert.deepEqual(spec.data[0].fields.date.domain, [START, '2026-10-21']);
   assert.equal(spec.data[0].values.find((row) => row.date === '2026-10-21' && row.series === '点赞量').value, null);

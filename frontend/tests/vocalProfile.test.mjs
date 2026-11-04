@@ -60,7 +60,7 @@ test('fan color ink picks the higher-contrast of black and white', () => {
 
 test('recurring birthdays validate the date without inventing a birth year', () => {
   assert.equal(formatVocalBirthday('11-26'), '11月26日');
-  assert.equal(formatVocalBirthday('11-26', false), 'November 26');
+  assert.equal(formatVocalBirthday('11-26', 'en'), 'November 26');
   assert.equal(formatVocalBirthday('02-29'), '2月29日');
   for (const value of [null, '', '2026-11-26', '2-01', '02-30', '00-12', '13-01', '04-31']) {
     assert.equal(formatVocalBirthday(value), null);

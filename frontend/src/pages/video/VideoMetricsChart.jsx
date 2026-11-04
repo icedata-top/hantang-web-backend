@@ -7,8 +7,8 @@ import { VIDEO_METRICS } from '../../constants/video/metrics.js';
 import { buildVideoMetricsChartSpec } from './videoMetricsChart.js';
 
 export default function VideoMetricsChart({ rows, mode }) {
-  const { i18n } = useTranslation();
-  const isZh = String(i18n.language || 'zh').toLowerCase().startsWith('zh');
+  const { i18n, t } = useTranslation();
+  const language = i18n.resolvedLanguage || i18n.language;
   const isDark = useDocThemeDark();
   const hostRef = useRef(null);
   const [failed, setFailed] = useState(false);
@@ -21,7 +21,7 @@ export default function VideoMetricsChart({ rows, mode }) {
     setFailed(false);
     const styles = getComputedStyle(document.documentElement);
     const colors = VIDEO_METRICS.map(({ color }) => styles.getPropertyValue(color).trim());
-    const chart = new VChart(buildVideoMetricsChartSpec(rows, colors, isZh, mode), { dom: host, theme: isDark ? 'dark' : 'light' });
+    const chart = new VChart(buildVideoMetricsChartSpec(rows, colors, language, mode), { dom: host, theme: isDark ? 'dark' : 'light' });
     chart.renderAsync().catch(() => { if (active) setFailed(true); });
     let frame;
     const resize = () => {
@@ -40,14 +40,14 @@ export default function VideoMetricsChart({ rows, mode }) {
       cancelAnimationFrame(frame);
       chart.release();
     };
-  }, [rows, mode, isDark, isZh, attempt]);
+  }, [rows, mode, isDark, language, attempt]);
 
   return <div className="video-history-chart-stage">
     <div ref={hostRef} className="video-history-chart" role="img"
-      aria-label={isZh ? `视频七项指标${mode === 'delta' ? '每日增量' : '累计值'}折线图，缺失数据处断线` : `Seven video metrics, ${mode === 'delta' ? 'daily changes' : 'cumulative values'}; missing data creates gaps`} />
+      aria-label={t("视频七项指标{{value0}}折线图，缺失数据处断线", { value0: t(mode === 'delta' ? '每日增量' : '累计值') })} />
     {failed && <div className="video-history-chart-failure" role="alert">
-      <span>{isZh ? '图表绘制失败，请重试。' : 'Could not render the chart. Please retry.'}</span>
-      <Button onClick={() => setAttempt((value) => value + 1)}>{isZh ? '重试' : 'Retry'}</Button>
+      <span>{t("图表绘制失败，请重试。")}</span>
+      <Button onClick={() => setAttempt((value) => value + 1)}>{t("重试")}</Button>
     </div>}
   </div>;
 }

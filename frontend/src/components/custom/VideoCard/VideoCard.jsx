@@ -1,3 +1,4 @@
+import { normalizeLanguage } from '../../../locales/languages.js';
 import { useState } from 'react';
 import { Card, Tag, Tooltip } from 'antd';
 import { LikeOutlined, PictureOutlined, PlayCircleOutlined, StarOutlined } from '@ant-design/icons';
@@ -19,17 +20,17 @@ const METRICS = [
 
 /** Shared song presentation from UniSeek. Uses supplied data; never fetches video metrics. */
 export default function VideoCard({ video, keyword = '', showProducer = false }) {
-  const { i18n } = useTranslation();
-  const isZh = String(i18n.language || 'zh').toLowerCase().startsWith('zh');
-  const t = (zh, en) => isZh ? zh : en;
+  const { i18n, t } = useTranslation();
+  const language = i18n.resolvedLanguage || i18n.language;
+
   const [failedSrc, setFailedSrc] = useState(null);
   const aid = normalizeVideoAid(video.aid);
-  const title = formatVideoText(video.title)?.trim() || (aid ? `av${aid}` : t('歌曲资料暂缺', 'Song information unavailable'));
+  const title = formatVideoText(video.title)?.trim() || (aid ? `av${aid}` : t("歌曲资料暂缺"));
   const href = aid ? `/videos/${aid}` : null;
   const src = /^https?:\/\//i.test(video.pic ?? '') ? video.pic.replace(/^http:\/\//i, 'https://') : null;
   const cover = src && failedSrc !== src
     ? <img src={src} alt="" loading="lazy" referrerPolicy="no-referrer" onError={() => setFailedSrc(src)} />
-    : <span className="video-card-cover-fallback" role="img" aria-label={t('封面暂缺', 'Cover unavailable')}><PictureOutlined aria-hidden="true" /></span>;
+    : <span className="video-card-cover-fallback" role="img" aria-label={t("封面暂缺")}><PictureOutlined aria-hidden="true" /></span>;
   const titleContent = splitHighlightParts(title, keyword).map((part, index) => part.hit
     ? <mark className="video-card-hit" key={index}>{part.text}</mark> : part.text);
   const titleClass = `video-card-title${hasHangingOpeningPunctuation(title) ? ' video-card-title--hanging' : ''}`;
@@ -38,7 +39,7 @@ export default function VideoCard({ video, keyword = '', showProducer = false })
     {href ? <Link className="video-card-cover video-card-link" to={href} aria-label={title}>{cover}</Link>
       : <div className="video-card-cover">{cover}</div>}
     <div className="video-card-top">
-      <Tag className="video-card-type" variant="filled">{t('歌曲', 'Song')}</Tag>
+      <Tag className="video-card-type" variant="filled">{t("歌曲")}</Tag>
       {aid && <span className="video-card-id">av{aid}</span>}
     </div>
     <div className="video-card-title-wrap">
@@ -48,16 +49,16 @@ export default function VideoCard({ video, keyword = '', showProducer = false })
     <div className="video-card-stats">
       {METRICS.filter(([key]) => key === 'view' || Object.hasOwn(video, key)).map(([key, zh, en, Icon]) => {
         const value = Number.isFinite(video[key]) ? video[key] : null;
-        const label = t(zh, en);
-        const description = `${label}：${value == null ? t('暂缺', 'Unavailable') : formatNumber(value, 'comma')}${key === 'view' && video.recordDate ? t(`；统计于 ${video.recordDate}`, `; recorded on ${video.recordDate}`) : ''}`;
+        const label = t(zh);
+        const description = `${label}：${value == null ? t("暂缺") : formatNumber(value, 'comma')}${key === 'view' && video.recordDate ? t("；统计于 {{value0}}", { value0: video.recordDate }) : ''}`;
         return <Tooltip key={key} title={description} trigger={['hover', 'focus']}>
           <span className="video-card-stat" tabIndex={0} aria-label={description}><Icon aria-hidden="true" />
-            <span>{value == null ? '—' : formatNumber(value, isZh ? 'zh' : 'en')}</span>
+            <span>{value == null ? '—' : formatNumber(value, normalizeLanguage(language))}</span>
           </span>
         </Tooltip>;
       })}
     </div>
-    {video.pubdate != null && <div className="video-card-published"><span>{t('投稿于', 'Published')}</span><RelativeTime value={video.pubdate} /></div>}
+    {video.pubdate != null && <div className="video-card-published"><span>{t("投稿于")}</span><RelativeTime value={video.pubdate} /></div>}
     {showProducer && video.userId && <div className="video-card-producer"><ProducerInfo userId={video.userId} showAvatar /></div>}
   </Card>;
 }

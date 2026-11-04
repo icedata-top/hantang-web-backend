@@ -19,9 +19,8 @@ function VideoCover({ src, alt }) {
 }
 
 function VideoInfoContent({ aid, hangingPunctuation, className }) {
-  const { i18n } = useTranslation();
-  const isZh = String(i18n.language || 'zh').toLowerCase().startsWith('zh');
-  const t = (zh, en) => isZh ? zh : en;
+  const { t } = useTranslation();
+
   const [attempt, setAttempt] = useState(0);
   const [state, setState] = useState({ status: 'loading', data: null });
   const [open, setOpen] = useState(false);
@@ -88,7 +87,7 @@ function VideoInfoContent({ aid, hangingPunctuation, className }) {
   const card = <div className="video-info-card" id={cardId} ref={cardRef} role="dialog"
     aria-labelledby={titleId} onBlur={onBlur} onKeyDown={onKeyDown}>
     {state.status === 'ready' && <div className="video-info-cover-wrap">
-      <VideoCover src={video.pic} alt={t(`${title} 的封面`, `Cover for ${title}`)} />
+      <VideoCover src={video.pic} alt={t("{{value0}} 的封面", { value0: title })} />
       {duration != null && <span className="video-info-duration">{duration}</span>}
     </div>}
     <div className="video-info-card-content">
@@ -96,21 +95,21 @@ function VideoInfoContent({ aid, hangingPunctuation, className }) {
       <div className="video-info-identifiers"><span>av{aid}</span>{video?.bvid && <span>{video.bvid}</span>}</div>
       {state.status === 'ready' && <>
         <dl className="video-info-metadata">
-          <div><dt>{t('投稿人', 'Contributor')}</dt><dd>{uploaderName}</dd></div>
-          <div><dt>{t('投稿时间', 'Published')}</dt><dd><RelativeTime value={video.pubdate} mode="absolute" /></dd></div>
-          <div><dt>{t('分区', 'Category')}</dt><dd>{getBilibiliSubPartitionName(video.typeId) || '—'}</dd></div>
+          <div><dt>{t("投稿人")}</dt><dd>{uploaderName}</dd></div>
+          <div><dt>{t("投稿时间")}</dt><dd><RelativeTime value={video.pubdate} mode="absolute" /></dd></div>
+          <div><dt>{t("分区")}</dt><dd>{getBilibiliSubPartitionName(video.typeId) || '—'}</dd></div>
         </dl>
-        <p className="video-info-description">{description || t('暂无简介', 'No description available')}</p>
+        <p className="video-info-description">{description || t("暂无简介")}</p>
       </>}
-      {state.status === 'loading' && <p className="video-info-status" role="status"><LoadingOutlined spin /> {t('正在加载视频资料…', 'Loading video information…')}</p>}
-      {state.status === 'missing' && <p className="video-info-status" role="status">{t('暂未收录该视频的资料', 'This video’s information has not been indexed')}</p>}
+      {state.status === 'loading' && <p className="video-info-status" role="status"><LoadingOutlined spin /> {t("正在加载视频资料…")}</p>}
+      {state.status === 'missing' && <p className="video-info-status" role="status">{t("暂未收录该视频的资料")}</p>}
       {state.status === 'error' && <div className="video-info-status" role="alert">
-        <span>{t('视频资料加载失败', 'Could not load video information')}</span>
-        <button type="button" className="ds-button" data-variant="normal" onClick={() => setAttempt((value) => value + 1)}><ReloadOutlined />{t('重试', 'Retry')}</button>
+        <span>{t("视频资料加载失败")}</span>
+        <button type="button" className="ds-button" data-variant="normal" onClick={() => setAttempt((value) => value + 1)}><ReloadOutlined />{t("重试")}</button>
       </div>}
       <div className="video-info-actions">
-        <a className="ds-button" data-variant="secondary" href={`https://www.bilibili.com/video/av${aid}`} target="_blank" rel="noopener noreferrer">{t('访问 Bilibili', 'Visit Bilibili')} <ExportOutlined /></a>
-        <Link className="ds-button" data-variant="primary" to={`/videos/${aid}`} onClick={closeCard}>{t('视频详情', 'Video details')}</Link>
+        <a className="ds-button" data-variant="secondary" href={`https://www.bilibili.com/video/av${aid}`} target="_blank" rel="noopener noreferrer">{t("访问 Bilibili")} <ExportOutlined /></a>
+        <Link className="ds-button" data-variant="primary" to={`/videos/${aid}`} onClick={closeCard}>{t("视频详情")}</Link>
       </div>
     </div>
   </div>;
@@ -137,8 +136,8 @@ function VideoInfoContent({ aid, hangingPunctuation, className }) {
 
 /** Inline video title with a detail card. Pass large 64-bit aids as decimal strings. */
 export default function VideoInfo({ aid, hangingPunctuation = true, className = '' }) {
-  const { i18n } = useTranslation();
+  const { t } = useTranslation();
   const id = normalizeVideoAid(aid);
-  if (!id) return <span className={`video-info-invalid ${className}`.trim()}>{String(i18n.language || 'zh').toLowerCase().startsWith('zh') ? '无效的视频ID' : 'Invalid video ID'}</span>;
+  if (!id) return <span className={`video-info-invalid ${className}`.trim()}>{t('无效的视频ID')}</span>;
   return <VideoInfoContent key={id} aid={id} hangingPunctuation={hangingPunctuation} className={className} />;
 }

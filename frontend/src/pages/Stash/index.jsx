@@ -48,8 +48,8 @@ function StashFavicon({ url }) {
 }
 
 function StashLinkCard({ link, t }) {
-  const desc = t(link.descZh, link.descEn);
-  const note = link.noteZh || link.noteEn ? t(link.noteZh, link.noteEn) : '';
+  const desc = t(link.descZh);
+  const note = link.noteZh || link.noteEn ? t(link.noteZh) : '';
 
   return (
     <li key={link.url}>
@@ -82,8 +82,8 @@ function StashLinkGrid({ links, t }) {
 
 function StashTocNav({ entries, activeId, onNavigate, t }) {
   return (
-    <nav className="stash-toc-nav" aria-label={t('目录', 'Contents')}>
-      <p className="stash-toc-heading">{t('目录', 'Contents')}</p>
+    <nav className="stash-toc-nav" aria-label={t("目录")}>
+      <p className="stash-toc-heading">{t("目录")}</p>
       <ul className="stash-toc-list">
         {entries.map((group) => (
           <li key={group.id} className="stash-toc-item">
@@ -95,7 +95,7 @@ function StashTocNav({ entries, activeId, onNavigate, t }) {
                 onNavigate(group.anchorId);
               }}
             >
-              {t(group.titleZh, group.titleEn)}
+              {t(group.titleZh)}
             </a>
             {group.children?.length ? (
               <ul className="stash-toc-sublist">
@@ -109,7 +109,7 @@ function StashTocNav({ entries, activeId, onNavigate, t }) {
                         onNavigate(section.anchorId);
                       }}
                     >
-                      {t(section.titleZh, section.titleEn)}
+                      {t(section.titleZh)}
                     </a>
                   </li>
                 ))}
@@ -123,9 +123,8 @@ function StashTocNav({ entries, activeId, onNavigate, t }) {
 }
 
 export default function Stash() {
-  const { i18n } = useTranslation();
-  const isZh = String(i18n?.language || 'zh').toLowerCase().startsWith('zh');
-  const t = (zh, en) => (isZh ? zh : en);
+  const { i18n, t } = useTranslation();
+  const language = i18n.resolvedLanguage || i18n.language;
 
   const tocEntries = useMemo(() => buildTocEntries(), []);
   const anchorIds = useMemo(
@@ -147,8 +146,8 @@ export default function Stash() {
   const isSearching = searchQuery.trim().length > 0;
 
   const visibleGroups = useMemo(
-    () => filterBookmarkGroups(BOOKMARK_GROUPS, searchQuery, isZh),
-    [searchQuery, isZh],
+    () => filterBookmarkGroups(BOOKMARK_GROUPS, searchQuery, language),
+    [searchQuery, language],
   );
 
   const visibleTocEntries = useMemo(
@@ -235,8 +234,8 @@ export default function Stash() {
       <div className="stash-layout">
         <div className="stash-main">
           <header className="stash-header">
-            <span className="stash-eyebrow">{t('收藏夹', 'Bookmarks')}</span>
-            <h1 className="stash-title">{t(STASH_META.titleZh, STASH_META.titleEn)}</h1>
+            <span className="stash-eyebrow">{t("收藏夹")}</span>
+            <h1 className="stash-title">{t(STASH_META.titleZh)}</h1>
             <div className="stash-search-wrap">
               <Input
                 className="stash-search"
@@ -244,14 +243,14 @@ export default function Stash() {
                 onChange={(event) => setSearchQuery(event.target.value)}
                 allowClear
                 prefix={<SearchOutlined aria-hidden />}
-                placeholder={t('搜索站点名称或摘要…', 'Search by name or description…')}
-                aria-label={t('搜索收藏站点', 'Search bookmarks')}
+                placeholder={t("搜索站点名称或摘要…")}
+                aria-label={t("搜索收藏站点")}
               />
               {isSearching ? (
                 <p className="stash-search-meta" aria-live="polite">
                   {resultCount > 0
-                    ? t(`找到 ${resultCount} 个站点`, `${resultCount} site(s) found`)
-                    : t('无匹配站点', 'No matching sites')}
+                    ? t("找到 {{value0}} 个站点", { value0: resultCount })
+                    : t("无匹配站点")}
                 </p>
               ) : null}
             </div>
@@ -259,16 +258,16 @@ export default function Stash() {
 
           <div className="stash-body">
             {visibleGroups.length === 0 ? (
-              <p className="stash-empty">{t('无匹配站点，请换个关键词试试', 'No results. Try another keyword.')}</p>
+              <p className="stash-empty">{t("无匹配站点，请换个关键词试试")}</p>
             ) : (
               visibleGroups.map((group) => (
               <section
                 key={group.id}
                 id={groupAnchorId(group.id)}
                 className="stash-group stash-anchor"
-                aria-label={t(group.titleZh, group.titleEn)}
+                aria-label={t(group.titleZh)}
               >
-                <h2 className="stash-group-title">{t(group.titleZh, group.titleEn)}</h2>
+                <h2 className="stash-group-title">{t(group.titleZh)}</h2>
 
                 {group.sections ? (
                   <div className="stash-subgroups">
@@ -278,7 +277,7 @@ export default function Stash() {
                         id={sectionAnchorId(group.id, section.id)}
                         className="stash-subgroup stash-anchor"
                       >
-                        <h3 className="stash-subgroup-title">{t(section.titleZh, section.titleEn)}</h3>
+                        <h3 className="stash-subgroup-title">{t(section.titleZh)}</h3>
                         <StashLinkGrid links={section.links} t={t} />
                       </div>
                     ))}
@@ -301,12 +300,12 @@ export default function Stash() {
             className="stash-toc-float"
             type="primary"
             icon={<UnorderedListOutlined />}
-            tooltip={t('目录', 'Contents')}
-            aria-label={t('打开目录', 'Open table of contents')}
+            tooltip={t("目录")}
+            aria-label={t("打开目录")}
             onClick={() => setDrawerOpen(true)}
           />
           <Drawer
-            title={t('目录', 'Contents')}
+            title={t("目录")}
             placement="right"
             width={280}
             open={drawerOpen}
