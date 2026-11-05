@@ -7,6 +7,7 @@ import com.hantang.web.controller.DataReaderController;
 import com.hantang.web.controller.HomeController;
 import com.hantang.web.controller.OverviewController;
 import com.hantang.web.controller.VideoController;
+import com.hantang.web.controller.VideoListController;
 import com.hantang.web.controller.ProducerController;
 import io.javalin.Javalin;
 
@@ -35,6 +36,7 @@ public class App {
                 new HomeController(),
                 new OverviewController(),
                 new VideoController(),
+                new VideoListController(),
                 new ProducerController(),
                 new UniSeekController()
         };

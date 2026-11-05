@@ -24,7 +24,9 @@
 
 每项为 type、id、title、subTitle、coverUrl、jumpUrl、payload，不对外提供可跨类型比较的 score。所有列表实体 ID 为字符串。
 
-视频封面来自 ADM 的 pic，头像来自 discovered_users.face，立绘复用 frontend/public/vocals。歌曲关键词与编号查询的 payload 包含 bvid、play、favorite、like、coin、publishDate（Unix 秒）、producerId、recordDate。recordDate 为已发布批次的来源日 D，不要求是今天，也不使用每个视频各自的最新日期。ADM 离线发布时已过滤 `processed_videos.is_deleted = false`、D 日有 Daily 记录且累计点赞数严格 **> 100** 的视频；100、0、NULL 均不入表。其他指标缺失时保留 null，真实 0 保留 0。
+视频封面来自 ADM 的 pic，头像来自 discovered_users.face，立绘复用 frontend/public/vocals。歌曲关键词与编号查询的 payload 包含 bvid、play、favorite、like、coin、publishDate（Unix 秒）、producerId、recordDate。recordDate 为已发布批次的来源日 D，不要求是今天，也不使用每个视频各自的最新日期。ADM 离线发布时已过滤 `processed_videos.is_deleted = false`、D 日有 Daily 记录且累计收藏数严格 **> 100** 的视频；100、0、NULL 均不入表。其他指标缺失时保留 null，真实 0 保留 0。
+
+旧点赞版的数据库约束及刷新过程需按[迁移操作步骤](../../../../sql/adm_uniseek_videos_favorite_migration.md)升级并重新发布。点赞不参与新门槛，原始 0 / NULL 保留，不由此次改动补齐。
 
 UP 主关键词 payload 包含 uid、fanCount、videoCount（videos_filtered，上游过滤投稿数）、totalView（filtered_view）；编号查询使用相同的收录投稿数与头像条件。
 

@@ -6,6 +6,8 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ProducerInfo from '../ProducerInfo/ProducerInfo.jsx';
 import RelativeTime from '../RelativeTime/RelativeTime.jsx';
+import VideoInfo from '../VideoInfo/VideoInfo.jsx';
+import VideoHonor from '../VideoHonor/VideoHonor.jsx';
 import { hasHangingOpeningPunctuation, normalizeVideoAid } from '../VideoInfo/videoInfo.js';
 import { formatVideoText } from '../../../pages/video/videoDetailFormat.js';
 import { formatNumber } from '../../../utils/formatNumber.js';
@@ -19,7 +21,7 @@ const METRICS = [
 ];
 
 /** Shared song presentation from UniSeek. Uses supplied data; never fetches video metrics. */
-export default function VideoCard({ video, keyword = '', showProducer = false }) {
+export default function VideoCard({ video, keyword = '', showProducer = false, titlePreview = false, showHonor = false }) {
   const { i18n, t } = useTranslation();
   const language = i18n.resolvedLanguage || i18n.language;
 
@@ -40,10 +42,12 @@ export default function VideoCard({ video, keyword = '', showProducer = false })
       : <div className="video-card-cover">{cover}</div>}
     <div className="video-card-top">
       <Tag className="video-card-type" variant="filled">{t("歌曲")}</Tag>
+      {showHonor && <VideoHonor views={video.view} />}
       {aid && <span className="video-card-id">av{aid}</span>}
     </div>
     <div className="video-card-title-wrap">
-      {href ? <Link className={`${titleClass} video-card-link`} to={href} title={title}>{titleContent}</Link>
+      {href && titlePreview ? <VideoInfo aid={aid} initialTitle={title} linkToDetail className="video-card-title-preview" />
+        : href ? <Link className={`${titleClass} video-card-link`} to={href} title={title}>{titleContent}</Link>
         : <span className={titleClass}>{titleContent}</span>}
     </div>
     <div className="video-card-stats">

@@ -67,32 +67,34 @@ try {
   });
   await db.exec(`INSERT INTO hantang_dynamic.processed_videos (aid,bvid,title,pic,pubdate,user_id,is_filtered,is_deleted,tag_new,participle,label_singers) VALUES
     (1,'BV1','初音未来','https://example.com/1.jpg',100,10,false,false,ARRAY['初音'],NULL,ARRAY['初音未来']),
-    (2,'BV2','100 likes',NULL,NULL,NULL,false,false,NULL,NULL,NULL),
-    (3,'BV3','0 likes',NULL,NULL,NULL,false,false,NULL,NULL,NULL),
-    (4,'BV4','NULL likes',NULL,NULL,NULL,false,false,NULL,NULL,NULL),
+    (2,'BV2','100 favorites',NULL,NULL,NULL,false,false,NULL,NULL,NULL),
+    (3,'BV3','0 favorites',NULL,NULL,NULL,false,false,NULL,NULL,NULL),
+    (4,'BV4','NULL favorites',NULL,NULL,NULL,false,false,NULL,NULL,NULL),
     (5,'BV5','deleted',NULL,NULL,NULL,false,true,NULL,NULL,NULL),
     (6,'BV6','unknown deletion status',NULL,NULL,NULL,false,NULL,NULL,NULL,NULL),
     (7,'BV7','no selected-day snapshot',NULL,NULL,NULL,false,false,NULL,NULL,NULL),
     (8,'BV8','is_filtered is not a search predicate',NULL,NULL,NULL,true,false,NULL,ARRAY['test'],NULL);
     INSERT INTO hantang_dynamic.video_daily(record_date,aid,view,favorite,"like",coin,share,reply,danmaku) VALUES
     ('2026-10-19',1,999,999,999,999,999,999,999),('2026-10-19',7,999,999,999,999,999,999,999),
-    ('2026-10-20',1,NULL,0,101,NULL,7,NULL,1),('2026-10-20',2,1,1,100,1,1,1,1),
-    ('2026-10-20',3,1,1,0,1,1,1,1),('2026-10-20',4,1,1,NULL,1,1,1,1),
-    ('2026-10-20',5,1,1,200,1,1,1,1),('2026-10-20',6,1,1,200,1,1,1,1),
-    ('2026-10-20',8,0,NULL,102,0,NULL,0,NULL),('2026-10-20',99,1,1,200,1,1,1,1);`);
-  await test('only 101+ likes, explicit nondeleted metadata and the selected source day enter publication', async () => {
+    ('2026-10-20',1,NULL,101,0,NULL,7,NULL,1),('2026-10-20',2,1,100,999,1,1,1,1),
+    ('2026-10-20',3,1,0,999,1,1,1,1),('2026-10-20',4,1,NULL,999,1,1,1,1),
+    ('2026-10-20',5,1,200,0,1,1,1,1),('2026-10-20',6,1,200,0,1,1,1,1),
+    ('2026-10-20',8,0,102,NULL,0,NULL,0,NULL),('2026-10-20',99,1,200,0,1,1,1,1);`);
+  await test('only 101+ favorites with zero or missing likes, explicit nondeleted metadata and the selected source day enter publication', async () => {
     const requested = await confirm();
     assert.equal((await snapshot()).data, null, 'confirmation does not publish');
     await refresh();
     const rows = await q('SELECT *, record_date::text AS day FROM hantang_dynamic.adm_uniseek_videos ORDER BY aid');
     assert.deepEqual(rows.map((row) => Number(row.aid)), [1, 8]);
     assert.equal(rows[0].view, null);
-    assert.equal(rows[0].favorite, 0);
+    assert.equal(rows[0].favorite, 101);
+    assert.equal(rows[0].like, 0);
     assert.equal(rows[0].share, 7);
     assert.deepEqual(rows[0].tag_new, ['初音']);
     assert.equal(rows[0].participle, null);
     assert.equal(rows[1].view, 0);
-    assert.equal(rows[1].favorite, null);
+    assert.equal(rows[1].favorite, 102);
+    assert.equal(rows[1].like, null);
     assert.ok(rows.every((row) => row.batch_id === requested.batch && row.day === '2026-10-20'));
     assert.equal(rows[0].refreshed_at.getTime(), rows[1].refreshed_at.getTime());
     const before = await snapshot();
@@ -140,7 +142,7 @@ try {
   });
   await test('same-day reconfirmation publishes a new batch and removes ineligible videos', async () => {
     const oldBatch = (await publication()).batch;
-    await db.exec(`UPDATE hantang_dynamic.video_daily SET "like"=100 WHERE aid=1 AND record_date='2026-10-20';
+    await db.exec(`UPDATE hantang_dynamic.video_daily SET favorite=100 WHERE aid=1 AND record_date='2026-10-20';
       UPDATE hantang_dynamic.processed_videos SET title='updated title' WHERE aid=8;`);
     const requested = await confirm();
     assert.notEqual(requested.batch, oldBatch);

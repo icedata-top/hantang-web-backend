@@ -1,6 +1,6 @@
 import { useId, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Segmented } from 'antd';
+import { Button, DatePicker, Form, InputNumber, Segmented, Select, Switch } from 'antd';
 import {
   InfoCircleOutlined,
   MoonOutlined,
@@ -154,15 +154,14 @@ function Buttons({ t }) {
             <div className="spec-button-name"><strong>{name}</strong><span>{t((usage)[0])}</span></div>
             {['default', 'hover', 'disabled'].map((state) => (
               <div className="spec-button-cell" key={state}>
-                <button
-                  type="button"
+                <Button
                   className="ds-button"
                   data-variant={type}
                   data-preview-state={state}
                   disabled={state === 'disabled'}
                   aria-label={`${name} · ${t((label)[0])} · ${state}`}
                   onClick={() => setFeedback(t("已体验 {{value0}} 按钮，仅作视觉演示。", { value0: name }))}
-                >{t((label)[0])}</button>
+                >{t((label)[0])}</Button>
                 <span className="spec-button-color"><span>{t("底")}</span><Token name={state === 'disabled' ? 'button-disabled-bg' : `button-${type}-${state === 'hover' ? 'hover' : 'bg'}`} /></span>
                 <span className="spec-button-color"><span>{t("字")}</span><Token name={state === 'disabled' ? 'button-disabled-text' : `button-${type}-text`} /></span>
               </div>
@@ -174,6 +173,37 @@ function Buttons({ t }) {
       <p className="spec-demo-feedback" role="status">{feedback || t("点击可用按钮，体验交互反馈。悬停列固定显示 Hover。")}</p>
     </>
   );
+}
+
+function FilterControls({ t }) {
+  const disabledId = useId();
+  const [disabled, setDisabled] = useState(false);
+  const [dates, setDates] = useState(null);
+  const [honor, setHonor] = useState('all');
+  const [minView, setMinView] = useState(null);
+  return <>
+    <div className="spec-control-disabled"><Switch id={disabledId} checked={disabled} onChange={setDisabled} /><label htmlFor={disabledId}>{t('禁用')}</label></div>
+    <Form layout="vertical" disabled={disabled} onFinish={() => {}}>
+      <div className="spec-control-grid">
+        <Form.Item label={t('投稿日期（北京时间）')}>
+          <DatePicker.RangePicker aria-label={t('投稿日期（北京时间）')} value={dates} onChange={setDates} placeholder={[t('开始日期'), t('结束日期')]} />
+        </Form.Item>
+        <Form.Item label={t('播放荣誉')}>
+          <Select aria-label={t('播放荣誉')} value={honor} onChange={setHonor} options={[
+            { value: 'all', label: t('不限荣誉') }, { value: 'none', label: t('未达殿堂（<10万）') },
+            { value: 'hall', label: t('殿堂（10万–100万）') }, { value: 'legend', label: t('传说（100万–1000万）') }, { value: 'myth', label: t('神话（≥1000万）') },
+          ]} />
+        </Form.Item>
+        <Form.Item label={t('最低播放量')}>
+          <InputNumber aria-label={t('最低播放量')} value={minView} onChange={setMinView} min={0} precision={0} placeholder={t('不限')} />
+        </Form.Item>
+      </div>
+      <div className="spec-control-actions">
+        <Button className="ds-button" data-variant="secondary" onClick={() => { setDates(null); setHonor('all'); setMinView(null); }}>{t('重置')}</Button>
+        <Button className="ds-button" data-variant="primary" htmlType="submit">{t('应用筛选')}</Button>
+      </div>
+    </Form>
+  </>;
 }
 
 function LanguageFontComparison({ t }) {
@@ -315,6 +345,7 @@ function Chips({ t }) {
 const SECTIONS = [
   { id: 'surfaces', en: 'Canvas & Surface', zh: '背景与卡片', description: ['从页面底色到内容表面，建立清晰的层级。', 'Build a clear hierarchy from the page canvas to content surfaces.'], Component: Surfaces },
   { id: 'buttons', en: 'Buttons', zh: '按钮', description: ['四种用途，三种状态。每一个状态都可以直接对照。', 'Four purposes, three states. Compare every state directly.'], Component: Buttons },
+  { id: 'controls', en: 'Filter controls', zh: '筛选控件', description: ['日期、选择、数字输入及浮层跟随当前主题，保留悬停、聚焦和禁用状态。', 'Dates, selects, number inputs and popups follow the current theme, including hover, focus and disabled states.'], Component: FilterControls },
   { id: 'typography', en: 'Typography', zh: '文字', description: ['用字号、字重和颜色表达内容的重要程度。', 'Express content hierarchy through size, weight, and color.'], Component: Typography },
   { id: 'chips', en: 'Tag / Chip', zh: '标签', description: ['分类、认证与播放荣誉，使用共享主题变量。', 'Categories, verification, and view honors use shared theme tokens.'], Component: Chips },
   { id: 'tooltips', en: 'Tooltip', zh: '悬停提示', description: ['沿用当前主题的 Surface 配色，支持文字和组件内容。', 'Use the current Surface colors for text and embedded components.'], Component: Tooltips },

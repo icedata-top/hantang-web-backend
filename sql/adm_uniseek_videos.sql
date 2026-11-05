@@ -1,6 +1,6 @@
 -- UniSeek 当前歌曲搜索集：每个 aid 一行，不积累逐日历史。
 -- 正式来源：processed_videos INNER JOIN video_daily（显式确认的同一 record_date）。
--- 资格：processed_videos.is_deleted = false，且该日累计点赞数严格大于 100。
+-- 资格：processed_videos.is_deleted = false，且该日累计收藏数严格大于 100。
 -- 表、索引及注释均为首次安装语句；不会修改源表或切换在线搜索代码。
 CREATE TABLE hantang_dynamic.adm_uniseek_videos (
     aid bigint PRIMARY KEY,
@@ -13,8 +13,8 @@ CREATE TABLE hantang_dynamic.adm_uniseek_videos (
     participle varchar[],
     label_singers text[],
     view integer,
-    favorite integer,
-    "like" integer NOT NULL CHECK ("like" > 100),
+    favorite integer NOT NULL CHECK (favorite > 100),
+    "like" integer,
     coin integer,
     share integer,
     reply integer,
@@ -26,7 +26,7 @@ CREATE TABLE hantang_dynamic.adm_uniseek_videos (
 CREATE INDEX adm_uniseek_videos_tag_new_idx ON hantang_dynamic.adm_uniseek_videos USING gin (tag_new);
 CREATE INDEX adm_uniseek_videos_participle_idx ON hantang_dynamic.adm_uniseek_videos USING gin (participle);
 CREATE INDEX adm_uniseek_videos_label_singers_idx ON hantang_dynamic.adm_uniseek_videos USING gin (label_singers);
-COMMENT ON TABLE hantang_dynamic.adm_uniseek_videos IS 'UniSeek当前已发布歌曲搜索宽表；每aid一行，统一来源日期，未删除且累计点赞>100';
+COMMENT ON TABLE hantang_dynamic.adm_uniseek_videos IS 'UniSeek当前已发布歌曲搜索宽表；每aid一行，统一来源日期，未删除且累计收藏>100';
 COMMENT ON COLUMN hantang_dynamic.adm_uniseek_videos.aid IS '视频AV号；保留bigint，不按子串检索';
 COMMENT ON COLUMN hantang_dynamic.adm_uniseek_videos.bvid IS '视频BV号；唯一，供精确检索';
 COMMENT ON COLUMN hantang_dynamic.adm_uniseek_videos.title IS 'processed_videos原始标题；标题子串匹配不依赖数据库扩展';
@@ -37,8 +37,8 @@ COMMENT ON COLUMN hantang_dynamic.adm_uniseek_videos.tag_new IS '原始varchar�
 COMMENT ON COLUMN hantang_dynamic.adm_uniseek_videos.participle IS '原始varchar分词数组';
 COMMENT ON COLUMN hantang_dynamic.adm_uniseek_videos.label_singers IS '原始text歌手标签数组';
 COMMENT ON COLUMN hantang_dynamic.adm_uniseek_videos.view IS '来源日累计播放量；NULL为缺失，0为真实零';
-COMMENT ON COLUMN hantang_dynamic.adm_uniseek_videos.favorite IS '来源日累计收藏量；NULL为缺失';
-COMMENT ON COLUMN hantang_dynamic.adm_uniseek_videos."like" IS '来源日累计点赞量，严格大于100';
+COMMENT ON COLUMN hantang_dynamic.adm_uniseek_videos.favorite IS '来源日累计收藏量，严格大于100；作为收录门槛';
+COMMENT ON COLUMN hantang_dynamic.adm_uniseek_videos."like" IS '来源日累计点赞量；NULL为缺失，0保留原值，不作为收录门槛';
 COMMENT ON COLUMN hantang_dynamic.adm_uniseek_videos.coin IS '来源日累计硬币量；NULL为缺失';
 COMMENT ON COLUMN hantang_dynamic.adm_uniseek_videos.share IS '来源日累计分享量；NULL为缺失';
 COMMENT ON COLUMN hantang_dynamic.adm_uniseek_videos.reply IS '来源日累计评论量；NULL为缺失';

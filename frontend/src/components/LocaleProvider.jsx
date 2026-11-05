@@ -8,9 +8,16 @@ import 'dayjs/locale/ja';
 import { normalizeLanguage } from '../locales/languages.js';
 
 const COMPONENT_LOCALES = { zh: zhCN, en: enGB, ja: jaJP };
-const LOCALE_THEME = { token: { fontFamily: 'var(--font-family-sans)' } };
+// Ant Design emits CSS variables so existing [data-theme] containers can supply
+// the same project colors to controls and their popups without a second palette.
+const COMPONENT_THEME = { cssVar: { key: 'icedata-antd' }, token: { fontFamily: 'var(--font-family-sans)' } };
+
+function getPopupContainer(trigger) {
+  const themeContainer = trigger?.closest('[data-theme]');
+  return themeContainer && themeContainer !== document.documentElement ? themeContainer : document.body;
+}
 
 export default function LocaleProvider({ children }) {
   const { i18n } = useTranslation();
-  return <ConfigProvider locale={COMPONENT_LOCALES[normalizeLanguage(i18n.language)]} theme={LOCALE_THEME}>{children}</ConfigProvider>;
+  return <ConfigProvider locale={COMPONENT_LOCALES[normalizeLanguage(i18n.language)]} theme={COMPONENT_THEME} getPopupContainer={getPopupContainer}>{children}</ConfigProvider>;
 }

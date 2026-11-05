@@ -1,5 +1,7 @@
 # UniSeek 技改复盘：每日生成 ADM 歌曲搜索宽表
 
+> 2026-11-05：本文保留早期点赞 >100 技改的历史口径。当前收录规则已改为收藏 >100；实际部署以[迁移与 CRON 操作步骤](../../../sql/adm_uniseek_videos_favorite_migration.md)为准。
+
 整理日期：2026-11-04。范围：歌曲搜索的数据准备、在线读取、缓存、部署问题及响应样本。设计细节见 [ADM 子设计](adm-search-snapshot.md)，操作入口见 [SQL 使用说明](../../../sql/adm_uniseek_videos.md)，剩余事项见 [TODO](../../todo/uniseek-adm-search-snapshot.md)。
 
 ## 结果与依据

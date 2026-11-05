@@ -1,6 +1,6 @@
 # UniSeek ADM 搜索宽表：手动安装与每日同步
 
-2026-11-04 更新：开发者已完成宽表及首批数据构建，截图客户端显示 72,992 行，并已运行改读 ADM 的 Java 搜索，反馈首次约 700 ms、后续分页约 100 ms。职责分工、历史对比及测量边界见 [技改复盘](../doc/design/uniseek/adm-search-retrospective.md)。Codex 未连接或操作业务库，CRON 注册及每日日期确认接入状态尚未核实。已安装的环境无需重复执行首次安装 SQL。
+2026-11-05 更新：当前收录规则改为 **来源日累计收藏 >100**。已安装旧点赞版的环境，按[一次性迁移、重刷与 CRON 操作顺序](adm_uniseek_videos_favorite_migration.md)执行，不要重新建表。新安装使用本页第 1 节。前次首批 72,992 行为旧点赞口径，不能直接作为新收藏口径的规模阈值。此次只读检查确认旧发布源日为 2026-11-02、最新投稿为 2024-01-25，部分新 aid 的 Daily 点赞系统性为 0；当前业务库的 CRON 注册与上游每日确认接入仍待维护者核对。
 
 完整表名：`hantang_dynamic.adm_uniseek_videos`，每个 aid 一行，仅保存当前成功批次。字段、类型、约束、注释与索引的唯一维护入口是[建表文档版 SQL](adm_uniseek_videos.sql)，刷新逻辑在[过程文档版 SQL](adm_uniseek_videos_refresh.sql)。方案背景见[UniSeek 子设计](../doc/design/uniseek/adm-search-snapshot.md)。
 
@@ -80,26 +80,19 @@ CALL hantang_dynamic.adm_refresh_uniseek_videos();
 
 在**已安装 pg_cron 的管理数据库连接**中完整执行[调度 SQL](adm_uniseek_videos_schedule.sql)。沿用现有跨库调度方式，目标业务库为 `hantang`；末参数是数据库名，不是 schema。如实际库名不同，先修改。
 
-```sql
-SELECT cron.schedule_in_database(
-    'hantang-uniseek-search-refresh',
-    '*/10 * * * *',
-    'CALL hantang_dynamic.adm_refresh_uniseek_videos();',
-    'hantang'
-);
-```
+脚本将 `hantang-uniseek-search-refresh` 配置为 `*/10 * * * *`，命令为 `CALL hantang_dynamic.adm_refresh_uniseek_videos();`，目标库为 `hantang`。已有一个任务时通过 `cron.alter_job` 保留 jobid 并更新；只有不存在任务时才调用 `cron.schedule_in_database` 创建。使用原维护账号或 DBA 检查可见任务，避免因行级权限看不到其他账号的任务而重复注册。
 
 每 10 分钟检查一次确认请求；**只在有新批次时生成数据**，成功请求不会重复扫描 Daily。上游每日确认一个日期，即形成每日刷新，不必依赖 CRON 的全局时区或猜测入库耗时。确认晚于检查时刻时，下一轮自动处理。没有确认时保留上一批。
 
-失败会回滚并记录为 pg_cron 失败，下次检查重试；本版没有自动重试次数上限。数据持续异常时应修复后重新确认，或先暂停调度。使用固定维护账号注册；该账号需具备源表 SELECT、新表写入、临时表创建及过程执行权限。
+失败会回滚并记录为 pg_cron 失败，下次检查重试；本版没有自动重试次数上限。数据持续异常时应修复后重新确认，或先暂停调度。调度脚本会更新并启用一个已有同名任务、保留 jobid；没有任务时才创建，发现多个可见同名任务时报错。使用固定维护账号注册或修改；该账号需具备源表 SELECT、新表写入、临时表创建及过程执行权限。
 
 跨库调度、权限及 CRON 日志行为以 [pg_cron 官方文档](https://github.com/citusdata/pg_cron)为准。脚本不会为你安装或配置服务器的 pg_cron 扩展。
 
 ## 4. 刷新与发布语义
 
 - 只读取确认日 D 的 `video_daily`，一次物化该日快照，然后 `INNER JOIN processed_videos`。不使用 `video_daily_latest`、`video_static` 或每个 aid 的各自最后一日。
-- 保持当前 UniSeek 的删除过滤：`p.is_deleted = false`；true、NULL 均不入表。只增加严格的 `d."like" > 100`，不额外用 `is_filtered` 筛选。
-- 100、0、NULL 赞均不入表。其他指标、数组的 NULL 和真实 0 / 空数组原样保留，不从旧日补齐。
+- 保持当前 UniSeek 的删除过滤：`p.is_deleted = false`；true、NULL 均不入表。使用严格的 `d.favorite > 100`，不额外用 `is_filtered` 筛选。
+- 100、0、NULL 收藏均不入表。点赞不参与收录，保留原始 0 / NULL。其他指标、数组的 NULL 和真实 0 / 空数组原样保留，不从旧日补齐。
 - 确认后源日期总行数改变、D 日 aid 重复、候选静态 aid / bvid 重复、结果数低于指定下限，都会阻止发布。行数不变的修改不能通过这项漂移检查被全部识别；入库完成仍由确认者保证。
 - 获取事务级互斥锁，持有控制行锁直至提交；同一时刻只有一个发布者。先在会话临时表中准备并校验，再在同一事务内 DELETE / INSERT 正式表、更新批次元数据及 ANALYZE。没有 TRUNCATE、正式表重建或逐步对外填充。
 - 在 PostgreSQL 的 MVCC 下，普通单条 SELECT 读取提交前的旧批次或提交后的新批次；失败回滚恢复旧数据。API 缓存已按 `batch_id` 区分，并使用实际排序查询返回的批次，避免两次读取跨发布时误标；跨页会话还没有固定快照游标。参见 [PostgreSQL 事务隔离](https://www.postgresql.org/docs/current/transaction-iso.html)。
@@ -112,7 +105,7 @@ SELECT cron.schedule_in_database(
 ```sql
 SELECT *, requested_batch_id IS DISTINCT FROM published_batch_id AS pending
 FROM hantang_dynamic.adm_uniseek_refresh_state;
-SELECT record_date, batch_id, count(*) AS rows, min("like") AS min_likes
+SELECT record_date, batch_id, count(*) AS rows, min(favorite) AS min_favorites
 FROM hantang_dynamic.adm_uniseek_videos
 GROUP BY record_date, batch_id;
 ```
@@ -128,15 +121,16 @@ WHERE jobid = (SELECT jobid FROM cron.job WHERE jobname = 'hantang-uniseek-searc
 ORDER BY start_time DESC LIMIT 10;
 ```
 
-暂停后仍保留搜索数据：
+暂停后保留任务和搜索数据（已运行实例不会被中断）：
 
 ```sql
-SELECT cron.unschedule('hantang-uniseek-search-refresh');
+SELECT cron.alter_job(jobid, active => false)
+FROM cron.job WHERE jobname = 'hantang-uniseek-search-refresh';
 ```
 
 ## 6. 本地验证与接入边界
 
-独立内存 PostgreSQL（PGlite）在未安装 pg_trgm 的环境中验证完整安装、已提交搜索表的续装路径、内置索引、无确认不刷新、非法确认、101/100/0/NULL 赞、固定日期、删除及缺静态记录、NULL/0、源行数变化、Daily 和静态重复、规模下限、发布中途失败回滚、同日新批次重算及事务内重跑。
+独立内存 PostgreSQL（PGlite）在未安装 pg_trgm 的环境中验证完整安装、已提交搜索表的续装路径、内置索引、无确认不刷新、非法确认、101/100/0/NULL 收藏、点赞 0 / NULL 可收录、固定日期、删除及缺静态记录、NULL/0、源行数变化、Daily 和静态重复、规模下限、发布中途失败回滚、同日新批次重算及事务内重跑。
 
 ```sh
 PGLITE_MODULE_PATH=/path/to/@electric-sql/pglite/dist/index.js node sql/tests/adm_uniseek_videos.test.mjs
@@ -144,4 +138,6 @@ PGLITE_MODULE_PATH=/path/to/@electric-sql/pglite/dist/index.js node sql/tests/ad
 
 另有 [搜索查询 SQL 回归](tests/uniseek.test.mjs)，提取生产 DAO 查询，在只建 ADM、不建原始视频和 Daily 表的环境验证关键词与编号、短词、完整评分后截取及 NULL/0。Java 测试验证发布批次缓存、同日更新、读取交错和独立 HTTP 响应；接口契约见 [UniSeek beta](../frontend/src/services/UniSeek/uniseek.md)。
 
-开发者已反馈应用访问新表的响应样本；Codex 未独立实测业务库角色权限、Timescale 压缩分区刷新性能、多连接竞争或 pg_cron 部署。剩余每日确认/调度、运行监控、精确编号及同日重发验收、固定快照分页见 [ADM TODO](../doc/todo/uniseek-adm-search-snapshot.md)。
+[旧点赞版迁移回归](tests/uniseek_favorite_migration.test.mjs)验证旧在线批次与授权保留、收藏门槛、点赞 0 / NULL、失败回滚、首次校验与同日重新发布，并用 pg_cron 文档签名的隔离替身验证调度脚本创建／更新／重复任务分支。替身测试不等同于线上 pg_cron 安装、行级权限和连接认证验收。
+
+开发者已反馈应用访问新表的响应样本；Codex 已做有限只读核查，未在业务库执行此次迁移、刷新或 CRON 修改；Timescale 刷新性能、多连接竞争及 pg_cron 部署仍需维护者验收。剩余每日确认/调度、运行监控、精确编号及同日重发验收、固定快照分页见 [ADM TODO](../doc/todo/uniseek-adm-search-snapshot.md)。

@@ -2,7 +2,7 @@ BEGIN;
 CREATE INDEX adm_uniseek_videos_tag_new_idx ON hantang_dynamic.adm_uniseek_videos USING gin (tag_new);
 CREATE INDEX adm_uniseek_videos_participle_idx ON hantang_dynamic.adm_uniseek_videos USING gin (participle);
 CREATE INDEX adm_uniseek_videos_label_singers_idx ON hantang_dynamic.adm_uniseek_videos USING gin (label_singers);
-COMMENT ON TABLE hantang_dynamic.adm_uniseek_videos IS 'UniSeek当前已发布歌曲搜索宽表；每aid一行，统一来源日期，未删除且累计点赞>100';
+COMMENT ON TABLE hantang_dynamic.adm_uniseek_videos IS 'UniSeek当前已发布歌曲搜索宽表；每aid一行，统一来源日期，未删除且累计收藏>100';
 COMMENT ON COLUMN hantang_dynamic.adm_uniseek_videos.aid IS '视频AV号；保留bigint，不按子串检索';
 COMMENT ON COLUMN hantang_dynamic.adm_uniseek_videos.bvid IS '视频BV号；唯一，供精确检索';
 COMMENT ON COLUMN hantang_dynamic.adm_uniseek_videos.title IS 'processed_videos原始标题；标题子串匹配不依赖数据库扩展';
@@ -13,8 +13,8 @@ COMMENT ON COLUMN hantang_dynamic.adm_uniseek_videos.tag_new IS '原始varchar�
 COMMENT ON COLUMN hantang_dynamic.adm_uniseek_videos.participle IS '原始varchar分词数组';
 COMMENT ON COLUMN hantang_dynamic.adm_uniseek_videos.label_singers IS '原始text歌手标签数组';
 COMMENT ON COLUMN hantang_dynamic.adm_uniseek_videos.view IS '来源日累计播放量；NULL为缺失，0为真实零';
-COMMENT ON COLUMN hantang_dynamic.adm_uniseek_videos.favorite IS '来源日累计收藏量；NULL为缺失';
-COMMENT ON COLUMN hantang_dynamic.adm_uniseek_videos."like" IS '来源日累计点赞量，严格大于100';
+COMMENT ON COLUMN hantang_dynamic.adm_uniseek_videos.favorite IS '来源日累计收藏量，严格大于100；作为收录门槛';
+COMMENT ON COLUMN hantang_dynamic.adm_uniseek_videos."like" IS '来源日累计点赞量；NULL为缺失，0保留原值，不作为收录门槛';
 COMMENT ON COLUMN hantang_dynamic.adm_uniseek_videos.coin IS '来源日累计硬币量；NULL为缺失';
 COMMENT ON COLUMN hantang_dynamic.adm_uniseek_videos.share IS '来源日累计分享量；NULL为缺失';
 COMMENT ON COLUMN hantang_dynamic.adm_uniseek_videos.reply IS '来源日累计评论量；NULL为缺失';
@@ -142,7 +142,7 @@ BEGIN
            v_state.requested_record_date, v_state.requested_batch_id, v_refreshed_at
     FROM pg_temp.adm_uniseek_daily_stage AS d
     INNER JOIN hantang_dynamic.processed_videos AS p ON p.aid = d.aid
-    WHERE p.is_deleted = false AND d."like" > 100;
+    WHERE p.is_deleted = false AND d.favorite > 100;
     GET DIAGNOSTICS v_result_rows = ROW_COUNT;
     IF v_result_rows < v_state.minimum_result_rows THEN
         RAISE EXCEPTION 'Search result count % is below the confirmed minimum %; previous publication retained', v_result_rows, v_state.minimum_result_rows;
@@ -156,6 +156,14 @@ BEGIN
     SELECT aid, bvid, title, pic, pubdate, user_id, tag_new, participle, label_singers,
            view, favorite, "like", coin, share, reply, danmaku, record_date, batch_id, refreshed_at
     FROM pg_temp.adm_uniseek_videos_stage;
+    IF EXISTS (
+        SELECT 1 FROM pg_catalog.pg_constraint
+        WHERE conrelid = 'hantang_dynamic.adm_uniseek_videos'::regclass
+          AND conname = 'adm_uniseek_videos_favorite_check' AND NOT convalidated
+    ) THEN
+        ALTER TABLE hantang_dynamic.adm_uniseek_videos VALIDATE CONSTRAINT adm_uniseek_videos_favorite_check;
+        ALTER TABLE hantang_dynamic.adm_uniseek_videos ALTER COLUMN favorite SET NOT NULL;
+    END IF;
     UPDATE hantang_dynamic.adm_uniseek_refresh_state
     SET published_record_date = v_state.requested_record_date,
         published_batch_id = v_state.requested_batch_id, published_at = clock_timestamp(),

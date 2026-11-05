@@ -34,17 +34,17 @@ try {
   await db.exec(await readFile(new URL('../adm_uniseek_videos.sql', import.meta.url), 'utf8'));
   await db.exec(`INSERT INTO hantang_dynamic.adm_uniseek_videos
     (aid,bvid,title,pubdate,user_id,tag_new,view,favorite,"like",coin,record_date,batch_id,refreshed_at) VALUES
-    (1,'BV1Ts411S7SM','世末歌者',100,1,NULL,0,0,101,0,'2026-10-20','${batchA}',now()),
-    (2,'BV2','【乐正绫】世末歌者',100,1,ARRAY['乐正绫','世末歌者'],1000000000,1,102,1,'2026-10-20','${batchA}',now()),
-    (3,'BV3','世末歌者 很长的标题',100,1,NULL,1000,1,103,1,'2026-10-20','${batchA}',now()),
-    (5,'BV5','标题里没有关键词',100,1,ARRAY['世末歌者','言和'],0,1,104,1,'2026-10-20','${batchA}',now()),
-    (6,'BV6','123木头人',100,1,NULL,0,0,105,0,'2026-10-20','${batchA}',now()),
-    (123,'BV123','无关歌名',100,1,NULL,0,0,106,0,'2026-10-20','${batchA}',now()),
-    (7,'BV7','100%_真实',100,1,NULL,10,0,107,0,'2026-10-20','${batchA}',now()),
-    (8,'BV8','言和 但没有标签',100,1,NULL,0,0,108,0,'2026-10-20','${batchA}',now()),
-    (10,'BV10','言和',100,1,ARRAY['言和'],NULL,NULL,109,NULL,'2026-10-20','${batchA}',now()),
-    (20,'BV20','同分',100,1,NULL,10,0,101,0,'2026-10-20','${batchA}',now()),
-    (21,'BV21','同分',100,1,NULL,10,0,101,0,'2026-10-20','${batchA}',now());`);
+    (1,'BV1Ts411S7SM','世末歌者',100,1,NULL,0,101,0,0,'2026-10-20','${batchA}',now()),
+    (2,'BV2','【乐正绫】世末歌者',100,1,ARRAY['乐正绫','世末歌者'],1000000000,102,102,1,'2026-10-20','${batchA}',now()),
+    (3,'BV3','世末歌者 很长的标题',100,1,NULL,1000,103,103,1,'2026-10-20','${batchA}',now()),
+    (5,'BV5','标题里没有关键词',100,1,ARRAY['世末歌者','言和'],0,104,104,1,'2026-10-20','${batchA}',now()),
+    (6,'BV6','123木头人',100,1,NULL,0,105,105,0,'2026-10-20','${batchA}',now()),
+    (123,'BV123','无关歌名',100,1,NULL,0,106,106,0,'2026-10-20','${batchA}',now()),
+    (7,'BV7','100%_真实',100,1,NULL,10,107,107,0,'2026-10-20','${batchA}',now()),
+    (8,'BV8','言和 但没有标签',100,1,NULL,0,108,108,0,'2026-10-20','${batchA}',now()),
+    (10,'BV10','言和',100,1,ARRAY['言和'],NULL,109,NULL,NULL,'2026-10-20','${batchA}',now()),
+    (20,'BV20','同分',100,1,NULL,10,110,101,0,'2026-10-20','${batchA}',now()),
+    (21,'BV21','同分',100,1,NULL,10,110,101,0,'2026-10-20','${batchA}',now());`);
   await test('keyword and exact-ID SQL run with no raw video or Daily tables present', async () => {
     const tables = (await db.query(`SELECT to_regclass('hantang_dynamic.processed_videos') AS raw,
       to_regclass('hantang_dynamic.video_daily') AS daily`)).rows[0];
@@ -61,12 +61,12 @@ try {
     assert.equal((await search('世末歌者', { page: 2 })).hasMore, false);
     assert.deepEqual(ids(await search('世末歌者', { page: 3 })), []);
     assert.equal(first.rows[0].view, 0);
-    assert.equal(first.rows[0].favorite, 0);
-    assert.equal(first.rows[0].like, 101);
+    assert.equal(first.rows[0].favorite, 101);
+    assert.equal(first.rows[0].like, 0);
     assert.equal(first.rows[0].record_date, '2026-10-20');
     assert.equal(first.rows[0].batch_id, batchA);
     assert.equal((await search('言和')).rows[0].view, null);
-    assert.equal((await exactVideo(10))[0].favorite, null);
+    assert.equal((await exactVideo(10))[0].like, null);
   });
   await test('one/two-character title matches, exact array elements and multiple words retain their meanings', async () => {
     assert.deepEqual(ids(await search('言和')), [10, 8]);
@@ -85,18 +85,18 @@ try {
     assert.deepEqual(ids(await search('%_')), [7]);
     assert.deepEqual(ids(await search("' OR true --")), []);
   });
-  await test('ties use aid descending and admission requires more than 100 likes', async () => {
+  await test('ties use aid descending and admission requires more than 100 favorites', async () => {
     assert.deepEqual(ids(await search('同分', { pageSize: 1 })), [21]);
     assert.equal((await search('同分', { pageSize: 1 })).hasMore, true);
     assert.deepEqual(ids(await search('同分', { page: 2, pageSize: 1 })), [20]);
-    for (const likes of [100, 0, null]) {
+    for (const favorites of [100, 0, null]) {
       await assert.rejects(() => db.query(`INSERT INTO hantang_dynamic.adm_uniseek_videos
-        (aid,bvid,"like",record_date,batch_id,refreshed_at) VALUES (99,'BV99',$1,'2026-10-20',$2,now())`, [likes, batchA]));
+        (aid,bvid,favorite,record_date,batch_id,refreshed_at) VALUES (99,'BV99',$1,'2026-10-20',$2,now())`, [favorites, batchA]));
     }
   });
   await test('all matches are ranked before the beta 1000-row return limit', async () => {
     await db.exec(`INSERT INTO hantang_dynamic.adm_uniseek_videos
-      (aid,bvid,title,view,"like",record_date,batch_id,refreshed_at)
+      (aid,bvid,title,view,favorite,record_date,batch_id,refreshed_at)
       SELECT i,'BV'||i,'limit test',CASE WHEN i=2000 THEN 1000000000 ELSE 0 END,101,
       '2026-10-20','${batchA}',now() FROM generate_series(2000,3000) i`);
     const rows = await ranked('limit test');

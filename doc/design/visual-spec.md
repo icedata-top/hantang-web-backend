@@ -28,6 +28,8 @@
 
 `frontend/src/styles/design-system.css` 只定义公共组件样式；`global.css` 只负责基础样式和既有组件适配。预览页的 `DesignSpec.css` 只负责样本布局，字体与颜色引用主题变量。三个公共样式文件已在 `main.jsx` 加载，业务页面无需重复引入或复制配色。
 
+Ant Design 通过 `LocaleProvider` 开启 CSS 变量模式，公共样式中的 `icedata-antd` 适配将控件、表单标签、占位文字、下拉选项、日期面板、聚焦及禁用状态连接到上述主题变量。浮层挂到触发控件最近的显式主题容器，普通页面沿用 body，保证日夜对照样本中的浮层跟随各自主题。不要在业务页另写一套控件配色。
+
 配色分三层：基础色（`--text`、`--theme-primary`、九种 `--highlight-*`、中性背景、黑白端点）→ 日夜混色比例 → 语义颜色。只有基础色直接写色值；文本、按钮、Tooltip、Alert、分割线、阴影等通过变量和 `color-mix(in srgb, ...)` 派生。
 
 红色统一来源：`--highlight-red` → `--button-danger-bg/hover`、`--alert-error-bg/border/text`、`--trend-up`。删除按钮按配置比例使用强调红或将其加深，错误提示将同一个红混入表面色；日夜分别使用各自的强调红与混色比例，不再单独挑另一组业务红色。信息提示使用品牌蓝，警告提示使用 `--highlight-orange`。
@@ -113,6 +115,8 @@ Primary 用于核心操作，Secondary 用于取消、重置等次要操作，No
 高度 36px，字体统一为 14px / 400，行高 22px，圆角 6px，水平内边距基准 16px。窄容器中的样本压缩水平内边距以保证三态可同屏查看。悬停过渡 160ms；键盘聚焦用 2px 品牌蓝外环，偏移 3px。尊重系统减少动态效果设置。
 
 实现：`.ds-button` 配合 `data-variant="primary|secondary|normal|danger"`，固定悬停样本使用 `data-preview-state="hover"`。颜色使用 `--button-{类型}-bg/hover/text`，字号和字重使用独立的按钮变量。
+
+Ant Design Button 的状态变量同样由 `.ds-button` 适配，悬停与按下时保持对应用途的文字、底色及无描边状态。规范页按钮样本使用真实 Ant Design Button；`/admin/design/spec#spec-controls` 提供日期范围、选择、数字输入和筛选按钮的日夜对照，并可切换禁用状态，直接检查浮层和键盘聚焦。
 
 ## 字体与文字颜色
 
@@ -227,6 +231,8 @@ RelativeTime 的四项悬停详情使用 Ant Design `Descriptions`，单列、�
 ## 歌曲卡片与展示切换
 
 歌曲卡片复用 [VideoCard](../../frontend/src/components/custom/VideoCard/README.md)，统一搜索和创作者详情共享封面、标题、标识与指标展示。创作者投稿用带图标及可访问名称的 Segmented 切换列表 / 卡片，桌面卡片一行多列、窄屏减列；两种视图保留同一查询和分页状态。未提供的额外指标不生成计数，明确缺失的指标显示 `—`，真实零仍为 `0`。
+
+歌曲列表 `/videos` 同样复用 VideoCard、DsTable 和 DsPagination，默认紧凑表格，通过图标 Segmented 切换卡片；两种视图共用筛选、排序和页码。筛选使用 DatePicker.RangePicker、Select 和 InputNumber，提供明确的应用与重置操作。标题复用 VideoInfo 的已有标题模式：点击进入详情，悬停或聚焦后加载资料气泡；播放量旁显示 VideoHonor，投稿人复用 ProducerInfo。页面使用现有主题变量，不另建配色或基础控件。
 
 ## 图表与数据状态
 

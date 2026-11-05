@@ -18,12 +18,13 @@ function VideoCover({ src, alt }) {
     : <div className="video-info-cover video-info-cover--fallback" role="img" aria-label={alt}><PictureOutlined /></div>;
 }
 
-function VideoInfoContent({ aid, hangingPunctuation, className }) {
+function VideoInfoContent({ aid, hangingPunctuation, className, initialTitle, linkToDetail }) {
   const { t } = useTranslation();
 
   const [attempt, setAttempt] = useState(0);
   const [state, setState] = useState({ status: 'loading', data: null });
   const [open, setOpen] = useState(false);
+  const [requested, setRequested] = useState(!initialTitle);
   const triggerRef = useRef(null);
   const cardRef = useRef(null);
   const focusCardOnOpen = useRef(false);
@@ -31,6 +32,7 @@ function VideoInfoContent({ aid, hangingPunctuation, className }) {
   const titleId = `${cardId}-title`;
 
   useEffect(() => {
+    if (!requested) return;
     const controller = new AbortController();
     setState({ status: 'loading', data: null });
     fetchVideoInfo(aid, { signal: controller.signal }).then(
@@ -42,10 +44,10 @@ function VideoInfoContent({ aid, hangingPunctuation, className }) {
       },
     );
     return () => controller.abort();
-  }, [aid, attempt]);
+  }, [aid, attempt, requested]);
 
   const video = state.data;
-  const title = formatVideoText(video?.title).trim() || `av${aid}`;
+  const title = formatVideoText(video?.title || initialTitle).trim() || `av${aid}`;
   const description = formatVideoText(video?.description).trim();
   const hanging = hangingPunctuation && hasHangingOpeningPunctuation(title);
   const duration = formatVideoDuration(video?.duration);
@@ -61,6 +63,7 @@ function VideoInfoContent({ aid, hangingPunctuation, className }) {
     // Keep interactive content available while keyboard focus is inside the card.
     if (!nextOpen && cardRef.current?.contains(document.activeElement)) return;
     if (!nextOpen) focusCardOnOpen.current = false;
+    if (nextOpen) setRequested(true);
     setOpen(nextOpen);
   }
 
@@ -114,30 +117,31 @@ function VideoInfoContent({ aid, hangingPunctuation, className }) {
     </div>
   </div>;
 
-  return <Popover content={card} placement="bottomLeft" trigger={['hover', 'click']} open={open} onOpenChange={onOpenChange}
+  const Trigger = linkToDetail ? Link : 'button';
+  return <Popover content={card} placement="bottomLeft" trigger={linkToDetail ? ['hover'] : ['hover', 'click']} open={open} onOpenChange={onOpenChange}
     afterOpenChange={(nextOpen) => { if (nextOpen && focusCardOnOpen.current) focusFirstAction(); }}
     mouseEnterDelay={0.15} mouseLeaveDelay={0.2} classNames={{ root: 'video-info-popover' }}>
-    <button ref={triggerRef} type="button" className={`video-info${hanging ? ' video-info--hanging' : ''} ${className}`.trim()}
-      aria-haspopup="dialog" aria-expanded={open} aria-controls={open ? cardId : undefined} aria-busy={state.status === 'loading'}
-      onFocus={(event) => { if (event.currentTarget.matches(':focus-visible')) setOpen(true); }} onBlur={onBlur}
+    <Trigger ref={triggerRef} {...(linkToDetail ? { to: `/videos/${aid}`, onClick: closeCard } : { type: 'button' })} className={`video-info${hanging ? ' video-info--hanging' : ''} ${className}`.trim()}
+      aria-haspopup="dialog" aria-expanded={open} aria-controls={open ? cardId : undefined} aria-busy={requested && state.status === 'loading'}
+      onFocus={(event) => { if (event.currentTarget.matches(':focus-visible')) onOpenChange(true); }} onBlur={onBlur}
       onKeyDown={(event) => {
         onKeyDown(event);
         if ((event.key === 'Tab' && !event.shiftKey && open) || event.key === 'ArrowDown') {
           event.preventDefault();
           focusCardOnOpen.current = true;
-          setOpen(true);
+          onOpenChange(true);
           focusFirstAction();
         }
       }}>
       <span className="video-info-title">{title}</span>
-    </button>
+    </Trigger>
   </Popover>;
 }
 
 /** Inline video title with a detail card. Pass large 64-bit aids as decimal strings. */
-export default function VideoInfo({ aid, hangingPunctuation = true, className = '' }) {
+export default function VideoInfo({ aid, hangingPunctuation = true, className = '', initialTitle, linkToDetail = false }) {
   const { t } = useTranslation();
   const id = normalizeVideoAid(aid);
   if (!id) return <span className={`video-info-invalid ${className}`.trim()}>{t('无效的视频ID')}</span>;
-  return <VideoInfoContent key={id} aid={id} hangingPunctuation={hangingPunctuation} className={className} />;
+  return <VideoInfoContent key={id} aid={id} hangingPunctuation={hangingPunctuation} className={className} initialTitle={initialTitle} linkToDetail={linkToDetail} />;
 }

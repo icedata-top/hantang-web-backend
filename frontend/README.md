@@ -320,7 +320,7 @@ UI 规范页 `/admin/design/spec` 同步展示这条约定。共用分页器的�
 
 ### UniSeek beta
 
-`/uniseek?keyword=天依` 独立展示本地虚拟歌手、创作者和歌曲，网络结果按到达顺序追加，后续只翻页加载歌曲。歌曲关键词及 AV/BV 精确查询已改读后端的 `hantang_dynamic.adm_uniseek_videos`：只展示已发布数据日点赞数 > 100 的收录视频，封面和累计指标直接来自宽表，`payload.recordDate` 为其来源日期。歌手本地匹配和创作者查询保持独立。
+`/uniseek?keyword=天依` 独立展示本地虚拟歌手、创作者和歌曲，网络结果按到达顺序追加，后续只翻页加载歌曲。歌曲关键词及 AV/BV 精确查询已改读后端的 `hantang_dynamic.adm_uniseek_videos`：只展示已发布数据日收藏数 > 100 的收录视频，封面和累计指标直接来自宽表，`payload.recordDate` 为其来源日期。歌手本地匹配和创作者查询保持独立。
 
 接口和无限滚动契约保持不变：page 从 1 开始，默认每页 30 首、最多返回 1,000 首。短关键词也支持标题子串；后端结果缓存按发布批次区分，同日补算后重新读取新批次。跨批次翻页仍可能出现顺序变化，由前端去重，固定快照游标留作后续。详见 [搜索接口说明](src/services/UniSeek/uniseek.md)、[ADM 部署说明](../sql/adm_uniseek_videos.md) 与 [剩余 TODO](../doc/todo/uniseek-adm-search-snapshot.md)。
 
@@ -340,7 +340,9 @@ src/pages/vocal/VocalDetail.jsx
 src/components/custom/VideoCard/VideoCard.jsx
 ```
 
-> 路由以 `src/App.jsx` 为准。三个导航列表页仍为待开发占位；虚拟歌手详情仅展示本地配置，暂不展示歌曲关联。歌曲卡片已用于统一搜索及创作者详情的投稿区。
+> 路由以 `src/App.jsx` 为准。歌曲列表和虚拟歌手列表已实现，创作者列表仍为占位；虚拟歌手详情仅展示本地配置，暂不展示歌曲关联。歌曲卡片用于统一搜索、歌曲列表及创作者详情的投稿区。
+
+歌曲列表 `/videos` 支持投稿日期、最高播放荣誉、历史二级分区、最低播放量筛选，以及播放 / 收藏 / 点赞 / 投稿时间排序；提供表格和卡片切换及分页，URL 保留当前条件。后端直接读取 UniSeek 发布宽表，仅在筛选分区时按 aid 查基础资料，不关联日历史表。列表页本身不新增表；收藏 >100 收录规则需要按[迁移与重刷步骤](../sql/adm_uniseek_videos_favorite_migration.md)升级既有 ADM 约束和刷新过程。收录范围和接口约定见 [歌曲列表](src/services/Video/videoList.md)。
 
 ## 使用的第三方组件/素材
 

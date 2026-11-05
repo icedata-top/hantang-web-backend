@@ -19,3 +19,6 @@
 .video-card-producer .producer-info { min-width: 0; max-width: 100%; }
 .video-card-link:focus-visible,
 .video-card-stat:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; border-radius: var(--radius-control); }
+.video-card-title-preview.video-info { display: block; text-decoration: none; font-size: var(--font-size-body); font-weight: var(--font-weight-semibold); line-height: var(--line-height-body); }
+.video-card-title-preview .video-info-title { display: -webkit-box; min-height: calc(2 * var(--font-size-body) * var(--line-height-body)); -webkit-line-clamp: 2; -webkit-box-orient: vertical; white-space: normal; overflow-wrap: anywhere; }
+.video-card-title-preview.video-info--hanging { margin-inline-start: -0.45em; padding-inline-start: 0.45em; text-indent: -0.45em; }

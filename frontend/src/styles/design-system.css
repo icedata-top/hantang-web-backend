@@ -1,4 +1,86 @@
 /* 公共组件样式；颜色、字号等可调参数统一来自 theme.css。 */
+/* Bridge Ant Design's CSS-variable mode to the project's live theme. The class
+   also appears on portals, so local day/night previews inherit the right colors. */
+html .icedata-antd,
+html .icedata-antd:is(.ant-select-css-var, .ant-input-css-var, .ant-input-number-css-var, .ant-picker-css-var, .ant-form-css-var) {
+  --ant-color-text: var(--text-primary);
+  --ant-color-text-secondary: var(--text-secondary);
+  --ant-color-text-tertiary: var(--text-secondary);
+  --ant-color-text-quaternary: var(--text-disabled);
+  --ant-color-text-disabled: var(--text-disabled);
+  --ant-color-text-placeholder: var(--text-secondary);
+  --ant-color-text-description: var(--text-secondary);
+  --ant-color-text-heading: var(--text-primary);
+  --ant-color-text-label: var(--text-primary);
+  --ant-color-text-light-solid: var(--selection-text);
+  --ant-color-icon: var(--text-secondary);
+  --ant-color-icon-hover: var(--text-primary);
+  --ant-color-bg-base: var(--canvas);
+  --ant-color-bg-container: var(--surface);
+  --ant-color-bg-container-disabled: var(--button-disabled-bg);
+  --ant-color-bg-elevated: var(--surface);
+  --ant-color-bg-layout: var(--canvas);
+  --ant-color-border: var(--surface-border);
+  --ant-color-border-secondary: var(--surface-border);
+  --ant-color-border-disabled: var(--surface-border);
+  --ant-color-split: var(--surface-border);
+  --ant-color-fill-secondary: var(--surface-hover);
+  --ant-color-fill-tertiary: var(--canvas);
+  --ant-color-fill-quaternary: var(--canvas);
+  --ant-color-fill-alter: var(--surface-hover);
+  --ant-color-primary: var(--theme-primary);
+  --ant-color-primary-hover: var(--button-primary-hover);
+  --ant-color-primary-active: var(--button-primary-hover);
+  --ant-color-primary-bg: var(--button-secondary-bg);
+  --ant-color-primary-bg-hover: var(--button-secondary-hover);
+  --ant-color-primary-border: var(--theme-primary);
+  --ant-color-primary-border-hover: var(--button-primary-hover);
+  --ant-color-link: var(--text-link);
+  --ant-color-link-hover: var(--text-link-hover);
+  --ant-color-link-active: var(--text-link-hover);
+  --ant-control-outline: var(--alert-info-bg);
+  --ant-control-item-bg-active: var(--button-secondary-bg);
+  --ant-control-item-bg-active-hover: var(--button-secondary-hover);
+  --ant-control-item-bg-hover: var(--surface-hover);
+  --ant-control-item-bg-active-disabled: var(--button-disabled-bg);
+  --ant-box-shadow-secondary: var(--shadow-card-hover);
+  --ant-form-label-color: var(--text-primary);
+  --ant-input-active-bg: var(--surface);
+  --ant-input-hover-bg: var(--surface);
+  --ant-input-active-border-color: var(--theme-primary);
+  --ant-input-hover-border-color: var(--theme-primary);
+  --ant-input-active-shadow: 0 0 0 2px var(--alert-info-bg);
+  --ant-input-number-active-bg: var(--surface);
+  --ant-input-number-hover-bg: var(--surface);
+  --ant-input-number-active-border-color: var(--theme-primary);
+  --ant-input-number-hover-border-color: var(--theme-primary);
+  --ant-input-number-active-shadow: 0 0 0 2px var(--alert-info-bg);
+  --ant-input-number-handle-bg: var(--surface);
+  --ant-input-number-handle-active-bg: var(--surface-hover);
+  --ant-input-number-handle-border-color: var(--surface-border);
+  --ant-input-number-handle-hover-color: var(--text-link);
+  --ant-select-selector-bg: var(--surface);
+  --ant-select-clear-bg: var(--surface);
+  --ant-select-hover-border-color: var(--theme-primary);
+  --ant-select-active-border-color: var(--theme-primary);
+  --ant-select-active-outline-color: var(--alert-info-bg);
+  --ant-select-option-selected-bg: var(--button-secondary-bg);
+  --ant-select-option-selected-color: var(--text-primary);
+  --ant-select-option-active-bg: var(--surface-hover);
+  --ant-select-multiple-item-bg: var(--chip-neutral-bg);
+  --ant-select-multiple-selector-bg-disabled: var(--button-disabled-bg);
+  --ant-date-picker-active-bg: var(--surface);
+  --ant-date-picker-hover-bg: var(--surface);
+  --ant-date-picker-active-border-color: var(--theme-primary);
+  --ant-date-picker-hover-border-color: var(--theme-primary);
+  --ant-date-picker-active-shadow: 0 0 0 2px var(--alert-info-bg);
+  --ant-date-picker-cell-hover-bg: var(--button-secondary-bg);
+  --ant-date-picker-cell-active-with-range-bg: var(--button-secondary-bg);
+  --ant-date-picker-cell-hover-with-range-bg: var(--button-secondary-hover);
+  --ant-date-picker-cell-range-border-color: var(--theme-primary);
+  --ant-date-picker-cell-bg-disabled: var(--button-disabled-bg);
+}
+
 .ds-button {
   --button-bg: var(--button-normal-bg);
   --button-hover-bg: var(--button-normal-hover);
@@ -55,6 +137,22 @@
   background: var(--button-disabled-bg);
   color: var(--button-disabled-text);
   cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Override Ant Design's state variables as well as the base .ds-button colors.
+   Its hover/active selectors otherwise restore the default outlined palette. */
+html .ant-btn.ds-button[data-variant] {
+  --ant-btn-border-width: var(--button-border-width);
+  --ant-btn-text-color: var(--button-text);
+  --ant-btn-text-color-hover: var(--button-text);
+  --ant-btn-text-color-active: var(--button-text);
+  --ant-btn-text-color-disabled: var(--button-disabled-text);
+  --ant-btn-bg-color: var(--button-bg);
+  --ant-btn-bg-color-hover: var(--button-hover-bg);
+  --ant-btn-bg-color-active: var(--button-hover-bg);
+  --ant-btn-bg-color-disabled: var(--button-disabled-bg);
+  --ant-btn-shadow: none;
   box-shadow: none;
 }
 

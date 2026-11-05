@@ -9,6 +9,7 @@ import UnderDevelopment from './pages/UnderDevelopment.jsx';
 import Stash from './pages/Stash/index.jsx';
 import UniSeek from './pages/UniSeek/UniSeek.jsx';
 import VideoDetail from './pages/video/VideoDetail.jsx';
+import VideoList from './pages/video/VideoList.jsx';
 import ProducerDetail from './pages/producer/ProducerDetail.jsx';
 import VocalDetail from './pages/vocal/VocalDetail.jsx';
 import VocalList from './pages/vocal/VocalList.jsx';
@@ -49,7 +50,7 @@ export default function App() {
           <Route path="overview" element={<Overview />} />
           <Route path="uniseek" element={<UniSeek />} />
           <Route path="stash" element={<Stash />} />
-          <Route path="videos" element={<UnderDevelopment />} />
+          <Route path="videos" element={<VideoList />} />
           <Route path="videos/:aid" element={<VideoDetail />} />
           <Route path="vocals" element={<VocalList />} />
           <Route path="vocals/:vocalId" element={<VocalDetail />} />

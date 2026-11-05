@@ -73,7 +73,7 @@ BEGIN
     IF v_source_rows = 0 OR v_source_rows <> v_state.confirmed_source_rows THEN
         RAISE EXCEPTION 'Source row count changed after confirmation: expected %, got %; confirm the date again', v_state.confirmed_source_rows, v_source_rows;
     END IF;
-    -- 验证D日所有aid唯一，包含未达到点赞门槛及缺少静态资料的视频，不用DISTINCT消歧。
+    -- 验证D日所有aid唯一，包含未达到收藏门槛及缺少静态资料的视频，不用DISTINCT消歧。
     ALTER TABLE pg_temp.adm_uniseek_daily_stage ADD PRIMARY KEY (aid);
     ANALYZE pg_temp.adm_uniseek_daily_stage;
     CREATE TEMP TABLE adm_uniseek_videos_stage (
@@ -90,7 +90,7 @@ BEGIN
            v_state.requested_record_date, v_state.requested_batch_id, v_refreshed_at
     FROM pg_temp.adm_uniseek_daily_stage AS d
     INNER JOIN hantang_dynamic.processed_videos AS p ON p.aid = d.aid
-    WHERE p.is_deleted = false AND d."like" > 100;
+    WHERE p.is_deleted = false AND d.favorite > 100;
     GET DIAGNOSTICS v_result_rows = ROW_COUNT;
     IF v_result_rows < v_state.minimum_result_rows THEN
         RAISE EXCEPTION 'Search result count % is below the confirmed minimum %; previous publication retained', v_result_rows, v_state.minimum_result_rows;
@@ -105,6 +105,16 @@ BEGIN
     SELECT aid, bvid, title, pic, pubdate, user_id, tag_new, participle, label_singers,
            view, favorite, "like", coin, share, reply, danmaku, record_date, batch_id, refreshed_at
     FROM pg_temp.adm_uniseek_videos_stage;
+    -- 旧点赞版迁移暂不校验存量行；首次成功换批后完成收藏约束和NOT NULL校验。
+    -- 新安装及后续刷新均跳过本段，避免每日重复获取DDL锁。
+    IF EXISTS (
+        SELECT 1 FROM pg_catalog.pg_constraint
+        WHERE conrelid = 'hantang_dynamic.adm_uniseek_videos'::regclass
+          AND conname = 'adm_uniseek_videos_favorite_check' AND NOT convalidated
+    ) THEN
+        ALTER TABLE hantang_dynamic.adm_uniseek_videos VALIDATE CONSTRAINT adm_uniseek_videos_favorite_check;
+        ALTER TABLE hantang_dynamic.adm_uniseek_videos ALTER COLUMN favorite SET NOT NULL;
+    END IF;
     UPDATE hantang_dynamic.adm_uniseek_refresh_state
     SET published_record_date = v_state.requested_record_date,
         published_batch_id = v_state.requested_batch_id, published_at = clock_timestamp(),
