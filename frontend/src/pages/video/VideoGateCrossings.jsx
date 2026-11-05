@@ -4,6 +4,7 @@ import { Button, Select, Spin } from 'antd';
 import { ReloadOutlined, WarningOutlined } from '@ant-design/icons';
 import { DsPagination, DsTable } from '../../components/design-system/DataDisplay.jsx';
 import RelativeTime from '../../components/custom/RelativeTime/RelativeTime.jsx';
+import { RELATIVE_TIME_MODES } from '../../components/custom/RelativeTime/relativeTime.js';
 import { fetchVideoGateCrossings } from '../../services/Video/video.api.js';
 import {
   GATE_CROSSING_ALL_LEVEL,
@@ -60,8 +61,8 @@ export function VideoGateCrossingsView({ rows = [], status, onRetry }) {
     {
       key: 'crossedAt',
       title: t('过线时间'),
-      width: 160,
-      render: (value) => <RelativeTime value={value} />,
+      width: 170,
+      render: (value) => <RelativeTime value={value} mode={RELATIVE_TIME_MODES.ABSOLUTE} />,
     },
   ];
 
@@ -78,12 +79,16 @@ export function VideoGateCrossingsView({ rows = [], status, onRetry }) {
     <div className="video-gate-crossings-heading">
       <h2 id="video-gate-crossings-title">{t('播放过线记录')}</h2>
       {hasRows && <div className="video-gate-crossings-filter">
-        <span id="video-gate-crossings-level-label">{t('过线值量级')}</span>
+        <span id="video-gate-crossings-level-label">{t('过线值精度')}</span>
         <Select className="video-gate-crossings-select" value={levelId} options={levelOptions}
           onChange={changeLevel} aria-labelledby="video-gate-crossings-level-label"
           popupMatchSelectWidth={false} />
       </div>}
     </div>
+
+    {hasRows && <p className="video-gate-crossings-caption">
+      {t('按取整精度分档：整千为千位整数，整万为万位整数，依次到整亿；每个过线值只归入最粗的一档。过线时间以北京时间显示到分，悬停查看相对时间等详情。')}
+    </p>}
 
     {loading && <div className="video-gate-crossings-state" role="status">
       <Spin /><span>{t('正在加载过线记录…')}</span>

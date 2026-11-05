@@ -14,15 +14,16 @@ import {
 
 const row = (gateValue, extra = {}) => ({ gateValue, previousView: null, currentView: null, crossedAt: null, ...extra });
 
-test('gate crossing levels cover the documented boundaries without gaps or overlaps', () => {
+test('each value belongs to its coarsest exactly-divisible unit, from 1e8 down to 1e3', () => {
   const examples = [
-    [null, null], [undefined, null], [999, null], [0, null], [-1000, null],
-    [1000, 'thousand'], [9999, 'thousand'],
-    [10_000, 'tenThousand'], [99_999, 'tenThousand'],
-    [100_000, 'hundredThousand'], [999_999, 'hundredThousand'],
-    [1_000_000, 'million'], [9_999_999, 'million'],
-    [10_000_000, 'tenMillion'], [99_999_999, 'tenMillion'],
-    [100_000_000, 'hundredMillion'], [999_999_999_999, 'hundredMillion'],
+    [null, null], [undefined, null], [0, null], [999, null], [-1000, null],
+    [1_000, 'thousand'], [9_000, 'thousand'], [193_000, 'thousand'], [999_000, 'thousand'],
+    [10_000, 'tenThousand'], [90_000, 'tenThousand'], [1_930_000, 'tenThousand'],
+    [100_000, 'hundredThousand'], [900_000, 'hundredThousand'], [1_100_000, 'hundredThousand'],
+    [1_000_000, 'million'], [2_000_000, 'million'], [9_000_000, 'million'], [14_000_000, 'million'],
+    [10_000_000, 'tenMillion'], [90_000_000, 'tenMillion'],
+    [100_000_000, 'hundredMillion'], [200_000_000, 'hundredMillion'],
+    [1_930_001, null], [100_001, null], [999_999_999_999, null], [100_000_000_000, 'hundredMillion'],
   ];
   for (const [gateValue, expected] of examples) {
     assert.equal(classifyGateCrossingLevel(gateValue)?.id ?? null, expected, String(gateValue));
@@ -39,38 +40,45 @@ test('only non-negative safe integers are classified', () => {
   assert.equal(classifyGateCrossingLevel(1000)?.id, 'thousand');
 });
 
-test('counts include the total, every level, and out-of-range rows only in the total', () => {
+test('counts are disjoint per level and unclassified rows only appear in the total', () => {
   const rows = [
-    row(1000), row(9999), row(10_000), row(99_999), row(100_000),
-    row(1_000_000), row(10_000_000), row(100_000_000), row(500), row(null),
+    row(1_000), row(9_000), row(193_000), row(10_000), row(100_000),
+    row(1_000_000), row(1_930_000), row(2_000_000), row(10_000_000), row(100_000_000),
+    row(500), row(null),
   ];
   assert.deepEqual(countGateCrossings(rows), {
-    all: 10,
-    thousand: 2,
+    all: 12,
+    thousand: 3,
     tenThousand: 2,
     hundredThousand: 1,
-    million: 1,
+    million: 2,
     tenMillion: 1,
     hundredMillion: 1,
   });
+  const levelSum = Object.entries(countGateCrossings(rows))
+    .filter(([id]) => id !== 'all')
+    .reduce((sum, [, count]) => sum + count, 0);
+  assert.equal(levelSum, 10);
   assert.deepEqual(countGateCrossings([]), {
     all: 0, thousand: 0, tenThousand: 0, hundredThousand: 0, million: 0, tenMillion: 0, hundredMillion: 0,
   });
   assert.deepEqual(countGateCrossings(undefined).all, 0);
 });
 
-test('the documented real sample puts both milestone rows in the million level', () => {
+test('the documented real sample puts 1,930,000 in ten-thousands and 2,000,000 in millions', () => {
   const rows = [row(1_930_000), row(2_000_000)];
-  assert.deepEqual(rows.map(({ gateValue }) => classifyGateCrossingLevel(gateValue).id), ['million', 'million']);
-  assert.equal(countGateCrossings(rows).million, 2);
+  assert.deepEqual(rows.map(({ gateValue }) => classifyGateCrossingLevel(gateValue).id), ['tenThousand', 'million']);
+  assert.equal(countGateCrossings(rows).million, 1);
+  assert.equal(countGateCrossings(rows).tenThousand, 1);
   assert.equal(countGateCrossings(rows).all, 2);
 });
 
 test('filtering is pure front-end selection and keeps order without mutating the source', () => {
-  const rows = [row(100_000), row(1_000), row(5_000), row(10_000)];
+  const rows = [row(100_000), row(1_000), row(5_000), row(10_000), row(1_930_000)];
   const source = [...rows];
   assert.deepEqual(filterGateCrossings(rows, GATE_CROSSING_ALL_LEVEL.id), source);
   assert.deepEqual(filterGateCrossings(rows, 'thousand').map(({ gateValue }) => gateValue), [1_000, 5_000]);
+  assert.deepEqual(filterGateCrossings(rows, 'tenThousand').map(({ gateValue }) => gateValue), [10_000, 1_930_000]);
   assert.deepEqual(filterGateCrossings(rows, 'hundredThousand').map(({ gateValue }) => gateValue), [100_000]);
   assert.deepEqual(filterGateCrossings(rows, 'hundredMillion'), []);
   assert.deepEqual(filterGateCrossings(rows, null), source);

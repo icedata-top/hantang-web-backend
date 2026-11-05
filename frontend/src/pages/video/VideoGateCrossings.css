@@ -2,6 +2,7 @@
 .video-gate-crossings-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; margin-bottom: 16px; }
 .video-gate-crossings-filter { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; min-width: 0; color: var(--text-secondary); font-size: var(--font-size-body); }
 .video-gate-crossings-select { min-width: 180px; max-width: 100%; }
+.video-gate-crossings-caption { margin: -6px 0 16px; color: var(--text-secondary); font-size: var(--font-size-caption); }
 .video-gate-crossings-state { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 12px; min-height: 160px; color: var(--text-secondary); font-size: var(--font-size-body); text-align: center; }
 .video-gate-crossings-notice { align-items: center; flex-wrap: wrap; margin: 0; }
 .video-gate-crossings-notice > span:not(.anticon) { flex: 1; min-width: 0; }
