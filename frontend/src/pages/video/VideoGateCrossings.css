@@ -1,0 +1,25 @@
+.video-gate-crossings-panel { min-width: 0; margin-top: 24px; padding: 24px; }
+.video-gate-crossings-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; margin-bottom: 16px; }
+.video-gate-crossings-filter { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; min-width: 0; color: var(--text-secondary); font-size: var(--font-size-body); }
+.video-gate-crossings-select { min-width: 180px; max-width: 100%; }
+.video-gate-crossings-state { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 12px; min-height: 160px; color: var(--text-secondary); font-size: var(--font-size-body); text-align: center; }
+.video-gate-crossings-notice { align-items: center; flex-wrap: wrap; margin: 0; }
+.video-gate-crossings-notice > span:not(.anticon) { flex: 1; min-width: 0; }
+.video-gate-crossings-pagination { display: flex; justify-content: flex-end; margin-top: 16px; }
+
+/* 过线值是短标签，保持单行并随数值列右对齐。 */
+.video-gate-crossings-gate { margin: 0; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.video-gate-crossings-delta { font-variant-numeric: tabular-nums; }
+.video-gate-crossings-delta[data-trend='up'] { color: var(--trend-up); }
+.video-gate-crossings-delta[data-trend='down'] { color: var(--trend-down); }
+.video-gate-crossings-delta[data-trend='flat'] { color: var(--trend-flat); }
+
+/* 放不下时只在表格区域滚动：数值列不压缩，避免千分位数字被省略。 */
+.video-gate-crossings-panel .ds-table { min-width: 700px; }
+
+@media (max-width: 480px) {
+  .video-gate-crossings-panel { padding: 20px; }
+  .video-gate-crossings-filter { width: 100%; }
+  .video-gate-crossings-filter > span { width: 100%; }
+  .video-gate-crossings-select { flex: 1; }
+}

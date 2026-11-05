@@ -18,6 +18,7 @@ import { formatVideoText } from './videoDetailFormat.js';
 import { parseVideoIdentifier } from './videoIdentifier.js';
 import VideoResult from './VideoResult.jsx';
 import VideoMetricsHistory from './VideoMetricsHistory.jsx';
+import VideoGateCrossings from './VideoGateCrossings.jsx';
 import './VideoDetail.css';
 
 const METRICS = [
@@ -221,6 +222,7 @@ export function VideoDetailView({ aid, info, latest }) {
         </ul>}
     </section>}
     {video && <VideoMetricsHistory key={aid} aid={aid} />}
+    {video && <VideoGateCrossings key={aid} aid={aid} />}
   </main>;
 }
 

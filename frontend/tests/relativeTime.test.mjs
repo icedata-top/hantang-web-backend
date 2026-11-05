@@ -15,6 +15,10 @@ test('accepts Unix seconds, numeric strings, unzoned dates, and ISO offsets cons
   }
   assert.equal(parseTime('2026-10-29'), NOW - 12 * HOUR);
   assert.equal(parseTime('2026-10-29T04:00:00.123Z'), NOW + 123);
+  // PostgreSQL timestamptz 可带微秒；有效数字截断到毫秒，不能整体视为无效时间。
+  assert.equal(parseTime('2026-10-29T04:00:00.020481Z'), NOW + 20);
+  assert.equal(parseTime('2026-10-29T04:00:00.123456789Z'), NOW + 123);
+  assert.equal(getRelativeTimeDetails('2026-10-29T04:00:00.020481Z', NOW).absolute, '2026-10-29 12:00');
   assert.equal(parseTime(0), 0);
   assert.equal(parseTime(-1), -1000);
 });

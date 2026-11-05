@@ -29,6 +29,8 @@
 
 单视频每日明细通过 `GET /videos/{aid}/daily-metrics?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD` 查询七项累计指标。按请求日期补齐行，未收录快照显式标记 `snapshotMissing`，缺失指标保留 `null`，不在后端计算增量。视频详情简介下方提供累计 / 增量图表与区间播放增长摘要；前端只对相邻有效快照作差。日期边界、日均及缺失数据口径见[单视频历史数据与趋势](doc/design/video-metrics-history.md)和[视频详情 API](frontend/src/services/Video/video.md)。
 
+单视频播放过线记录通过 `GET /videos/{aid}/gate-crossings` 读取 `hantang_dynamic.video_collection_gate_crossings`，按过线值降序返回；没有记录时返回 200 与空数组。详情页趋势图下方按过线值量级（整千 / 整万 / 整十万 / 整百万 / 整千万 / 整亿）筛选，筛选在前端完成。接口、量级范围与页面口径见[单视频播放过线与量级筛选](doc/design/video-gate-crossings.md)。
+
 ## 技术栈
 
 ### 前端

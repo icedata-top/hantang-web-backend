@@ -645,5 +645,18 @@ export default {
   "共用汉字字形": "Shared Han glyphs",
   "配置字体栈": "Configured font stack",
   "overview.zhongshuMeaning": "China-V stands for Chinese Vocaloid and vocal-synth music.",
-  "overview.zhongshuSample": "A curated sample of 50 representative videos, selected using views, favorites, and manual review. The sample is relatively fixed and may be revised; it is not a live Top 50 ranking."
+  "overview.zhongshuSample": "A curated sample of 50 representative videos, selected using views, favorites, and manual review. The sample is relatively fixed and may be revised; it is not a live Top 50 ranking.",
+  "全部": "All",
+  "整千": "Thousands",
+  "整万": "Tens of thousands",
+  "整十万": "Hundreds of thousands",
+  "整百万": "Millions",
+  "整千万": "Tens of millions",
+  "整亿": "Hundreds of millions",
+  "{{value0}}（{{value1}} 条）": "{{value0}} ({{value1}} total)",
+  "过线值量级": "Milestone range",
+  "正在加载过线记录…": "Loading view milestones…",
+  "过线记录加载失败，请重试。": "View milestones failed to load. Please try again.",
+  "该视频暂无过线记录": "This video has no view milestones yet",
+  "播放过线记录明细": "View milestone details"
 };

@@ -54,6 +54,15 @@ public class VideoDao {
         return rows.stream().findFirst();
     }
 
+    public List<Map<String, Object>> findGateCrossings(long aid) {
+        return query.apply("""
+                SELECT gate_value, previous_view, current_view, crossed_at
+                FROM hantang_dynamic.video_collection_gate_crossings
+                WHERE aid = ?
+                ORDER BY gate_value DESC, id DESC
+                """, List.of(aid));
+    }
+
     public List<Map<String, Object>> findDailyMetrics(VideoDailyMetricsRequest request) {
         return query.apply("""
                 SELECT record_date::text AS record_date,
