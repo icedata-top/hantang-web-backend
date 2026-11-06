@@ -28,8 +28,9 @@ export function buildVideoMetricsChartSpec(rows, colors, language, mode) {
       activeType: 'dimension',
       confine: true,
       dimension: {
-        // Include missing metrics in the date tooltip instead of silently omitting them.
-        content: (data) => {
+        // Replace the combined tooltip once; `content` is expanded once per active datum.
+        // Include missing metrics instead of silently omitting them.
+        updateContent: (_content, data) => {
           const row = byDate.get(String(data?.[0]?.value));
           return row ? VIDEO_METRICS.map(({ key, label }, index) => ({
             key: t(label),

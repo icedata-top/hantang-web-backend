@@ -103,7 +103,7 @@ test('chart legends and missing metrics translate together, and bookmark searche
   assert.equal(spec.data[0].values[0].series, '再生数');
   assert.equal(spec.data[0].values[1].value, null);
   assert.equal(spec.axes[1].title.text, '日次増分');
-  const tooltip = spec.tooltip.dimension.content([{ value: rows[0].date }]);
+  const tooltip = spec.tooltip.dimension.updateContent([], [{ value: rows[0].date }]);
   assert.equal(tooltip[1].key, 'お気に入り数');
   assert.equal(tooltip[1].value, 'データなし');
   const link = { name: 'Vite', descZh: '前端构建工具', descEn: 'Frontend build tool' };

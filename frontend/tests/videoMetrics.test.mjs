@@ -134,7 +134,7 @@ test('chart retains nulls and the full date domain; date tooltips explicitly nam
   assert.equal(spec.invalidType, 'break');
   assert.deepEqual(spec.data[0].fields.date.domain, [START, '2026-10-21']);
   assert.equal(spec.data[0].values.find((row) => row.date === '2026-10-21' && row.series === '点赞量').value, null);
-  const tooltip = spec.tooltip.dimension.content([{ value: '2026-10-21' }]);
+  const tooltip = spec.tooltip.dimension.updateContent([], [{ value: '2026-10-21' }]);
   assert.equal(tooltip.length, 7);
   assert.equal(tooltip.find((line) => line.key === '点赞量').value, '暂缺');
   assert.equal(tooltip.find((line) => line.key === '播放量').value, '120');
