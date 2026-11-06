@@ -12,6 +12,8 @@ import ProducerInfo from './components/custom/ProducerInfo/ProducerInfo.jsx';
 - `userId`：正整数用户 ID，支持数字或不带前导零的十进制字符串。超过 JavaScript 安全整数范围时必须用字符串，最大为 `9223372036854775807`。无效 ID 不请求后端。
 - `showAvatar`：默认 `false`，控制名字旁的 24px 头像。悬停卡片始终展示 64px 头像。
 - `className`：可选，作用于行内触发元素，默认继承所在位置的字号与颜色。
+- `initialProducer`：可选，传入与 `userId` 一致的完整公开账号资料（与详情 API 同名字段）。提供后直接显示并填充浮层，不额外请求详情接口；创作者列表使用这一方式避免逐行请求。
+- `linkToDetail`：默认 `false`。开启后名称使用站内详情链接，点击进入 `/producers/:userId`，仍可悬停或聚焦打开资料浮层。
 
 组件需放在 React Router 内。卡片包含新标签页打开的 `https://space.bilibili.com/{userId}`，以及站内 `/producers/{userId}` 详情按钮。支持鼠标悬停、键盘聚焦、触屏点击；卡片打开后按 Tab 进入操作，Escape 关闭并返回名字。浮层使用当前主题的 Surface 配色。
 

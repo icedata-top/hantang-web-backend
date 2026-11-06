@@ -1,5 +1,6 @@
 .producer-info { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 0; border: 0; border-radius: 2px; background: transparent; color: inherit; font: inherit; line-height: inherit; vertical-align: middle; text-align: start; cursor: pointer; }
 .producer-info:hover .producer-info-name { color: var(--text-link-hover); }
+.producer-info:is(a) { text-decoration: none; }
 .producer-info:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
 .producer-info-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .producer-info-invalid { color: var(--text-secondary); }

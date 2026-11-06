@@ -23,17 +23,20 @@ function ProducerAvatar({ src, large = false }) {
     : <span className={`${className} producer-info-avatar--fallback`} aria-hidden="true"><UserOutlined /></span>;
 }
 
-function ProducerInfoContent({ userId, showAvatar, className }) {
+function ProducerInfoContent({ userId, showAvatar, className, initialProducer, linkToDetail }) {
   const { t } = useTranslation();
 
   const [attempt, setAttempt] = useState(0);
-  const [state, setState] = useState({ status: 'loading', data: null });
+  const [remoteState, setState] = useState({ status: 'loading', data: null });
+  const suppliedProducer = initialProducer && String(initialProducer.userId) === userId ? initialProducer : null;
+  const state = suppliedProducer ? { status: 'ready', data: suppliedProducer } : remoteState;
   const [open, setOpen] = useState(false);
   const triggerRef = useRef(null);
   const cardRef = useRef(null);
   const cardId = useId();
 
   useEffect(() => {
+    if (suppliedProducer) return;
     const controller = new AbortController();
     setState({ status: 'loading', data: null });
     fetchProducerInfo(userId, { signal: controller.signal }).then(
@@ -43,7 +46,7 @@ function ProducerInfoContent({ userId, showAvatar, className }) {
       },
     );
     return () => controller.abort();
-  }, [userId, attempt]);
+  }, [userId, attempt, suppliedProducer]);
 
   const producer = state.data;
   const name = producer?.name?.trim() || `UID ${userId}`;
@@ -94,9 +97,11 @@ function ProducerInfoContent({ userId, showAvatar, className }) {
     </div>
   </div>;
 
-  return <Popover content={card} placement="bottomLeft" trigger={['hover', 'click']} open={open} onOpenChange={onOpenChange}
+  const Trigger = linkToDetail ? Link : 'button';
+  return <Popover content={card} placement="bottomLeft" trigger={linkToDetail ? ['hover'] : ['hover', 'click']} open={open} onOpenChange={onOpenChange}
     mouseEnterDelay={0.15} mouseLeaveDelay={0.2} classNames={{ root: 'producer-info-popover' }}>
-    <button ref={triggerRef} type="button" className={`producer-info ${className}`.trim()} aria-haspopup="dialog"
+    <Trigger ref={triggerRef} {...(linkToDetail ? { to: `/producers/${userId}`, onClick: () => setOpen(false) } : { type: 'button' })}
+      className={`producer-info ${className}`.trim()} aria-haspopup="dialog"
       aria-expanded={open} aria-controls={open ? cardId : undefined} aria-busy={state.status === 'loading'}
       onFocus={(event) => { if (event.currentTarget.matches(':focus-visible')) setOpen(true); }} onBlur={onBlur}
       onKeyDown={(event) => {
@@ -109,14 +114,15 @@ function ProducerInfoContent({ userId, showAvatar, className }) {
       }}>
       {showAvatar && <ProducerAvatar src={producer?.face} />}
       <span className="producer-info-name">{name}</span>
-    </button>
+    </Trigger>
   </Popover>;
 }
 
 /** Inline producer name with a profile card. Pass large 64-bit IDs as decimal strings. */
-export default function ProducerInfo({ userId, showAvatar = false, className = '' }) {
+export default function ProducerInfo({ userId, showAvatar = false, className = '', initialProducer, linkToDetail = false }) {
   const { t } = useTranslation();
   const id = normalizeUserId(userId);
   if (!id) return <span className={`producer-info-invalid ${className}`.trim()}>{t('无效的创作者ID')}</span>;
-  return <ProducerInfoContent key={id} userId={id} showAvatar={showAvatar} className={className} />;
+  return <ProducerInfoContent key={id} userId={id} showAvatar={showAvatar} className={className}
+    initialProducer={initialProducer} linkToDetail={linkToDetail} />;
 }

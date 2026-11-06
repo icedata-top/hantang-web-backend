@@ -5,12 +5,12 @@ import About from './pages/About/index.jsx';
 import Home from './pages/Home/index.jsx';
 import Overview from './pages/Overview/index.jsx';
 import NotFound from './pages/NotFound.jsx';
-import UnderDevelopment from './pages/UnderDevelopment.jsx';
 import Stash from './pages/Stash/index.jsx';
 import UniSeek from './pages/UniSeek/UniSeek.jsx';
 import VideoDetail from './pages/video/VideoDetail.jsx';
 import VideoList from './pages/video/VideoList.jsx';
 import ProducerDetail from './pages/producer/ProducerDetail.jsx';
+import ProducerList from './pages/producer/ProducerList.jsx';
 import VocalDetail from './pages/vocal/VocalDetail.jsx';
 import VocalList from './pages/vocal/VocalList.jsx';
 import { ADMIN_ENABLED } from './config/runtimeEnv.js';
@@ -54,7 +54,7 @@ export default function App() {
           <Route path="videos/:aid" element={<VideoDetail />} />
           <Route path="vocals" element={<VocalList />} />
           <Route path="vocals/:vocalId" element={<VocalDetail />} />
-          <Route path="producers" element={<UnderDevelopment />} />
+          <Route path="producers" element={<ProducerList />} />
           <Route path="producers/:userId" element={<ProducerDetail />} />
           <Route path="about" element={<About />} />
           {ADMIN_ENABLED && (

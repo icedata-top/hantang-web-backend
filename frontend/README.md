@@ -340,7 +340,9 @@ src/pages/vocal/VocalDetail.jsx
 src/components/custom/VideoCard/VideoCard.jsx
 ```
 
-> 路由以 `src/App.jsx` 为准。歌曲列表和虚拟歌手列表已实现，创作者列表仍为占位；虚拟歌手详情仅展示本地配置，暂不展示歌曲关联。歌曲卡片用于统一搜索、歌曲列表及创作者详情的投稿区。
+> 路由以 `src/App.jsx` 为准。歌曲、虚拟歌手和创作者列表均已实现；虚拟歌手详情仅展示本地配置，暂不展示歌曲关联。歌曲卡片用于统一搜索、歌曲列表及创作者详情的投稿区。
+
+创作者列表 `/producers` 默认表格，支持卡片；按最低粉丝数、最低收录投稿数筛选，按粉丝、收录投稿或 UID 排序，提供 20 / 50 / 100 条分页。切换展示保留 URL 中的条件和页码，不重复请求。名称复用带完整列表资料的 ProducerInfo，点击进入详情，浮层不逐行再查接口。没有搜索输入框，查找具体账号引导到 UniSeek；接口与验收见[创作者列表 API](src/services/Producer/producerList.md)。
 
 歌曲列表 `/videos` 支持投稿日期、最高播放荣誉、历史二级分区、最低播放量筛选，以及播放 / 收藏 / 投稿时间排序；提供表格和卡片切换及分页，URL 保留当前条件。表格与卡片隐藏点赞数。后端直接读取 UniSeek 发布宽表，仅在筛选分区时按 aid 查基础资料，不关联日历史表。列表页本身不新增表；收藏 >100 收录规则需要按[迁移与重刷步骤](../sql/adm_uniseek_videos_favorite_migration.md)升级既有 ADM 约束和刷新过程。收录范围和接口约定见 [歌曲列表](src/services/Video/videoList.md)。
 

@@ -2,6 +2,8 @@ package com.hantang.web.service;
 
 import com.hantang.web.dao.ProducerDao;
 import com.hantang.web.dos.producer.ProducerInfoResponse;
+import com.hantang.web.dos.producer.ProducerListRequest;
+import com.hantang.web.dos.producer.ProducerListResponse;
 import com.hantang.web.dos.producer.ProducerVideosRequest;
 import com.hantang.web.dos.producer.ProducerVideosResponse;
 
@@ -28,6 +30,15 @@ public class ProducerService {
                 text(row, "pic"), text(row, "user_id"), number(row, "view"), text(row, "record_date"))).toList();
         return new ProducerVideosResponse(Long.toString(request.userId()), request.sortBy(), request.order(),
                 request.role(), request.page(), request.pageSize(), page.total(), rows);
+    }
+
+    public ProducerListResponse getList(ProducerListRequest request) {
+        var page = producerDao.findList(request);
+        var rows = page.rows().stream().map(row -> new ProducerListResponse.Producer(
+                text(row, "user_id"), text(row, "user_name"), text(row, "face"), text(row, "sign"),
+                number(row, "fans"), number(row, "videos_filtered"), integer(row, "level"),
+                integer(row, "official_role"), text(row, "official_title"), text(row, "last_updated"))).toList();
+        return new ProducerListResponse(request.page(), request.pageSize(), page.total(), rows);
     }
 
     private static String text(Map<String, Object> row, String key) {

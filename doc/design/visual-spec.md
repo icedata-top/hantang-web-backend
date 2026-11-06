@@ -234,6 +234,8 @@ RelativeTime 的四项悬停详情使用 Ant Design `Descriptions`，单列、�
 
 歌曲列表 `/videos` 同样复用 VideoCard、DsTable 和 DsPagination，默认紧凑表格，通过图标 Segmented 切换卡片；两种视图共用筛选、排序和页码。筛选使用 DatePicker.RangePicker、Select 和 InputNumber，提供明确的应用与重置操作。标题复用 VideoInfo 的已有标题模式：点击进入详情，悬停或聚焦后加载资料气泡；播放量旁显示 VideoHonor，投稿人复用 ProducerInfo。页面使用现有主题变量，不另建配色或基础控件。
 
+创作者列表 `/producers` 复用 ProducerInfo、DsTable 和 DsPagination，默认表格，可切换卡片；名称直接链接详情，头像、简介及资料浮层使用列表已返回的公开资料，不逐行请求。筛选使用 InputNumber，排序使用 Select 和 Segmented；收录投稿数注明本站收录口径，不展示为账号全站总投稿数。页面不提供搜索框，引导到 UniSeek，日夜主题与窄屏布局沿用歌曲列表规范。
+
 ## 图表与数据状态
 
 图表沿用 VChart，Canvas 配色同样读取当前主题变量，并在主题切换后更新。图例、坐标轴、提示和空状态一并适配日夜主题；不能只更换折线颜色。

@@ -5,7 +5,7 @@ import RelativeTime from '../../components/custom/RelativeTime/RelativeTime.jsx'
 import ProducerInfo from '../../components/custom/ProducerInfo/ProducerInfo.jsx';
 import VideoInfo from '../../components/custom/VideoInfo/VideoInfo.jsx';
 import VideoCard from '../../components/custom/VideoCard/VideoCard.jsx';
-import { producerVideos } from '../../services/Producer/producer.mock.js';
+import { producerInfo, producerVideos } from '../../services/Producer/producer.mock.js';
 import { getRelativeTimeDetails } from '../../components/custom/RelativeTime/relativeTime.js';
 import './DesignComponents.css';
 
@@ -70,6 +70,8 @@ export default function DesignComponents() {
         <div className="components-switch-control"><Switch id="producer-info-show-avatar" checked={showProducerAvatar} onChange={setShowProducerAvatar} /><label htmlFor="producer-info-show-avatar">{t("显示头像")}</label></div>
       </form>
       <div className="producer-info-live-preview"><ProducerInfo userId={producerId} showAvatar={showProducerAvatar} /></div>
+      <p className="components-note">{t('创作者列表')}</p>
+      <div className="producer-info-live-preview"><ProducerInfo userId={producerInfo.userId} initialProducer={producerInfo} showAvatar linkToDetail /></div>
       <pre className="components-usage"><code>{`<ProducerInfo userId=${JSON.stringify(producerId)}${showProducerAvatar ? ' showAvatar' : ''} />`}</code></pre>
     </section>
     <section className="ds-surface components-card" aria-labelledby="video-card-preview-title">
