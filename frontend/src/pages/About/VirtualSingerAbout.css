@@ -1,0 +1,222 @@
+.vocal-about-page {
+  box-sizing: border-box;
+  width: min(100%, 960px);
+  margin: 0 auto;
+  padding: 28px 20px 64px;
+  color: var(--text-primary);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  overflow-wrap: anywhere;
+}
+
+.vocal-about-breadcrumb {
+  margin-bottom: 28px;
+  font-size: var(--font-size-caption);
+}
+
+.vocal-about-breadcrumb .ant-breadcrumb-separator,
+.vocal-about-breadcrumb li:last-child {
+  color: var(--text-secondary);
+}
+
+.vocal-about-header {
+  max-width: 760px;
+  margin-bottom: 36px;
+}
+
+.vocal-about-header h1 {
+  margin: 0 0 14px;
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-title);
+}
+
+.vocal-about-header p,
+.vocal-about-section-heading p,
+.vocal-about-exclusion p {
+  margin: 0;
+}
+
+.vocal-about-section-heading {
+  margin-bottom: 20px;
+}
+
+.vocal-about-section-heading h2 {
+  margin: 0 0 8px;
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-heading);
+}
+
+.vocal-about-section-heading p,
+.vocal-about-exclusion p {
+  color: var(--text-secondary);
+}
+
+.vocal-about-scope {
+  margin-bottom: 40px;
+}
+
+.vocal-about-exclusions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.vocal-about-exclusion {
+  min-width: 0;
+}
+
+.vocal-about-symbol {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 14px;
+}
+
+.vocal-about-subject-icon {
+  font-size: var(--media-action-icon-size);
+  color: var(--text-secondary);
+}
+
+.vocal-about-stop-icon {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  border: 3px solid var(--canvas);
+  border-radius: 50%;
+  background: var(--canvas);
+  color: var(--alert-error-text);
+  font-size: var(--font-size-title);
+}
+
+.vocal-about-exclusion h3 {
+  margin: 0 0 8px;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-heading);
+}
+
+.vocal-about-scope-note {
+  margin: 20px 0 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-caption);
+}
+
+.vocal-about-source {
+  margin-top: 20px;
+  padding: 24px;
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+
+.vocal-about-source-heading {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.vocal-about-source-number {
+  color: var(--text-secondary);
+  font-size: var(--font-size-caption);
+  font-variant-numeric: tabular-nums;
+  padding-top: 4px;
+}
+
+.vocal-about-source-heading h2 {
+  margin: 0;
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-heading);
+}
+
+.vocal-about-quotation {
+  margin: 0;
+}
+
+.vocal-about-quotation blockquote {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+  padding-inline-start: 18px;
+  border-inline-start: 2px solid var(--surface-border);
+}
+
+.vocal-about-quotation blockquote p {
+  margin: 0;
+}
+
+.vocal-about-quotation strong {
+  font-weight: var(--font-weight-semibold);
+}
+
+.vocal-about-quotation sup {
+  color: var(--text-secondary);
+}
+
+.vocal-about-attribution {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--surface-border);
+  color: var(--text-secondary);
+  font-size: var(--font-size-caption);
+}
+
+.vocal-about-attribution p {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 0;
+}
+
+.vocal-about-attribution cite {
+  font-style: normal;
+}
+
+.vocal-about-external-icon {
+  margin-inline-start: 5px;
+  font-size: var(--font-size-xs);
+}
+
+.vocal-about-footer {
+  margin-top: 32px;
+}
+
+@media (max-width: 720px) {
+  .vocal-about-exclusions {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .vocal-about-exclusion {
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+  }
+
+  .vocal-about-symbol {
+    margin-bottom: 0;
+  }
+
+  .vocal-about-source {
+    padding: 20px 16px;
+  }
+
+  .vocal-about-quotation blockquote {
+    padding-inline-start: 12px;
+  }
+}

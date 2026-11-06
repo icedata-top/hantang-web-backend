@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Outlet, Route, Routes, useLocation } from 'react-router-dom';
 import IcedataNavbar from './components/IcedataNavbar.jsx';
 import About from './pages/About/index.jsx';
+import VirtualSingerAbout from './pages/About/VirtualSingerAbout.jsx';
 import Home from './pages/Home/index.jsx';
 import Overview from './pages/Overview/index.jsx';
 import NotFound from './pages/NotFound.jsx';
@@ -57,6 +58,7 @@ export default function App() {
           <Route path="producers" element={<ProducerList />} />
           <Route path="producers/:userId" element={<ProducerDetail />} />
           <Route path="about" element={<About />} />
+          <Route path="about/virtual-singers" element={<VirtualSingerAbout />} />
           {ADMIN_ENABLED && (
             <Route path="admin/*" element={<Suspense fallback={null}><Admin /></Suspense>} />
           )}

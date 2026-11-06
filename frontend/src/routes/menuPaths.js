@@ -20,6 +20,9 @@ export function getMenuKeyFromPathname(pathname) {
   if (ADMIN_ENABLED && (pathname === '/admin' || pathname.startsWith('/admin/'))) {
     return 'admin';
   }
+  if (pathname.startsWith('/about/')) {
+    return 'about';
+  }
   if (matchPath('/videos/:aid', pathname)) {
     return 'videos';
   }

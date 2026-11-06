@@ -1,5 +1,6 @@
 import { GithubOutlined, GlobalOutlined, TeamOutlined } from '@ant-design/icons';
 import { Trans, useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { useMeshParallax } from '../../hooks/useMeshParallax.js';
 import './index.css';
 
@@ -29,9 +30,13 @@ export default function About() {
           <span className="about-eyebrow">icedata</span>
           <div className="about-prose">
             <p>
-              {t("冰数据是一支面向虚拟歌手社群的")}
-              <strong>{t("非官方")}</strong>
-              {t("数据中台协作体。我们以自动化采集与结构化存储为基础，围绕投稿数据做分析与呈现，帮助社群更清晰地理解内容生态与传播脉络。")}
+              <Trans
+                i18nKey="about.introduction"
+                components={{
+                  vocal: <Link className="ds-link" to="/about/virtual-singers" />,
+                  strong: <strong />,
+                }}
+              />
             </p>
             <p>
               {t("社区中常提到，icedata 的精神可以上溯至 2013 年前后出现的 ")}
@@ -99,6 +104,9 @@ export default function About() {
             <div className="about-prose">
               <p>
                 <Trans i18nKey="about.frontendStack" components={{ strong: <strong /> }} />
+              </p>
+              <p>
+                <Trans i18nKey="about.backendStack" components={{ strong: <strong /> }} />
               </p>
               <p>
                 <Trans i18nKey="about.modelAssist" components={{ strong: <strong /> }} />
