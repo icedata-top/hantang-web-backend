@@ -51,7 +51,11 @@ export default function About() {
         <div className="about-stack">
           <section className="about-section" aria-label={t("我们做什么")}>
             <p className="about-section-text">
-              {t("组织持续汇聚、清洗与分析虚拟歌手相关的投稿数据，并通过 Web 应用、ChatBI 智能对话与数据可视化视频等形式，把数据洞察交付给创作者与爱好者。技术路线在演进，目标不变：让公开可得的投稿数据更容易被理解与使用。")}
+              <Trans i18nKey="about.activities" components={{
+                vocal: <Link className="ds-link" to="/about/virtual-singers" />,
+                song: <Link className="ds-link" to="/about/songs" />,
+                creator: <Link className="ds-link" to="/about/creators" />,
+              }} />
             </p>
           </section>
 

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { Button, Empty, Form, InputNumber, Segmented, Select, Spin, Tooltip } from 'antd';
 import { AppstoreOutlined, ReloadOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import ProducerInfo from '../../components/custom/ProducerInfo/ProducerInfo.jsx';
@@ -72,7 +72,7 @@ export default function ProducerList() {
   const filtered = query.minFans != null || query.minVideos != null;
   return <main className="producer-list-page">
     <header className="producer-list-heading">
-      <div><h1>{t('创作者')}</h1><p>{t('发现已收录的创作者，浏览他们的账号与作品。')}</p></div>
+      <div><h1>{t('创作者')}</h1><p><Trans i18nKey="producer.listIntroduction" components={{ creator: <Link className="ds-link" to="/about/creators" /> }} /></p></div>
       <Link className="ds-link" to="/uniseek">{t('查找创作者？前往 Uni Seek →')}</Link>
     </header>
     <section className="ds-surface producer-list-filters" aria-label={t('创作者筛选')}>

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { Button, DatePicker, Empty, Form, InputNumber, Segmented, Select, Spin } from 'antd';
 import { AppstoreOutlined, ReloadOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
@@ -76,7 +76,7 @@ export default function VideoList() {
 
   return <main className="video-list-page">
     <header className="video-list-heading">
-      <div><h1>{t('歌曲')}</h1><p>{t('按投稿时间、播放荣誉和分区浏览已收录的歌曲。')}</p></div>
+      <div><h1>{t('歌曲')}</h1><p><Trans i18nKey="video.listIntroduction" components={{ song: <Link className="ds-link" to="/about/songs" /> }} /></p></div>
       <Link className="ds-link" to="/uniseek">{t('查找歌曲、歌手或创作者？前往 Uni Seek →')}</Link>
     </header>
     <section className="ds-surface video-list-filters" aria-label={t('歌曲筛选')}>
