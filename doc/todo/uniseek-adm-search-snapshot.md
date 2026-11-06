@@ -36,3 +36,5 @@
 - [ ] 评估固定批次游标分页和 1,000 首返回上限；当前跨批次翻页仍可能漂移，前端去重不能代替完整快照分页。
 
 不在本待办中启动 Elasticsearch、冻结正式排序函数或改变歌手/UP 主搜索范围。关联工作见 [Elasticsearch 与正式排序 TODO](uniseek-elasticsearch-ranking.md)；当前接口见 [UniSeek beta](../../frontend/src/services/UniSeek/uniseek.md)。
+
+2026-11-06 新增独立待办：[投稿三维打标与后续创作者识别](uniseek-song-classification.md)。先标注是否歌曲、演唱来源与演唱语言，再确定UP主聚合和默认展示规则；标签持久保存，并在实施时接入ADM发布流程。
