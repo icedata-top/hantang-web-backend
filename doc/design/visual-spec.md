@@ -190,6 +190,8 @@ RelativeTime 的四项悬停详情使用 Ant Design `Descriptions`，单列、�
 
 实现：`.ds-alert` 配合 `data-variant="info|warning|error"`，颜色对应 `--alert-{类型}-bg/border/text`。规范页是静态样本，不主动播报错误；业务页面在动态状态变化时按场景配置适当的播报语义。
 
+虚拟歌手列表 `/vocals` 的收录提示使用可关闭的 Ant Design Alert，图标、正文及关闭按钮垂直居中；单段提示不叠加标题或段落的默认外边距。正文中的「虚拟歌手」链接到 `/about/virtual-singers`，关闭按钮提供中／英／日文可访问名称，悬停和键盘焦点沿用现有主题变量。
+
 ## Tabs
 
 正文 14px，普通和选中项分别引用 `--font-weight-regular` 与 `--font-weight-medium`，默认高度 40px、间距 24px、选中下划线 2px，分别由 `--tabs-height`、`--tabs-gap`、`--tabs-indicator-size` 控制。没有外框，底部分隔线引用 `--tabs-divider`。

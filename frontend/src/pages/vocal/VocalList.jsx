@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Empty, Input } from 'antd';
-import { InfoCircleOutlined, SearchOutlined } from '@ant-design/icons';
+import { Alert, Empty, Input } from 'antd';
+import { CloseOutlined, InfoCircleOutlined, SearchOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import catalog from '../../constants/vocal/vocal-frontend-info.json';
@@ -33,12 +33,18 @@ export default function VocalList() {
           onChange={(event) => setSearch(event.target.value)}
         />
       </header>
-      <div className="ds-alert vocal-list-notice" data-variant="info">
-        <InfoCircleOutlined aria-hidden="true" />
-        <p>
-          <Trans i18nKey="vocal.catalogNotice" components={{ about: <Link className="ds-link" to="/about" /> }} />
-        </p>
-      </div>
+      <Alert
+        className="ds-alert vocal-list-notice"
+        data-variant="info"
+        type="info"
+        showIcon
+        icon={<InfoCircleOutlined aria-hidden="true" />}
+        closable={{ closeIcon: <CloseOutlined aria-hidden="true" />, 'aria-label': t('vocal.dismissCatalogNotice') }}
+        title={<Trans i18nKey="vocal.catalogNotice" components={{
+          vocal: <Link className="ds-link" to="/about/virtual-singers" />,
+          about: <Link className="ds-link" to="/about" />,
+        }} />}
+      />
       <p className="vocal-list-count" role="status">
         {t("共 {{value0}} 位歌手", { value0: count })}
       </p>
