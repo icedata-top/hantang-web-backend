@@ -49,6 +49,57 @@ test('one selected day still has a valid delta when both boundary snapshots exis
   assert.equal(model.average, 7);
 });
 
+test('a missing publication-day snapshot supplies a zero baseline for all seven metrics and range growth', () => {
+  const source = [snapshot(1, 70), snapshot(2, 100)];
+  const model = buildVideoMetricsModel(source, START, '2026-10-21', START);
+  assert.equal(model.publicationBaselineDate, START);
+  assert.equal(model.cumulative[0].baselineAssumed, true);
+  assert.equal(model.cumulative[0].snapshotMissing, true);
+  for (const { key } of VIDEO_METRICS) {
+    assert.equal(model.cumulative[0].indicators[key], 0);
+    assert.equal(model.delta[0].indicators[key], 70);
+    assert.equal(model.delta[1].indicators[key], 30);
+  }
+  assert.deepEqual(model.missingSnapshots, []);
+  assert.equal(model.growth, 100);
+  assert.equal(model.average, 50);
+  assert.equal(source.length, 2);
+  assert.equal(source[0].indicators.view, 70);
+});
+
+test('a publication baseline never fills later gaps or invents a missing closing value', () => {
+  const model = buildVideoMetricsModel([snapshot(2, 100)], START, '2026-10-21', START);
+  assert.deepEqual(model.delta.map(row => row.indicators.view), [null, null]);
+  assert.deepEqual(model.missingSnapshots, ['2026-10-21']);
+  assert.equal(model.growth, 100);
+  const noClosingSnapshot = buildVideoMetricsModel([], START, START, START);
+  assert.equal(noClosingSnapshot.cumulative[0].indicators.view, 0);
+  assert.equal(noClosingSnapshot.delta[0].indicators.view, null);
+  assert.equal(noClosingSnapshot.growth, null);
+});
+
+test('real publication snapshots and partial metrics are preserved, including after backfill', () => {
+  const source = [snapshot(0, 5, { like: null }), snapshot(1, 15)];
+  const model = buildVideoMetricsModel(source, START, START, START);
+  assert.equal(model.publicationBaselineDate, null);
+  assert.equal(model.cumulative[0].indicators.view, 5);
+  assert.equal(model.cumulative[0].indicators.like, null);
+  assert.equal(model.delta[0].indicators.view, 10);
+  assert.equal(model.delta[0].indicators.like, null);
+  assert.equal(model.partialSnapshots.length, 1);
+  const missing = [{ ...snapshot(0, 99), snapshotMissing: true }, snapshot(1, 15)];
+  assert.equal(buildVideoMetricsModel(missing, START, START, START).growth, 15);
+  assert.equal(missing[0].indicators.view, 99);
+});
+
+test('publication must fall within the selected business range to create a baseline', () => {
+  for (const publication of [undefined, null, '2026-10-19', '2026-10-21', '2026-10-22']) {
+    const model = buildVideoMetricsModel([], START, START, publication);
+    assert.equal(model.publicationBaselineDate, null);
+    assert.ok(model.cumulative.every(row => Object.values(row.indicators).every(value => value === null)));
+  }
+});
+
 test('backfilling a gap restores deltas; an absent snapshot flag overrides unexpected counters', () => {
   const rows = [snapshot(0, 100), snapshot(2, 140)];
   assert.deepEqual(buildVideoMetricsModel(rows, START, '2026-10-21').delta.map((row) => row.indicators.view), [null, null]);

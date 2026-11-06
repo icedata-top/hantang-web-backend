@@ -8,9 +8,9 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/zh-cn';
 import {
   MIN_METRICS_DATE as MIN_OVERVIEW_DATE, getMaxSelectableDate as getOverviewMaxSelectableDate,
-  getDefaultDateRange as getDefaultOverviewFilter, getDateRangePresets as getOverviewRangePresets,
   isDateRangeDisabled as isOverviewDateDisabled,
 } from '../../../utils/metricsDateRange.js';
+import { getDefaultOverviewFilter, getOverviewRangePresets } from '../overviewDateRange.js';
 export { getOverviewMaxSelectableDate, getDefaultOverviewFilter, getOverviewRangePresets };
 
 const { RangePicker } = DatePicker;
@@ -44,9 +44,11 @@ function getDefaultRangePanelMonths(locale) {
  * @param {object} props
  * @param {string} [props.startDate] YYYY-MM-DD
  * @param {string} [props.endDate] YYYY-MM-DD
+ * @param {string|null} props.latestRecordDate 最新快照日，默认与快捷范围结束于其前一天
+ * @param {boolean} [props.dateLoading]
  * @param {(next: { startDate?: string, endDate?: string }) => void} [props.onFilterChange]
  */
-export default function OverviewFilter({ startDate, endDate, onFilterChange }) {
+export default function OverviewFilter({ startDate, endDate, latestRecordDate = null, dateLoading = false, onFilterChange }) {
   const { i18n, t } = useTranslation();
   const language = i18n.resolvedLanguage || i18n.language;
 
@@ -139,7 +141,8 @@ export default function OverviewFilter({ startDate, endDate, onFilterChange }) {
       </div>
       <RangePicker
         value={pickerRange}
-        presets={getOverviewRangePresets(language)}
+        presets={getOverviewRangePresets(language, latestRecordDate)}
+        disabled={dateLoading}
         disabledDate={isOverviewDateDisabled}
         defaultPickerValue={defaultPickerValue}
         onChange={handleRangeChange}

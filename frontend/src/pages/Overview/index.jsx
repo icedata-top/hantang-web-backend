@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FilterOutlined } from '@ant-design/icons';
-import { Card, Drawer, Spin, Typography, message } from 'antd';
+import { Alert, Button, Card, Drawer, Spin, Typography, message } from 'antd';
 import OverviewFilter, { getDefaultOverviewFilter } from './components/OverviewFilter.jsx';
 import OverviewTrendChart, { TAB_SUBMISSIONS } from './components/OverviewTrendChart.jsx';
 import OverviewViewHistogramChart from './components/OverviewViewHistogramChart.jsx';
@@ -9,6 +9,7 @@ import OverviewGateCrossingsTable from './components/OverviewGateCrossingsTable.
 import IndicatorCell from './components/IndicatorCell.jsx';
 import { useMeshParallax } from '../../hooks/useMeshParallax.js';
 import { ApiError } from '../../services/http/client.js';
+import { fetchDailyLatestDate } from '../../services/Daily/daily.api.js';
 import {
   fetchOverviewGateCrossings,
   fetchOverviewIndicators,
@@ -46,7 +47,11 @@ export default function Overview() {
 
   useMeshParallax(true);
 
-  const [filter, setFilter] = useState(() => getDefaultOverviewFilter());
+  const [filter, setFilter] = useState(null);
+  const hasUserChangedFilter = useRef(false);
+  const [dailyDate, setDailyDate] = useState({ status: 'loading', date: null });
+  const [dailyDateAttempt, setDailyDateAttempt] = useState(0);
+  const dateLoading = dailyDate.status === 'loading';
   const [loading, setLoading] = useState(false);
   const [payload, setPayload] = useState({
     indicators: [],
@@ -77,6 +82,23 @@ export default function Overview() {
     }
     message.error(errorMessage);
   }, [i18n]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setDailyDate({ status: 'loading', date: null });
+    fetchDailyLatestDate({ signal: controller.signal })
+      .then(({ latestRecordDate }) => {
+        if (controller.signal.aborted) return;
+        setDailyDate({ status: 'ready', date: latestRecordDate });
+        if (!hasUserChangedFilter.current) {
+          setFilter(getDefaultOverviewFilter(latestRecordDate));
+        }
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setDailyDate({ status: 'error', date: null });
+      });
+    return () => controller.abort();
+  }, [dailyDateAttempt]);
 
   const loadIndicators = useCallback((startDate, endDate) => {
     setLoading(true);
@@ -187,6 +209,7 @@ export default function Overview() {
   }, [isMobile]);
 
   const handleFilterChange = ({ startDate, endDate }) => {
+    hasUserChangedFilter.current = true;
     setFilter({ startDate, endDate });
     if (isMobile) {
       setFilterDrawerOpen(false);
@@ -197,6 +220,8 @@ export default function Overview() {
     <OverviewFilter
       startDate={filter?.startDate}
       endDate={filter?.endDate}
+      latestRecordDate={dailyDate.date}
+      dateLoading={dateLoading}
       onFilterChange={handleFilterChange}
     />
   );
@@ -244,10 +269,21 @@ export default function Overview() {
           )}
 
           <div className="overview-main-scroll">
-            <section className="overview-metrics" aria-label={t("指标数值")} aria-live="polite" aria-busy={loading}>
-              <Spin spinning={loading}>
+            {dailyDate.status === 'error' && (
+              <Alert className="ds-alert" data-variant="error" type="error" showIcon
+                title={t('最新数据日期加载失败，请重试。')}
+                action={<Button className="ds-button" data-variant="secondary"
+                  onClick={() => setDailyDateAttempt((value) => value + 1)}>{t('重试')}</Button>}
+              />
+            )}
+            {dailyDate.status === 'ready' && !getDefaultOverviewFilter(dailyDate.date) && (
+              <Alert className="ds-alert" data-variant="info" type="info" showIcon
+                title={t('暂无可用的每日数据日期，请手动选择日期范围。')} />
+            )}
+            <section className="overview-metrics" aria-label={t("指标数值")} aria-live="polite" aria-busy={loading || dateLoading}>
+              <Spin spinning={loading || dateLoading}>
                 {!filter?.startDate || !filter?.endDate ? (
-                  <Text type="secondary">{t("请选择日期范围以查看指标。")}</Text>
+                  <Text type="secondary">{dateLoading ? t('加载中') : t("请选择日期范围以查看指标。")}</Text>
                 ) : payload?.indicators?.length ? (
                   <div className="overview-indicator-grid">
                     {payload.indicators.map((row) => (
@@ -264,7 +300,7 @@ export default function Overview() {
 
             <OverviewTrendChart
               trend={trendRows}
-              loading={trendLoading}
+              loading={dateLoading || trendLoading}
               activeTab={trendType}
               onTabChange={setTrendType}
             />
@@ -283,7 +319,7 @@ export default function Overview() {
               total={payload?.gateCrossingsTotal ?? 0}
               page={gateCrossingsPage}
               pageSize={GATE_CROSSINGS_PAGE_SIZE}
-              loading={gateCrossingsLoading}
+              loading={dateLoading || gateCrossingsLoading}
               onPageChange={setGateCrossingsPage}
             />
           </div>

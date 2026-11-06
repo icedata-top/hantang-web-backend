@@ -23,8 +23,15 @@ export function fillVideoSnapshots(rows, startDate, endDate) {
 }
 
 /** Business days [start, end] use snapshots [start, end + 1], matching Overview. */
-export function buildVideoMetricsModel(rows, startDate, endDate) {
+export function buildVideoMetricsModel(rows, startDate, endDate, publicationDate) {
   const cumulative = fillVideoSnapshots(rows, startDate, addSnapshotDays(endDate, 1));
+  // Only a missing publication-day snapshot may serve as an assumed zero baseline.
+  const publicationBaseline = publicationDate >= startDate && publicationDate <= endDate
+    ? cumulative.find((row) => row.date === publicationDate && row.snapshotMissing) : null;
+  if (publicationBaseline) {
+    publicationBaseline.baselineAssumed = true;
+    publicationBaseline.indicators = Object.fromEntries(VIDEO_METRICS.map(({ key }) => [key, 0]));
+  }
   const delta = cumulative.slice(0, -1).map((row, index) => ({
     date: row.date,
     indicators: Object.fromEntries(VIDEO_METRICS.map(({ key }) => {
@@ -42,7 +49,8 @@ export function buildVideoMetricsModel(rows, startDate, endDate) {
     growth,
     average: growth == null ? null : growth / delta.length,
     days: delta.length,
-    missingSnapshots: cumulative.filter((row) => row.snapshotMissing).map((row) => row.date),
+    publicationBaselineDate: publicationBaseline?.date ?? null,
+    missingSnapshots: cumulative.filter((row) => row.snapshotMissing && !row.baselineAssumed).map((row) => row.date),
     partialSnapshots: cumulative.filter((row) => !row.snapshotMissing && VIDEO_METRICS.some(({ key }) => row.indicators[key] == null)),
   };
 }

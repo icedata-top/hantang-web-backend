@@ -1,6 +1,7 @@
 package com.hantang.web;
 
 import com.hantang.web.controller.BaseController;
+import com.hantang.web.controller.DailyController;
 import com.hantang.web.controller.UniSeekController;
 import com.hantang.web.config.Zhongshu50Config;
 import com.hantang.web.controller.DataReaderController;
@@ -32,6 +33,7 @@ public class App {
      */
     private static void registerAllController(Javalin app) {
         BaseController[] controllers = {
+                new DailyController(),
                 new DataReaderController(),
                 new HomeController(),
                 new OverviewController(),
