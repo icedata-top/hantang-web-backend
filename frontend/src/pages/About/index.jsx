@@ -1,5 +1,5 @@
 import { GithubOutlined, GlobalOutlined, TeamOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { useMeshParallax } from '../../hooks/useMeshParallax.js';
 import './index.css';
 
@@ -96,15 +96,14 @@ export default function About() {
           </section>
 
           <section className="about-section" aria-label={t("技术与素材")}>
-            <p className="about-section-text">
-              {t("本前端使用 ")}
-              <strong>Ant Design</strong>
-              {t("；数据可视化计划采用 ")}
-              <strong>VChart</strong>
-              {t("。部分插图来自 ")}
-              <strong>unDraw</strong>
-              {t("（开源插图，可按许可使用与再创作）。")}
-            </p>
+            <div className="about-prose">
+              <p>
+                <Trans i18nKey="about.frontendStack" components={{ strong: <strong /> }} />
+              </p>
+              <p>
+                <Trans i18nKey="about.modelAssist" components={{ strong: <strong /> }} />
+              </p>
+            </div>
           </section>
         </div>
       </div>
