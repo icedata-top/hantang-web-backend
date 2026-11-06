@@ -10,7 +10,7 @@ export function parseVideoListQuery(params) {
     honor: ['none', 'hall', 'legend', 'myth'].includes(params.get('honor')) ? params.get('honor') : 'all',
     typeId: integer(params.get('typeId'), 1, 2147483647, null),
     minView: integer(params.get('minView'), 0, Number.MAX_SAFE_INTEGER, null),
-    sortBy: ['view', 'favorite', 'like'].includes(params.get('sortBy')) ? params.get('sortBy') : 'pubdate',
+    sortBy: ['view', 'favorite'].includes(params.get('sortBy')) ? params.get('sortBy') : 'pubdate',
     order: params.get('order') === 'asc' ? 'asc' : 'desc',
     page: integer(params.get('page'), 1, 2147483647, 1), pageSize: integer(params.get('pageSize'), 1, 100, 20),
   };

@@ -76,9 +76,9 @@ export default function DesignComponents() {
       <div className="components-card-heading"><h2 id="video-card-preview-title">VideoCard</h2><span className="ds-chip" data-variant="neutral">{t("共享歌曲卡片")}</span></div>
       <p className="components-description">{t("统一搜索和创作者详情共用歌曲卡片；封面及标题可跳转到视频详情，缺失指标明确显示为「—」。")}</p>
       <div className="components-switch-control"><Switch id="video-card-browse-mode" checked={browseCard} onChange={setBrowseCard} /><label htmlFor="video-card-browse-mode">{t("歌曲列表")}</label></div>
-      <div className="components-video-card-preview"><VideoCard video={producerVideos[0]} titlePreview={browseCard} showHonor={browseCard} showProducer={browseCard} /></div>
+      <div className="components-video-card-preview"><VideoCard video={producerVideos[0]} titlePreview={browseCard} showHonor={browseCard} showProducer={browseCard} showLike={!browseCard} /></div>
       <p className="components-note">{t("使用已有《世末歌者》公开样本，播放量暂缺，不生成演示计数。")}</p>
-      <pre className="components-usage"><code>{browseCard ? '<VideoCard video={video} titlePreview showHonor showProducer />' : '<VideoCard video={video} />'}</code></pre>
+      <pre className="components-usage"><code>{browseCard ? '<VideoCard video={video} titlePreview showHonor showProducer showLike={false} />' : '<VideoCard video={video} />'}</code></pre>
     </section>
     <section className="ds-surface components-card" aria-labelledby="video-info-card-title">
       <div className="components-card-heading"><h2 id="video-info-card-title">VideoInfo</h2><span className="ds-chip" data-variant="neutral">{t("视频（歌曲）信息")}</span></div>

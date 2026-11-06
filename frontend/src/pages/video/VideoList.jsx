@@ -65,8 +65,8 @@ export default function VideoList() {
     { key: 'view', title: t('播放量'), width: 150, align: 'right', sortable: true, render: value => <div className="video-list-views">
       <span>{value == null ? '—' : formatNumber(value, 'comma')}</span><VideoHonor views={value} />
     </div> },
-    ...[['favorite', '收藏量'], ['like', '点赞量']].map(([key, title]) => ({ key, title: t(title), width: 108, align: 'right', sortable: true,
-      render: value => value == null ? '—' : formatNumber(value, 'comma') })),
+    { key: 'favorite', title: t('收藏量'), width: 108, align: 'right', sortable: true,
+      render: value => value == null ? '—' : formatNumber(value, 'comma') },
     { key: 'pubdate', title: t('投稿时间'), width: 150, sortable: true, render: value => <RelativeTime value={value} /> },
   ];
   const partitions = Object.entries(BILIBILI_SUB_PARTITION_IDS_BY_REGION);
@@ -119,7 +119,7 @@ export default function VideoList() {
         <h2>{filtersActive ? t('筛选结果') : t('全部歌曲')}{videos.status === 'ready' && <span>{t('共 {{value0}} 条', { value0: formatNumber(total, 'comma') })}</span>}</h2>
         <div className="video-list-controls">
           <Select aria-label={t('排序依据')} value={query.sortBy} onChange={sortBy => updateQuery({ sortBy })} options={[
-            { value: 'pubdate', label: t('投稿时间') }, { value: 'view', label: t('播放量') }, { value: 'favorite', label: t('收藏量') }, { value: 'like', label: t('点赞量') },
+            { value: 'pubdate', label: t('投稿时间') }, { value: 'view', label: t('播放量') }, { value: 'favorite', label: t('收藏量') },
           ]} />
           <Segmented className="ds-segmented" aria-label={t('排序方向')} value={query.order} onChange={order => updateQuery({ order })}
             options={[{ value: 'desc', label: t('降序 ↓') }, { value: 'asc', label: t('升序 ↑') }]} />
@@ -140,7 +140,7 @@ export default function VideoList() {
           loading={videos.status === 'loading'} sortKey={query.sortBy} sortDirection={query.order}
           onSort={(sortBy, order) => updateQuery({ sortBy, order })} emptyText={t('没有符合条件的歌曲，请调整筛选条件。')} />
       </div> : videos.status === 'loading' ? <div className="video-list-state" role="status"><Spin /><span>{t('正在加载歌曲…')}</span></div>
-        : rows.length ? <ul className="video-list-grid">{rows.map(video => <li key={video.aid}><VideoCard video={video} showProducer titlePreview showHonor /></li>)}</ul>
+        : rows.length ? <ul className="video-list-grid">{rows.map(video => <li key={video.aid}><VideoCard video={video} showProducer titlePreview showHonor showLike={false} /></li>)}</ul>
           : <div className="video-list-state" role="status"><Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t('没有符合条件的歌曲，请调整筛选条件。')} /></div>}
       <div className="video-list-pagination"><DsPagination current={query.page} pageSize={query.pageSize} total={total}
         disabled={videos.status !== 'ready'} pageSizeOptions={[20, 50, 100]} label={t('歌曲分页')}

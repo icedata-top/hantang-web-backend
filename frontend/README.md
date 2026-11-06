@@ -342,7 +342,7 @@ src/components/custom/VideoCard/VideoCard.jsx
 
 > 路由以 `src/App.jsx` 为准。歌曲列表和虚拟歌手列表已实现，创作者列表仍为占位；虚拟歌手详情仅展示本地配置，暂不展示歌曲关联。歌曲卡片用于统一搜索、歌曲列表及创作者详情的投稿区。
 
-歌曲列表 `/videos` 支持投稿日期、最高播放荣誉、历史二级分区、最低播放量筛选，以及播放 / 收藏 / 点赞 / 投稿时间排序；提供表格和卡片切换及分页，URL 保留当前条件。后端直接读取 UniSeek 发布宽表，仅在筛选分区时按 aid 查基础资料，不关联日历史表。列表页本身不新增表；收藏 >100 收录规则需要按[迁移与重刷步骤](../sql/adm_uniseek_videos_favorite_migration.md)升级既有 ADM 约束和刷新过程。收录范围和接口约定见 [歌曲列表](src/services/Video/videoList.md)。
+歌曲列表 `/videos` 支持投稿日期、最高播放荣誉、历史二级分区、最低播放量筛选，以及播放 / 收藏 / 投稿时间排序；提供表格和卡片切换及分页，URL 保留当前条件。表格与卡片隐藏点赞数。后端直接读取 UniSeek 发布宽表，仅在筛选分区时按 aid 查基础资料，不关联日历史表。列表页本身不新增表；收藏 >100 收录规则需要按[迁移与重刷步骤](../sql/adm_uniseek_videos_favorite_migration.md)升级既有 ADM 约束和刷新过程。收录范围和接口约定见 [歌曲列表](src/services/Video/videoList.md)。
 
 ## 使用的第三方组件/素材
 

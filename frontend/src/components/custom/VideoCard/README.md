@@ -14,6 +14,7 @@ import VideoCard from './components/custom/VideoCard/VideoCard.jsx';
 - `video`：直接接受创作者分页投稿接口的行数据，含 `aid`、`title`、`pic`、`view`、`recordDate`、`pubdate`、`userId`。大整数 ID 使用十进制字符串。
 - `keyword`：可选的搜索关键词，沿用已有纯文本切分高亮，正则特殊字符按字面处理，不注入 HTML。
 - `showProducer`：默认关闭；参与作者模式下开启，显示实际上传者的 ProducerInfo。
+- `showLike`：默认 `true`；歌曲列表传入 `false`，隐藏点赞指标及其提示，搜索和创作者投稿沿用默认展示。
 - `favorite` / `like`：可选的额外累计指标。未提供字段时不显示该项，明确为 NULL 时显示 `—`；真实零显示 `0`。
 
 保留原歌曲 Item 的 16:9 封面、歌曲标签、ID、标题和指标结构。封面和标题使用 `/videos/{aid}` 站内链接；标题两行省略，开口标点只在首行悬挂。封面为空或加载失败时使用图标占位。时间复用 RelativeTime，播放量提示注明接口提供的统计日期。配色、字重、圆角和阴影引用项目主题变量，标签无边框。

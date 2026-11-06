@@ -2,6 +2,8 @@
 
 页面 `/videos`，导航「歌曲」进入。默认表格、投稿时间降序；卡片复用 VideoCard。标题点击直接进入 `/videos/:aid`，悬停或键盘聚焦复用 VideoInfo，投稿人复用 ProducerInfo。筛选、排序、页码和布局保存在 URL；切换布局不重新请求列表。筛选点击「应用筛选」生效，重置恢复默认条件。
 
+列表页的表格与卡片仅展示播放、收藏指标，隐藏点赞数及点赞排序；旧 URL 的 `sortBy=like` 回退到投稿时间。接口仍保留点赞字段与排序能力。
+
 ## GET /videos
 
 使用现有 ResponseDTO，`result` 为 `{ page, pageSize, total, recordDate, rows }`。

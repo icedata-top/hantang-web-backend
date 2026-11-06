@@ -3,7 +3,7 @@ import test from 'node:test';
 import { parseVideoListQuery, videoListParams, VIDEO_LIST_DEFAULTS } from '../src/pages/video/videoListQuery.js';
 
 test('song browse URLs round-trip filters and pagination independently of layout', () => {
-  const query = { ...VIDEO_LIST_DEFAULTS, startDate: '2026-02-01', endDate: '2026-02-28', honor: 'legend', typeId: 30, minView: 0, page: 3, pageSize: 50, sortBy: 'like', order: 'asc' };
+  const query = { ...VIDEO_LIST_DEFAULTS, startDate: '2026-02-01', endDate: '2026-02-28', honor: 'legend', typeId: 30, minView: 0, page: 3, pageSize: 50, sortBy: 'favorite', order: 'asc' };
   const params = videoListParams({ ...query, layout: 'cards' });
   assert.equal(params.has('layout'), false);
   params.set('layout', 'cards');

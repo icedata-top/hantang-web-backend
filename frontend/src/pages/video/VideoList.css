@@ -17,7 +17,7 @@
 .video-list-controls .ant-select { min-width: 116px; }
 .video-list-scope { margin: 0 0 18px; }
 .video-list-table { overflow: hidden; }
-.video-list-table .ds-table { min-width: 900px; }
+.video-list-table .ds-table { min-width: 800px; }
 .video-list-title { display: grid; gap: 4px; min-width: 0; padding-inline-start: .45em; }
 .video-list-title .video-info { display: flex; text-decoration: none; font-weight: var(--font-weight-medium); }
 .video-list-title .video-list-caption { font-variant-numeric: tabular-nums; }

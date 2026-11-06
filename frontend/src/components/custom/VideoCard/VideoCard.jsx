@@ -21,7 +21,7 @@ const METRICS = [
 ];
 
 /** Shared song presentation from UniSeek. Uses supplied data; never fetches video metrics. */
-export default function VideoCard({ video, keyword = '', showProducer = false, titlePreview = false, showHonor = false }) {
+export default function VideoCard({ video, keyword = '', showProducer = false, titlePreview = false, showHonor = false, showLike = true }) {
   const { i18n, t } = useTranslation();
   const language = i18n.resolvedLanguage || i18n.language;
 
@@ -51,7 +51,7 @@ export default function VideoCard({ video, keyword = '', showProducer = false, t
         : <span className={titleClass}>{titleContent}</span>}
     </div>
     <div className="video-card-stats">
-      {METRICS.filter(([key]) => key === 'view' || Object.hasOwn(video, key)).map(([key, zh, en, Icon]) => {
+      {METRICS.filter(([key]) => (key !== 'like' || showLike) && (key === 'view' || Object.hasOwn(video, key))).map(([key, zh, en, Icon]) => {
         const value = Number.isFinite(video[key]) ? video[key] : null;
         const label = t(zh);
         const description = `${label}：${value == null ? t("暂缺") : formatNumber(value, 'comma')}${key === 'view' && video.recordDate ? t("；统计于 {{value0}}", { value0: video.recordDate }) : ''}`;
