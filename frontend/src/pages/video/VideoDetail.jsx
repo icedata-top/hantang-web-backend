@@ -221,8 +221,8 @@ export function VideoDetailView({ aid, info, latest }) {
           {tags.map((tag) => <li className="ds-chip" data-variant="neutral" key={tag}>{tag}</li>)}
         </ul>}
     </section>}
-    {video && <VideoMetricsHistory key={aid} aid={aid} pubdate={video.pubdate} />}
-    {video && <VideoGateCrossings key={aid} aid={aid} />}
+    {video && <VideoMetricsHistory key={`history-${aid}`} aid={aid} pubdate={video.pubdate} />}
+    {video && <VideoGateCrossings key={`gates-${aid}`} aid={aid} />}
   </main>;
 }
 
