@@ -1,270 +1,252 @@
-# 汉唐 Web
+# 冰数据 icedata 前后端一体化
 
-本仓库同时包含前端和后端。两边独立构建、独立启动，互不打包进对方的产物。
+冰数据（icedata）是一支面向虚拟歌手社群的非官方数据中台协作体，围绕公开投稿数据进行整理、分析与呈现。本仓库承载冰数据 Web 应用的前端和查询服务，提供歌曲、创作者与虚拟歌手浏览、视频指标查询、数据总览和 UniSeek 统一搜索。
 
-本项目负责数据查询接口、查询口径及前端展示。数据爬取、MySQL 到 PostgreSQL 的数据同步、上游数据预处理由其他仓库及其 owner 负责；本仓库记录相关外部依赖，并在查询与展示中正确处理数据缺失。已确认的同步缺失问题见[MySQL 到 PostgreSQL 同步数据缺失](doc/todo/mysql-postgresql-sync-data-loss.md)。
+前后端在同一仓库协作，分别构建、启动和发布。仓库名 `hantang-web-backend`，以及代码包名、数据库对象和镜像中的 `hantang` 均沿用历史工程命名；项目名称统一使用 **冰数据 icedata**。
 
-## 目录
+本仓库负责查询接口、统计口径、前端展示，以及应用层预计算 SQL。数据采集、MySQL 到 PostgreSQL 的同步、上游内容预处理由其他仓库及其维护者负责。
 
-| 路径 | 说明 |
-|------|------|
-| `frontend/` | 前端 |
-| `src/` | 后端源码 |
-| `sql/` | 数据库 DDL、表文档、查询示例与实例数据 |
-| `doc/todo/`、`doc/design/`、`doc/rule/` | 待办、设计、约定 |
+[官方站点](https://www.icedata.top/) · [GitHub 组织](https://github.com/icedata-top) · [前端说明](frontend/README.md)
 
-## 开发规范
+## 阅读导航
 
-- [Git commit 规范](doc/rule/commit-conventions.md)：使用 `type(scope): 中文摘要`；文档类型为 `doc`，无关功能及其他 Agent 的独立工作分开提交。
-- [UI 与配色规范](doc/design/visual-spec.md)：复用 Ant Design 与项目公共组件，主题参数集中在 `theme.css`，业务强调色使用既有 highlight 派生变量，不硬编码色值。预览入口为 `/admin/design/spec` 与 `/admin/design/components`。
-- [验收方式](.cursor/rules/verification.mdc)：按改动完成必要检查、测试或构建，常规界面由用户手动验收。
+- [概念说明](#概念说明)
+- [目录结构](#目录结构)
+- [技术栈](#技术栈)
+- [表结构设计](#表结构设计)
+- [UniSeek 统一搜索](#uniseek-统一搜索)
+- [本地开发](#本地开发)
+- [开发规范](#开发规范)
+- [CI/CD 与部署](#cicd-与部署)
 
-## 视频与创作者数据
+## 概念说明
 
-视频静态信息（标题、投稿时间、简介、封面、上传者等）的源表为 PostgreSQL 的 `hantang_dynamic.processed_videos`；UniSeek 歌曲搜索读取由它与指定日期 Daily 数据离线生成的 `hantang_dynamic.adm_uniseek_videos`。如无必要，不得使用 `hantang_dynamic.video_static`，也不得将其作为默认回退来源。创作者账号信息来自 `hantang_dynamic.discovered_users`，上传者关联为 `processed_videos.user_id = discovered_users.user_id`。
+以下口径与网页 `/about` 及其术语说明页保持一致，用于理解站内内容、实体和数据关系。
 
-字段含义、时间及缺失值口径见[视频与创作者表文档](sql/video_creator_reference.md)，可执行的只读 SQL 见[查询示例](sql/video_creator_queries.sql)，世末歌者（`aid=6009789`）与 COPY（`user_id=396194`）的完整实例见[实例数据说明](sql/examples/video_creator_sample.md)。
+### 歌曲与投稿
 
-创作者详情提供账号基本信息和分页投稿两个接口，支持以第一作者（`user_id`）或参与作者（`staff`）筛选，按播放量 / 投稿时间升降序排列；接口约定与验证方式见[创作者详情 API](frontend/src/services/Producer/producer.md)。
+“歌曲”指以歌曲本身及其演唱为主体的投稿，包括原创、翻唱和翻调。歌词、静态画面或完整 MV 都可以是呈现形式。舞蹈、相声、剪辑、排行榜、教程、专辑试听等，即使包含歌曲，也不属于这一口径。
 
-创作者列表 `/producers` 已接入 `GET /producers`，提供表格／卡片、粉丝与收录投稿数筛选、排序和分页；页面不提供搜索，指向 UniSeek。收录与字段口径见[创作者列表 API](frontend/src/services/Producer/producerList.md)。
+当前数据以哔哩哔哩视频投稿为记录单位，使用 `aid` 标识，BV 号是同一投稿的另一种编号。同一首歌曲可以有多个版本或多次投稿，因此视频记录数不能直接当作去重后的歌曲作品数。前端向用户称“歌曲”，代码与数据接口主要使用 `video`。
 
-单视频每日明细通过 `GET /videos/{aid}/daily-metrics?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD` 查询七项累计指标。按请求日期补齐行，未收录快照显式标记 `snapshotMissing`，缺失指标保留 `null`，不在后端计算增量。视频详情简介下方提供累计 / 增量图表与区间播放增长摘要；前端只对相邻有效快照作差。日期边界、日均及缺失数据口径见[单视频历史数据与趋势](doc/design/video-metrics-history.md)和[视频详情 API](frontend/src/services/Video/video.md)。
+站内说明入口：`/about/songs`。
 
-单视频播放过线记录通过 `GET /videos/{aid}/gate-crossings` 读取 `hantang_dynamic.video_collection_gate_crossings`，按过线值降序返回；没有记录时返回 200 与空数组。详情页趋势图下方按过线值的取整精度（整千 / 整万 / 整十万 / 整百万 / 整千万 / 整亿）筛选，每个过线值只归入最粗的一档，筛选在前端完成；过线时间以北京时间显示到分。接口、分档规则与页面口径见[单视频播放过线与取整精度筛选](doc/design/video-gate-crossings.md)。
+### 创作者
+
+“创作者”指参与虚拟歌手歌曲创作、在哔哩哔哩投稿这类歌曲，且整体投稿以这类歌曲为主的 UP 主。创作包括词、曲、编曲、调教、混音、绘画、视频制作等环节；主体可以是个人，也可以是社团、企业或机构。单纯搬运、整理他人作品，不等于参与创作。
+
+前端领域命名使用 `producer`。当前页面以投稿账号 `user_id` 展示“第一作者”，以 `staff` 成员展示“参与作者”；这是账号与投稿的关联方式，不代表已经核实全部创作分工。部分后端字段仍沿用 `user`，以现有接口约定为准。
+
+站内说明入口：`/about/creators`。
+
+### 虚拟歌手
+
+冰数据不另立通用的虚拟歌手定义。网页引用 VCPedia、Vocawiki 和周刊虚拟歌手中文曲排行榜的解释，并单独说明本站的数据收录范围：不收录自然人直接演唱、真人扮演并直接演唱的 VTuber / VUP，以及 SVC 声音转换演唱内容。声库由真人录制不等于真人直接演唱，使用 AI 的歌声合成也不因“AI”字样被排除。
+
+当前虚拟歌手的名称、别名、角色资料和立绘由前端本地配置维护，详情使用 `/vocals/:vocalId`。视频与歌手的可靠关联、完整实体归并及歌手聚合仍待完善，不能把标题提及或空的歌手标签当作已确认的演唱关系。
+
+站内说明入口：`/about/virtual-singers`。三类内容的已收录资料均可能仍需补全与核验；业务定义不等于存量数据已全部完成分类。更细的歌曲、演唱来源与语言口径见[投稿内容识别说明](doc/design/uniseek/content-classification.md)。
+
+## 目录结构
+
+```text
+.
+├── frontend/                         # 前端应用
+│   ├── src/pages/                    # 页面与路由对应实现
+│   ├── src/components/               # 公共组件与业务组件
+│   ├── src/services/                 # API 调用、MOCK 与接口说明
+│   ├── src/constants/vocal/          # 虚拟歌手资料与搜索配置
+│   ├── src/locales/                  # 中、英、日文案
+│   ├── src/styles/                   # 主题变量与公共样式
+│   ├── public/                       # 静态素材
+│   ├── tests/                        # 前端测试
+│   ├── Dockerfile                    # 前端镜像构建
+│   ├── Caddyfile                     # 静态资源与 API 反向代理
+│   └── docker-compose.yml            # 前后端容器部署模板
+├── src/main/java/com/hantang/web/     # Java 后端
+│   ├── controller/                   # 路由、参数校验与响应
+│   ├── service/                      # 业务规则、查询编排与缓存
+│   ├── dao/                          # 数据访问与 SQL
+│   ├── dos/                          # 请求、响应及数据对象
+│   └── App.java                      # 服务入口
+├── src/main/resources/               # 配置资源，含中术50样本名单
+├── src/test/                         # 后端测试
+├── sql/                              # 字段快照、DDL、聚合与刷新脚本、SQL 测试
+├── doc/design/                       # 业务口径与技术设计
+├── doc/todo/                         # 实施进度与待办
+├── doc/rule/                         # 开发约定
+├── .github/workflows/                # GitHub Actions 工作流
+├── config.secret.properties.example  # 后端数据库配置示例
+├── Dockerfile                        # 后端镜像构建
+└── pom.xml                           # Maven 配置
+```
 
 ## 技术栈
 
-### 前端
+- **前端**：React、Vite、Ant Design、React Router；i18next 负责中、英、日界面，dayjs 处理日期，VChart 绘制图表。依赖版本见 [package.json](frontend/package.json)。
+- **后端**：Java 21、Javalin 6、Maven，通过 PostgreSQL JDBC 和 HikariCP 访问数据库。入口为 `com.hantang.web.App`，默认监听 `8080`。依赖版本见 [pom.xml](pom.xml)。
+- **数据**：当前 Web 后端读取 PostgreSQL，主要业务对象位于 `hantang_dynamic` schema。MySQL 属于上游数据链路，后端本地启动只需 PostgreSQL 配置。
+- **构建与运行**：Docker 分别打包前后端；前端容器使用 Caddy 提供静态资源，并将同源 `/api` 请求转发给后端。GitHub Actions 构建镜像并推送 GHCR，通过 Portainer 部署。
 
-目录：`frontend/`。细节见 `frontend/README.md`。
+本地前端开发使用 npm 与 `package-lock.json`；当前前端 Dockerfile 使用 pnpm 与 `pnpm-lock.yaml` 做冻结安装。修改依赖时需核对两条构建路径，具体以各自配置为准。
 
-- React 18、Vite 5、Ant Design、React Router、i18next、VChart
-- 包管理使用 npm，锁文件是 `frontend/package-lock.json`
-- 开发服务器端口 `5173`
+## 表结构设计
 
-### 后端
+数据库按用途分为**明细层**与**应用层（ADM）**：明细层保留基础资料和观测记录，应用层面向页面查询预先整理搜索集或统计结果。当前两层对象都位于 `hantang_dynamic` schema，并非两个独立数据库。
 
-目录：仓库根目录，源码在 `src/main/java`。
-
-- Java 21、Maven、Javalin 6
-- MySQL、PostgreSQL（HikariCP）
-- 入口类 `com.hantang.web.App`，监听 `8080`
-- 数据库连接读取仓库根目录的 `config.secret.properties`。该文件已在 `.gitignore` 中，不提交
-
-## 总览页：中术50
-
-「中术50」借鉴上证指数等以样本观察整体变化的思路，选取相对固定的 50 个作品作为观测对象，跟踪这些作品的播放、收藏等指标变化。它不是按所选日期实时排序得到的 Top 50。作品名单已配置；样本调整规则及是否采用指数化计算尚未确定，目前不定义基期、权重或指数点位。
-
-- 顶部展示名称为「中术50播放」「中术50收藏」，趋势图对应「中术50视频数据」。
-- 样本配置位于 `src/main/resources/config/zhongshu-50.json`，`aids` 数组维护 50 个作品的 aid，`name` 为名称。
-- Java 后端在启动 HTTP 服务前读取配置，校验恰好 50 个不重复的正整数 aid，并缓存为不可变内存名单；配置缺失或不合法时启动失败。修改名单后需重新打包并重启（Docker 需重新构建镜像）。
-- 顶部播放、收藏及视频数据趋势均使用参数化的 `WHERE aid IN (?, ...)` 限定这份样本；新投稿、活跃创作者及其他图表不受此名单影响。
-- 顶部播放、收藏按 `hantang_dynamic.video_daily` 中样本的结束日次日快照合计减去开始日快照合计；视频数据趋势按相同样本计算每天的次日快照减去当日快照，返回播放、收藏、点赞、硬币、分享、评论、弹幕增量。顶部指标逐项校验两个端点均有完整的 50 个样本及对应字段，任一端缺失则该项 `value=null`，不作差；缺少当期或上期增量、或上期增量为 0 时，`dod=null`。前端以「暂缺」展示，真实零增量仍为 0。趋势图逐指标检查 D 与 D+1 快照完整性，任一端缺失则 D 日该指标返回 `null`；前端保留日期并在缺口断线，不补零。
-- 顶部指标保留当期值与前一等长区间的环比，不计算同比。
-- 顶部指标的中术50每日累计播放、累计收藏在 Service 与 DAO 之间按 `record_date` 缓存，复用 `CacheDao` 的线程安全内存 Map：成功加载后有效期 60 分钟，最多 64 个日期，容量满时按写入顺序淘汰。过期后由下一次读取重新查询；同一天并发未命中时合并查询，失败或样本不完整时不缓存，补数后下次请求重查。缓存随进程重启清空，不缓存整个日期区间，也不缓存新投稿、活跃创作者或趋势图。
-
-## 启动
-
-前后端各开一个终端。
-
-### 前端
-
-```sh
-cd frontend
-npm install
-npm run dev
+```text
+上游采集、同步与预处理
+          ↓
+明细层：processed_videos / discovered_users / video_daily / 过线记录
+          ├──→ 详情、历史指标与当前总览查询
+          ├──→ 搜索集发布 → adm_uniseek_videos → UniSeek 与歌曲列表
+          └──→ 按日预聚合 → adm_entity_metrics_daily → 总览接入待完成
 ```
 
-浏览器访问 `http://localhost:5173/`。`npm run dev` 默认直接请求本机后端 `http://localhost:8080/`，请先启动后端。只使用前端 MOCK 数据时：
+### 明细层：资料与观测记录
+
+- **`processed_videos`**：以 `aid` 为业务对象键，保存标题、投稿时间、简介、封面、分区、上传者、参与账号及预处理标签等当前资料。视频基本信息统一以此表为源，不默认回退到历史 `video_static` 表。
+- **`discovered_users`**：以 `user_id` 为业务对象键，保存账号名称、头像、粉丝数、签名及上游收录计数等当前资料。上传者通过 `processed_videos.user_id = discovered_users.user_id` 关联；当前账号资料不代表投稿当时的历史状态。
+- **`video_daily`**：以视频和观测日期（`aid`、`record_date`）描述逐日快照，保存播放、收藏、点赞、硬币、分享、评论、弹幕七项累计指标。日增量需要按相邻日期的快照计算。
+- **`video_collection_gate_crossings`**：保存采集侧记录的播放过线事件，包括过线值、前后播放量和过线时间，供详情与总览展示。
+
+完整字段见[明细层字段快照](sql/hantang_dynamic_schema.sql)和[视频与创作者表说明](sql/video_creator_reference.md)，查询例子见[只读 SQL](sql/video_creator_queries.sql)。字段快照用于说明现有结构，不作为整库初始化或自动迁移脚本。
+
+### 应用层：搜索宽表与日聚合
+
+**`adm_uniseek_videos`：当前已发布的歌曲搜索集。** 每个 `aid` 一行，将视频资料与同一确认日期的 Daily 快照组合，保存搜索字段、展示资料、七项累计指标，以及 `record_date`、`batch_id` 和刷新时间。仅保留当前成功批次，刷新在一个事务中完成，失败保留原批次。UniSeek 歌曲检索与歌曲列表已读取此表。
+
+当前搜索集的收录条件为 `processed_videos.is_deleted = false`，且来源日累计收藏数严格 **大于 100**；点赞不参与这一门槛。这是当前查询集的筛选条件，不代表每条投稿已完成歌曲内容核验。表结构与维护流程见[搜索宽表说明](sql/adm_uniseek_videos.md)。
+
+**`adm_entity_metrics_daily`：按业务日保存的统计结果。** 行粒度为“数据范围 × 维度类型 × 维度对象 × 日期”，对应 `scope_key`、`dimension_type`、`dimension_key`、`stat_date`。七项指标分别保存期末累计值和日增量，并记录快照覆盖数、完整性、规则版本和发布批次。
+
+第一期聚合范围包括全量总计、中术50固定样本总计、旧版分区（`type_id`）和新版分区（`tid_v2`）。两套分区独立统计，不混加，也不生成中术50与分区的交叉组合。虚拟歌手和创作者维度留待实体关系完善后推进。
+
+中术50以[配置中的固定 50 个投稿](src/main/resources/config/zhongshu-50.json)观察指标变化，不是实时排序的 Top 50；目前不定义基期、权重或指数点位。更新名单需重新构建后端，并同步核对数据库聚合使用的样本版本。
+
+日聚合按天执行并原子替换，任务状态与有限重试由 `adm_aggregation_task` 管理；搜索集的确认日期与发布状态由 `adm_uniseek_refresh_state` 管理。两者是维护辅助表，不是新增的观测明细。
+
+日聚合的结构、执行与调度见[表结构说明](sql/adm_entity_metrics_daily_draft.sql)和[安装与调用](sql/adm_aggregation_usage.md)。**当前总览接口仍直接查询明细，尚未切换为读取这张日聚合表。** 自动调度、历史回刷与接入进度见[日聚合待办](doc/todo/adm-daily-aggregation.md)。
+
+### 时间与缺失值口径
+
+- `record_date` 是北京时间凌晨采集的观测日期，不是精确零点快照。统计 D 日增长时，使用 D+1 快照减 D 快照；日聚合的期末累计值取 D+1 快照。
+- 累计值不跨日相加；增量保留真实负值，不因源端修正而截成零。
+- 缺失记录、缺失指标、真实零值和空数组分别处理，不把缺失统一补为零，也不跨日期缺口计算单日增量。单视频趋势的投稿日基线等特殊口径见[历史指标与趋势](doc/design/video-metrics-history.md)。
+
+已确认的上游同步缺失由对应维护者修复与补数，见[MySQL 到 PostgreSQL 同步缺失](doc/todo/mysql-postgresql-sync-data-loss.md)；页面展示与聚合需要保留这些缺失信息。
+
+## UniSeek 统一搜索
+
+UniSeek 是站内统一搜索入口，路径为 `/uniseek`，例如 `/uniseek?keyword=天依`。一次输入可以查找虚拟歌手、歌曲和创作者，也支持 AV、BV、UID 精确查询。
+
+### 查询与展示
+
+- **虚拟歌手**：前端用本地名称和别名即时匹配，不等待后端，不分页。
+- **歌曲**：后端查询 `adm_uniseek_videos`，支持标题子串及标签、分词等数组元素匹配。AV/BV 查询使用同一已发布搜索集，未进入该集合的投稿不会通过编号绕过收录条件。
+- **创作者**：后端查询 `discovered_users`，支持名称和 UID；当前查询要求有上游过滤投稿数及有效头像，这不替代完整的创作者内容核验。
+
+各来源独立请求，结果按实际到达顺序追加，不进行跨实体类型的评分比较。重复实体合并展示，某一路失败可以单独重试；后续滚动仅加载歌曲。歌曲默认每页 30 条，每个关键词最多返回 1,000 条，同类排序结合标题相关性与有上限的播放量加分。
+
+### 数据更新与后续工作
+
+歌曲搜索请求只读取已发布宽表，不在线关联原始视频和 Daily。维护者或上游任务先明确确认已完整入库的来源日期，再离线刷新；不能把最大日期或定时任务触发时间当作数据已完整的证明。缓存随发布批次变化失效，同一天补数后也可以重新发布。
+
+当前仍是 beta：跨批次分页可能发生顺序变化，前端会去重；内容分类、视频与虚拟歌手关系、正式排序及 Elasticsearch 等工作分别记录在待办中。
+
+- [UniSeek 查询与前后端约定](frontend/src/services/UniSeek/uniseek.md)
+- [搜索宽表安装、确认日期与刷新](sql/adm_uniseek_videos.md)
+- [旧点赞门槛迁移到收藏门槛](sql/adm_uniseek_videos_favorite_migration.md)
+- [宽表化技改复盘](doc/design/uniseek/adm-search-retrospective.md)
+- [每日同步与运行验收](doc/todo/uniseek-adm-search-snapshot.md)、[内容分类](doc/todo/uniseek-song-classification.md)、[搜索与排序后续计划](doc/todo/uniseek-elasticsearch-ranking.md)
+
+## 本地开发
+
+准备 Java 21、Maven、Node.js（当前前端镜像使用 24）与 npm。连接真实数据时，还需准备可访问的 PostgreSQL 和已获授权的应用账号；只开发前端时可使用 MOCK。
+
+### 启动后端
+
+在仓库根目录复制配置示例，填写真实的 PostgreSQL 连接信息：
 
 ```sh
-VITE_APP_ENV=MOCK npm run dev
+cp config.secret.properties.example config.secret.properties
 ```
 
-生产打包：
-
-```sh
-npm run build
-```
-
-产物在 `frontend/dist/`，该目录不提交。
-
-### 后端
-
-在仓库根目录准备好 `config.secret.properties`，然后运行主类 `com.hantang.web.App`。
-
-用 Maven 打包后启动：
+`config.secret.properties` 已被 Git 忽略，不提交密码或本地配置。后端从进程工作目录读取此文件，请在仓库根目录启动：
 
 ```sh
 mvn package
 java -jar target/hantang-web-backend-1.0-SNAPSHOT.jar
 ```
 
-接口在 `http://localhost:8080/`。开发环境已允许跨域，前端可以从 `5173` 访问后端。
+也可以在 IDE 中以仓库根目录为工作目录运行 `com.hantang.web.App`。服务地址为 `http://localhost:8080`。
 
----
+### 启动前端
 
-# 后端结构说明
+另开终端：
 
-后端基于 Javalin，采用分层结构。
-
-## Docker 运行
-
-镜像不会打包 `config.secret.properties`。运行容器时需要把运行环境的数据库配置文件挂载到 `/app/config.secret.properties`：
-
-```bash
-docker build -t hantang-web-backend:local .
-docker run --rm -p 8080:8080 \
-  -v /path/to/config.secret.properties:/app/config.secret.properties:ro \
-  hantang-web-backend:local
+```sh
+cd frontend
+npm ci
+npm run dev
 ```
 
-`config.secret.properties` 目前只需要 PostgreSQL 连接配置，不再需要 MySQL 配置。可以从示例文件复制后填写真实值：
+浏览器访问 `http://localhost:5173/`。开发模式默认直接请求本机 `8080` 后端；不连接后端时可运行：
 
-```bash
-cp config.secret.properties.example config.secret.properties
+```sh
+VITE_APP_ENV=MOCK npm run dev
 ```
 
-## 📂 项目包结构
+生产构建在 `frontend/` 执行 `npm run build`，产物为 `frontend/dist/`。默认生产 API 前缀为同源 `/api`，环境与运行时配置见[前端说明](frontend/README.md#环境与后端配置)。
 
-```text
-src/main/java
-├── api # 第三方API调用相关封装（如Bilibili接口、WBI签名等）
-├── controller # 控制器层：接收请求，参数解析，响应封装
-├── dao # 数据访问层：与数据库或外部存储交互
-├── dos # 数据对象（DO），包括数据库实体和业务传输对象
-│ ├── common # 通用数据结构，如统一响应体 ResponseDTO
-│ └── data.reader # 与“数据读取”功能相关的请求/响应体
-├── mapper # JSON序列化/反序列化等映射器封装
-├── service # 服务层（可选）：编写核心业务逻辑，解耦控制器和DAO
-└── App # 应用入口 com.hantang.web.App
-```
+### 常用页面
 
+- `/overview`：数据总览与中术50。
+- `/videos`、`/videos/:aid`：歌曲列表、投稿详情与历史指标；详情也接受 BV 号入口。
+- `/producers`、`/producers/:userId`：创作者列表与详情。
+- `/vocals`、`/vocals/:vocalId`：虚拟歌手列表与本地角色资料。
+- `/uniseek`：统一搜索。
+- `/about`：项目介绍与术语说明。
 
----
+开发规范页 `/admin/design/spec` 和组件预览 `/admin/design/components` 需要显式开启管理入口。本地在 `frontend/.env.local` 设置 `VITE_ADMIN_ENABLED=true` 后重启；容器设置 `ICEDATA_ADMIN_ENABLED=true` 后重新创建。开关只控制页面入口，不提供权限认证。
 
-## 📌 各包功能说明
+## 开发规范
 
-| 包名            | 说明 |
-|-----------------|------|
-| `api`           | 封装对外部系统（如Bilibili）的 API 调用逻辑，便于统一管理签名、HTTP 请求等 |
-| `controller`    | 路由注册与控制器：仅做参数校验、调用 Service、封装统一响应 |
-| `dao`           | 数据访问层：封装 SQL、ORM 或其他数据源操作逻辑 |
-| `dos`           | 数据对象：含数据库实体（DO）和前后端交互的请求体、响应体（Request/Response） |
-| `mapper`        | JSON 序列化与反序列化配置（如自定义 Fastjson2 Mapper） |
-| `service`       | 业务逻辑层（可选）：编写可单元测试的复杂业务逻辑，控制器只负责调用 |
-| `resources`     | 配置文件，如日志、数据库、JSON Schema 等 |
+- **提交与改动范围**：遵循 [Git commit 规范](doc/rule/commit-conventions.md)，标题使用 `type(scope): 中文摘要`，文档类型为 `doc`。同一功能的前后端、测试和文档可以一起提交，无关改动分开。
+- **后端分层**：Controller 负责路由、参数校验与统一响应；Service 负责业务规则、查询编排与缓存；DAO 负责参数化 SQL 和数据访问。请求与响应遵循现有 `ResponseDTO` 及各功能文档。
+- **前端与视觉**：遵循[冰数据视觉规范](doc/design/visual-spec.md)，优先复用 Ant Design 和项目公共组件。主题参数集中在 `frontend/src/styles/theme.css`，业务样式引用语义变量，不另写硬编码配色。
+- **语言与领域命名**：界面文案同步维护中、英、日三套资源；业务数据保留原文。歌曲、创作者、虚拟歌手的代码命名分别沿用 `video`、`producer`、`vocal`，不自行改写现有 HTTP 字段。
+- **数据口径与 SQL**：表结构、字段含义和执行说明放在 `sql/`；设计与进度分别放在 `doc/design/`、`doc/todo/`。修改指标、收录或时间口径时同步维护对应文档，区分已实现、已部署与待办。
+- **验证**：遵循[验收方式](.cursor/rules/verification.mdc)，按改动运行必要检查、测试或构建。前端在 `frontend/` 执行 `npm test`、`npm run build`；后端在根目录执行 `mvn test`、`mvn package`。SQL 回归的环境要求与命令见对应专题文档。常规界面由开发者手动验收；仅文档改动检查内容、链接和差异即可。
 
----
+## CI/CD 与部署
 
-## 🧩 分层设计规范
+### GitHub Actions：构建与镜像发布
 
-### ✅ Controller 层
+GitHub 已集成前后端流水线，配置见 [CI 工作流](.github/workflows/ci.yml)。推送任意分支、提交或更新 PR，以及手动触发时，分别构建后端和前端 Docker 镜像：
 
-- **职责单一**：仅负责解析请求、调用 Service、封装返回。
-- **无复杂业务逻辑**：只做简单校验（如必填字段）。
-- **统一返回结构**：使用 `ResponseDTO<T>` 封装结果，包含 `code`、`msg`、`timestamp`、`result`。
-- **URL 命名规范**：推荐使用短横线（kebab-case）风格，示例：
-```text
-GET /hello-world
-POST /hantang/metric-achieved-time
-POST /hantang/video-metrics
-```
+- 后端：`ghcr.io/icedata-top/hantang-web-backend`。
+- 前端：`ghcr.io/icedata-top/hantang-web-frontend`。
 
+仓库内事件会推送镜像到 GHCR；来自 fork 的 PR 仅构建，不推送。标签按分支、PR 和提交短 SHA 生成，具体以该次工作流输出为准。两个镜像独立发布，部署时应确认它们对应的提交和标签。
 
----
+[Build & Release 工作流](.github/workflows/build.yml) 另行提供后端 JAR 构建与 GitHub Release：支持手动构建，在 PR 合入 `main` 或推送 `v*` 标签时创建 Release。当前流水线的 Maven 打包使用 `-DskipTests`，测试需按开发规范单独完成。
 
-### ✅ Service 层
+### Tailscale：连接发布网络
 
-- **可选**：对于复杂逻辑建议放到 Service 层，便于单元测试。
-- **只做业务逻辑**：不处理路由、响应封装、不直接操作 HTTP 对象。
-- **依赖注入**：可依赖 DAO 层获取数据，保证可替换性。
+1. 打开本机 **Tailscale 客户端**，使用已获授权的 **GitHub 账号**登录。
+2. 选择 **`icedata-top.org.github`** 网络并连接，确认客户端显示已连接。网页管理后台的登录状态不等于本机已接通网络。
+3. 首次加入或权限不足时，由网络管理员处理邀请、设备批准及访问权限。
 
----
+### Portainer：部署服务
 
-### ✅ DAO 层
+连接 Tailscale 后，访问 **[Portainer](http://portainer.icedata.top/)**，使用具备发布权限的账号登录。镜像构建成功后，由维护者在 Portainer 完成部署：
 
-- **与数据源交互**：仅负责 SQL、ORM 或第三方数据源调用。
-- **命名建议**：以 `Dao` 结尾，如 `PostgreDao`。
-- **接口隔离**：不同表/功能独立实现，方便后期更换数据源。
+1. 在 GitHub Actions 确认本次前后端镜像构建和推送成功，记录要发布的标签。
+2. 在对应 Stack 或容器配置中更新镜像。前后端组合部署模板见 [docker-compose.yml](frontend/docker-compose.yml)，可通过 `ICEDATA_WEB_IMAGE`、`ICEDATA_BACKEND_IMAGE` 指定镜像及标签，默认使用 `main`。
+3. 配置后端 PostgreSQL 连接，并确保运行时存在 `/app/config.secret.properties`。镜像不包含此文件；Compose 模板会通过配置项生成，单独运行后端容器时需挂载。
+4. 拉取镜像并重新部署，检查容器状态、日志、页面和 API 是否正常。
 
----
+前端容器由 Caddy 将 `/api/*` 转发到 `http://icedata-backend:8080`。运行时 API 地址、管理入口等配置见[前端部署说明](frontend/README.md#环境与后端配置)。现有 Compose 模板还要求填写历史变量 `ICEDATA_DB_URL_LOCAL`、`ICEDATA_DB_USER_LOCAL`、`ICEDATA_DB_PASSWORD_LOCAL`，以通过模板校验；当前后端只读取 PostgreSQL 配置。
 
-## 🗂️ 统一响应体示例
-
-使用 `ResponseDTO<T>` 统一封装所有 API 响应。
-
-```java
-public record ResponseDTO<T>(
-  int code,
-  int timestamp,
-  String msg,
-  T result
-) 
-```
-
-# 契约
-
-## 说明
-
-### 视频识别码 (videoIdentifier)
-- **说明**：用于唯一标识一个视频。系统将按以下优先级尝试匹配：AV号 > BV号 > 视频名称。
-- **格式**：字符串类型。
-
-### 枚举定义
-
-#### 时间粒度 (granularity)
-指定数据聚合的时间维度。
-```json
-["MINUTE", "HOUR", "DAY", "WEEK", "MONTH"]
-```
-
-#### 指标类型 (metrics)
-定义需要查询的数据指标。
-```json
-["view", "favorite", "like", "reply", "danmaku", "share", "coin"]
-```
-
-## 接口1：查询视频时间序列数据
-### 描述
-根据指定的时间范围、粒度和指标，查询视频的历史数据序列。
-
-### 请求
-POST `/hantang/video-time-series`
-
-```json
-{
-    "videoIdentifier": "BV1Ab421k7EQ",
-    "startTime": "2025-06-23",
-    "endTime": "2025-06-28",
-    "granularity": "DAY",
-    "metrics": ["view", "like", "favorite"]
-}
-```
-
-## 接口2：查询指标达成时间
-### 描述
-查询指定视频的某个数据指标达到目标数值的预估时间或历史达成时间点。
-
-### 请求
-POST `/hantang/metric-achieved-time`
-```json
-{
-    "videoIdentifier": "霜雪千年",
-    "metric": "view", 
-    "target": 3000000
-}
-```
-
-### UniSeek beta
-
-统一搜索入口 `/uniseek`。歌手在前端即时匹配；歌曲、UP 主关键词和 AV/BV/UID 精确查询并发调用，按到达顺序追加，后续只分页加载歌曲。
-
-歌曲关键词与 AV/BV 查询统一读取 `hantang_dynamic.adm_uniseek_videos`，在线不再 JOIN `processed_videos` 或 Daily，也不探测 Daily 最新日期。宽表按显式确认的数据日离线生成，只收录未删除、该日收藏数 **> 100** 的视频，直接提供封面、标签和累计指标。关键词支持一、二字标题子串及精确标签匹配；所有匹配项先按临时相关性与有上限的播放量加分排序，再保留最多 1,000 首供分页。排序结果按关键词和发布批次 UUID 缓存 60 秒，最多 16 个键，同日重新发布也会使旧缓存失效。
-
-旧点赞 >100 环境需要由对象所有者按[收藏门槛迁移、重刷与 CRON 操作顺序](sql/adm_uniseek_videos_favorite_migration.md)升级。脚本保留表与授权；第一次确认日期并成功重刷后生效，不代表业务库已经完成迁移。
-
-开发者已完成首批宽表构建并实际运行新搜索，反馈首次视频响应约 **700 ms**、后续滚动分页约 **100 ms/次**；旧路径聊天记录中的热门二字词未缓存首查约 **3–4 秒**，粗略相当于首次提速约 4–6 倍。样本的关键词、负载和测量条件未统一，不作为 P50/P95。开发者提出宽表化方向并负责业务库操作，Codex 补充发布校验、查询迁移、批次缓存及回归；过程、分工与结果见 [技改复盘](doc/design/uniseek/adm-search-retrospective.md)。
-
-无需 `pg_trgm`，应用不建表、不注册 CRON；独立 Java 账号需授予 schema USAGE 和宽表 SELECT，后续每日同步仍须确认完整数据日。接口与回归说明见 [UniSeek 说明](frontend/src/services/UniSeek/uniseek.md)，部署及授权见 [ADM SQL 使用说明](sql/adm_uniseek_videos.md)，剩余调度、运行验收见 [ADM TODO](doc/todo/uniseek-adm-search-snapshot.md)。
+数据库建表、只读授权、聚合和搜索宽表的调度由维护者按 `sql/` 中的专题说明单独部署。应用启动不会自动建表、安装扩展或注册 CRON；发布镜像后，还需确认目标环境的数据表、权限和已发布数据集可用。
