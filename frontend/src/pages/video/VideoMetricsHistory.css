@@ -1,0 +1,26 @@
+.video-history-panel { min-width: 0; margin-top: 24px; padding: 24px; }
+.video-history-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; margin-bottom: 20px; }
+.video-history-range { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; font-size: var(--font-size-body); }
+.video-history-range .ant-picker { max-width: 100%; min-width: 0; }
+.video-history-range-actions { display: inline-flex; gap: 8px; }
+.video-history-caption { margin: 12px 0 20px; color: var(--text-secondary); font-size: var(--font-size-caption); }
+.video-history-summary { margin: 0 0 16px; font-size: var(--font-size-body); font-variant-numeric: tabular-nums; }
+.video-history-summary strong { color: var(--text-primary); font-weight: var(--font-weight-semibold); }
+.video-history-notice { align-items: center; flex-wrap: wrap; margin: 0 0 16px; }
+.video-history-notice > span:not(.anticon) { flex: 1; min-width: 0; }
+.video-history-chart-stage { position: relative; min-width: 0; }
+.video-history-chart { width: 100%; height: 380px; min-width: 0; }
+.video-history-chart canvas { display: block; }
+.video-history-chart-failure { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 12px; background: var(--surface); color: var(--text-secondary); }
+.video-history-state { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 300px; color: var(--text-secondary); font-size: var(--font-size-body); text-align: center; }
+.video-history-missing.ant-collapse { color: var(--text-secondary); font-size: var(--font-size-caption); }
+.video-history-missing p { margin: 0 0 8px; }
+.video-history-missing ul { margin: 0 0 12px; padding-inline-start: 20px; }
+.video-history-missing li { margin-bottom: 4px; overflow-wrap: anywhere; }
+
+@media (max-width: 480px) {
+  .video-history-panel { padding: 20px; }
+  .video-history-chart { height: 340px; }
+  .video-history-range { align-items: flex-start; }
+  .video-history-range > label { width: 100%; }
+}

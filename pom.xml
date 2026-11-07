@@ -19,7 +19,7 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>2.0.16</version>
+                <version>2.0.20</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -28,22 +28,21 @@
         <dependency>
             <groupId>com.alibaba.fastjson2</groupId>
             <artifactId>fastjson2</artifactId>
-            <version>2.0.57</version>
+            <version>2.0.66</version>
         </dependency>
-
 
         <!-- Javalin 需要的日志 slf4j -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>2.0.16</version>
+            <version>2.0.20</version>
         </dependency>
 
         <!-- Javalin 需要的日志 slf4j -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
-            <version>2.0.16</version>
+            <version>2.0.20</version>
         </dependency>
 
         <!-- Javalin  -->
@@ -57,7 +56,7 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>5.9.2</version>
+            <version>5.14.4</version>
             <scope>test</scope>
         </dependency>
 
@@ -65,7 +64,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.18.0</version>
+            <version>3.21.0</version>
         </dependency>
 
         <dependency>
@@ -77,32 +76,32 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.30</version>
+            <version>1.18.48</version>
             <scope>provided</scope>
         </dependency>
         <!-- Javalin需要的序列化工具-->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.19.4</version>
+            <version>2.22.4</version>
         </dependency>
         <!-- java.time（LocalDate 等）需显式注册 JavaTimeModule -->
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>2.19.4</version>
+            <version>2.22.4</version>
         </dependency>
         <!-- Postgre SQL DB -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.7</version>
+            <version>42.7.14</version>
         </dependency>
         <!-- HikariCP 连接池 -->
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
-            <version>5.0.1</version>
+            <version>7.1.0</version>
         </dependency>
     </dependencies>
     <build>
@@ -136,6 +135,8 @@
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>com.hantang.web.App</mainClass>
                                 </transformer>
+                                <!-- 合并 META-INF/services，保留 PostgreSQL 等依赖的 ServiceLoader 注册 -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>
                             <!-- 可选：避免打包时的文件冲突 -->
                             <filters>

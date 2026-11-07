@@ -1,0 +1,90 @@
+/* 卡片内紧凑排列：标题、数值、环比。 */
+.indicator-cell {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: baseline;
+  column-gap: 10px;
+  row-gap: 6px;
+  min-width: 0;
+  width: 100%;
+}
+
+.indicator-cell-title {
+  grid-column: 1 / -1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  opacity: 0.82;
+  line-height: 1.35;
+  text-align: left;
+  letter-spacing: 0.01em;
+}
+
+.indicator-cell-title:lang(en) {
+  min-height: 2.7em;
+}
+
+.indicator-cell-main-row {
+  grid-column: 1 / -1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.indicator-cell-main {
+  display: inline-block;
+}
+
+.indicator-cell-missing {
+  color: var(--text);
+  opacity: 0.55;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.indicator-cell-main .ant-statistic-content {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.25;
+  font-variant-numeric: tabular-nums;
+}
+
+.indicator-cell-main .ant-statistic-content-value {
+  color: inherit;
+}
+
+.indicator-cell-label {
+  font-size: 12px;
+  color: var(--text);
+  opacity: 0.52;
+  text-align: left;
+  line-height: 1.35;
+}
+
+.indicator-cell-num {
+  grid-column: 2;
+  justify-self: end;
+  text-align: right;
+  min-width: 0;
+}
+
+.indicator-cell-num .ant-statistic {
+  display: inline-block;
+}
+
+.indicator-cell-rate .ant-statistic-content {
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.indicator-cell-rate .ant-statistic-content-prefix {
+  margin-inline-end: 3px;
+}
+
+.indicator-cell-rate .ant-statistic-content-prefix .anticon {
+  font-size: 12px;
+  vertical-align: 0.05em;
+}

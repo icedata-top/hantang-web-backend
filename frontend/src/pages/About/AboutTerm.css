@@ -1,0 +1,41 @@
+.about-term-page {
+  box-sizing: border-box;
+  width: min(100%, 780px);
+  margin: 0 auto;
+  padding: 28px 20px 64px;
+  color: var(--text-primary);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  overflow-wrap: anywhere;
+}
+
+.about-term-breadcrumb {
+  margin-bottom: 28px;
+  font-size: var(--font-size-caption);
+}
+
+.about-term-breadcrumb .ant-breadcrumb-separator,
+.about-term-breadcrumb li:last-child {
+  color: var(--text-secondary);
+}
+
+.about-term-page h1 {
+  margin: 0 0 24px;
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-title);
+}
+
+.about-term-prose {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.about-term-prose p {
+  margin: 0;
+}
+
+.about-term-footer {
+  margin-top: 32px;
+}

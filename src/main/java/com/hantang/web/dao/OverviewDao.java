@@ -1,5 +1,6 @@
 package com.hantang.web.dao;
 
+import com.hantang.web.config.Zhongshu50Config;
 import com.hantang.web.dao.foundation.PostgreDao;
 import com.hantang.web.dos.overview.OverviewRequest;
 import com.hantang.web.utils.IsoTimeUtils;
@@ -8,11 +9,15 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 public class OverviewDao {
+
+    public static final List<String> ZHONGSHU50_METRICS =
+            List.of("view", "favorite", "like", "coin", "share", "reply", "danmaku");
 
     private final PostgreDao postgreDao;
 
@@ -39,7 +44,8 @@ public class OverviewDao {
     }
 
     /**
-     * 某一自然日 {@code video_daily} 全表播放、收藏合计（按 {@code record_date} 精确匹配一天）。
+     * 某一自然日 {@code video_daily} 中术50样本的播放、收藏合计。
+     * 每个指标分别检查 50 个样本及字段是否完整，不完整的指标返回 null。
      *
      * @param recordDateYyyyMmDd {@code yyyy-MM-dd}
      */
@@ -52,16 +58,22 @@ public class OverviewDao {
         } catch (DateTimeParseException e) {
             throw new IllegalArgumentException("recordDate 须为 yyyy-MM-dd: " + recordDateYyyyMmDd, e);
         }
-        String sql = "SELECT COALESCE(SUM(view), 0)::bigint AS view_count, "
-                + "COALESCE(SUM(favorite), 0)::bigint AS favorite_count "
+        List<Object> params = new ArrayList<>();
+        params.add(recordDateYyyyMmDd.trim());
+        String sampleFilter = buildZhongshu50Filter(params);
+        int sampleCount = Zhongshu50Config.getAids().size();
+        String sql = "SELECT CASE WHEN COUNT(DISTINCT aid) = " + sampleCount
+                + " AND COUNT(view) = " + sampleCount + " THEN SUM(view)::bigint END AS view_count, "
+                + "CASE WHEN COUNT(DISTINCT aid) = " + sampleCount
+                + " AND COUNT(favorite) = " + sampleCount + " THEN SUM(favorite)::bigint END AS favorite_count "
                 + "FROM hantang_dynamic.video_daily "
-                + "WHERE record_date = ?::date";
-        List<Map<String, Object>> rows = postgreDao.queryList(sql, List.of(recordDateYyyyMmDd.trim()));
+                + "WHERE record_date = ?::date" + sampleFilter;
+        List<Map<String, Object>> rows = postgreDao.queryList(sql, params);
         if (rows.isEmpty()) {
-            return new DailyViewFavoriteSums(0L, 0L);
+            return new DailyViewFavoriteSums(null, null);
         }
         Map<String, Object> row = rows.get(0);
-        return new DailyViewFavoriteSums(toLong(row.get("view_count")), toLong(row.get("favorite_count")));
+        return new DailyViewFavoriteSums(toNullableLong(row.get("view_count")), toNullableLong(row.get("favorite_count")));
     }
 
     public List<Map<String, Object>> getTrend(OverviewRequest request, String trendType) {
@@ -77,8 +89,7 @@ public class OverviewDao {
             return queryDailyCountTrend(request, "COUNT(DISTINCT user_id)::bigint", "activeUserCount");
         }
         if ("videoStats".equals(type)) {
-            // TODO: 中术300 指标口径待补充后实现
-            return buildEmptyDailyTrend(request, "zhongshu300Count");
+            return queryZhongshu50DailySnapshots(request);
         }
         throw new IllegalArgumentException("未知 trendType: " + trendType);
     }
@@ -107,6 +118,41 @@ public class OverviewDao {
                 + filter
                 + "GROUP BY type_id "
                 + "ORDER BY cnt DESC";
+        return postgreDao.queryList(sql, params);
+    }
+
+    public List<Map<String, Object>> getViewHistogram(OverviewRequest request) {
+        if (request == null || request.getEndDate() == null) {
+            throw new IllegalArgumentException("OverviewRequest 及 endDate 不能为空");
+        }
+        String endDate = request.getEndDate().format(DateTimeFormatter.ISO_LOCAL_DATE);
+        List<Object> params = new ArrayList<>();
+        params.add(endDate);
+        String scope = request.getAddtionalParams() == null ? null : request.getAddtionalParams().get("scope");
+        String submissionFilter = "";
+        if (scope != null && "new".equals(scope.trim())) {
+            // 用 EXISTS 按投稿日期限定作品，避免元数据重复行放大分桶数量。
+            submissionFilter = "AND EXISTS (SELECT 1 FROM hantang_dynamic.processed_videos p "
+                    + "WHERE p.aid = video_daily.aid " + buildFilterSql(request, params) + ") ";
+        }
+        String sql = "SELECT "
+                + "CASE "
+                + "WHEN \"view\" < 0 THEN 'E01' "
+                + "WHEN \"view\" < 10 THEN 'E02' "
+                + "WHEN \"view\" < 100 THEN 'E03' "
+                + "WHEN \"view\" < 1000 THEN 'E04' "
+                + "WHEN \"view\" < 10000 THEN 'E05' "
+                + "WHEN \"view\" < 100000 THEN 'E06' "
+                + "WHEN \"view\" < 1000000 THEN 'E07' "
+                + "WHEN \"view\" < 10000000 THEN 'E08' "
+                + "ELSE 'E09' "
+                + "END AS code, "
+                + "COUNT(*)::bigint AS cnt "
+                + "FROM hantang_dynamic.video_daily "
+                + "WHERE record_date = ?::date "
+                + submissionFilter
+                + "GROUP BY 1 "
+                + "ORDER BY 1";
         return postgreDao.queryList(sql, params);
     }
 
@@ -177,18 +223,39 @@ public class OverviewDao {
         return result;
     }
 
-    private List<Map<String, Object>> buildEmptyDailyTrend(OverviewRequest request, String metricKey) {
-        List<Map<String, Object>> result = new ArrayList<>();
-        LocalDate cursor = request.getStartDate();
-        LocalDate end = request.getEndDate();
-        while (!cursor.isAfter(end)) {
-            Map<String, Object> item = new LinkedHashMap<>();
-            item.put("date", cursor.format(DateTimeFormatter.ISO_LOCAL_DATE));
-            item.put(metricKey, 0L);
-            result.add(item);
-            cursor = cursor.plusDays(1);
+    /**
+     * 返回开始日至结束日次日的中术50累计快照，由 Service 逐日作差。
+     * 每项指标独立校验完整样本；缺行、重复行或字段为空时，该项合计为 null。
+     * 整日无记录时不返回该日期，Service 仍会保留相应业务日。
+     */
+    private List<Map<String, Object>> queryZhongshu50DailySnapshots(OverviewRequest request) {
+        if (endBeforeStart(request)) {
+            throw new IllegalArgumentException("endDate 不能早于 startDate");
         }
-        return result;
+        List<Object> params = new ArrayList<>();
+        params.add(request.getStartDate().toString());
+        params.add(request.getEndDate().plusDays(1).toString());
+        String sampleFilter = buildZhongshu50Filter(params);
+        int sampleCount = Zhongshu50Config.getAids().size();
+        List<String> sums = new ArrayList<>();
+        for (String metric : ZHONGSHU50_METRICS) {
+            // 指标列来自固定名单，不接受请求参数作为 SQL 标识符。
+            String column = "\"" + metric + "\"";
+            sums.add("CASE WHEN COUNT(*) = " + sampleCount
+                    + " AND COUNT(DISTINCT aid) = " + sampleCount
+                    + " AND COUNT(" + column + ") = " + sampleCount
+                    + " THEN SUM(" + column + ")::bigint END AS " + column);
+        }
+        String sql = "SELECT record_date::text AS date, " + String.join(", ", sums)
+                + " FROM hantang_dynamic.video_daily WHERE record_date BETWEEN ?::date AND ?::date"
+                + sampleFilter + " GROUP BY record_date ORDER BY record_date";
+        return postgreDao.queryList(sql, params);
+    }
+
+    private static String buildZhongshu50Filter(List<Object> params) {
+        List<Long> aids = Zhongshu50Config.getAids();
+        params.addAll(aids);
+        return " AND aid IN (" + String.join(", ", Collections.nCopies(aids.size(), "?")) + ") ";
     }
 
     /** 同 {@link #sumViewAndFavoriteForRecordDate(String)}，入参为日历日。 */
@@ -249,11 +316,15 @@ public class OverviewDao {
         return Long.parseLong(o.toString());
     }
 
+    private static Long toNullableLong(Object o) {
+        return o == null ? null : toLong(o);
+    }
+
     public record ProcessedVideoUserCounts(long videoCount, long userCount) {
     }
 
-    /** 某日 {@code video_daily} 播放量、收藏量总和 */
-    public record DailyViewFavoriteSums(long viewSum, long favoriteSum) {
+    /** 某日中术50样本的累计值；某项样本不完整时，该项为 null，真实 0 保留。 */
+    public record DailyViewFavoriteSums(Long viewSum, Long favoriteSum) {
     }
 
     public record GateCrossingQueryResult(List<Map<String, Object>> rows, long total) {

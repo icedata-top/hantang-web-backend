@@ -23,6 +23,7 @@ public class OverviewTrendResponse {
 
     public static class TrendRow {
         private String date;
+        /** 每个请求日均保留；中术50指标缺少任一必要快照时，值为 null，真实零值为 0。 */
         private Map<String, Long> indicators;
 
         public TrendRow() {

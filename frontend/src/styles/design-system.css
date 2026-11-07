@@ -1,0 +1,441 @@
+/* 公共组件样式；颜色、字号等可调参数统一来自 theme.css。 */
+/* Bridge Ant Design's CSS-variable mode to the project's live theme. The class
+   also appears on portals, so local day/night previews inherit the right colors. */
+html .icedata-antd,
+html .icedata-antd:is(.ant-select-css-var, .ant-input-css-var, .ant-input-number-css-var, .ant-picker-css-var, .ant-form-css-var) {
+  --ant-color-text: var(--text-primary);
+  --ant-color-text-secondary: var(--text-secondary);
+  --ant-color-text-tertiary: var(--text-secondary);
+  --ant-color-text-quaternary: var(--text-disabled);
+  --ant-color-text-disabled: var(--text-disabled);
+  --ant-color-text-placeholder: var(--text-secondary);
+  --ant-color-text-description: var(--text-secondary);
+  --ant-color-text-heading: var(--text-primary);
+  --ant-color-text-label: var(--text-primary);
+  --ant-color-text-light-solid: var(--selection-text);
+  --ant-color-icon: var(--text-secondary);
+  --ant-color-icon-hover: var(--text-primary);
+  --ant-color-bg-base: var(--canvas);
+  --ant-color-bg-container: var(--surface);
+  --ant-color-bg-container-disabled: var(--button-disabled-bg);
+  --ant-color-bg-elevated: var(--surface);
+  --ant-color-bg-layout: var(--canvas);
+  --ant-color-border: var(--surface-border);
+  --ant-color-border-secondary: var(--surface-border);
+  --ant-color-border-disabled: var(--surface-border);
+  --ant-color-split: var(--surface-border);
+  --ant-color-fill-secondary: var(--surface-hover);
+  --ant-color-fill-tertiary: var(--canvas);
+  --ant-color-fill-quaternary: var(--canvas);
+  --ant-color-fill-alter: var(--surface-hover);
+  --ant-color-primary: var(--theme-primary);
+  --ant-color-primary-hover: var(--button-primary-hover);
+  --ant-color-primary-active: var(--button-primary-hover);
+  --ant-color-primary-bg: var(--button-secondary-bg);
+  --ant-color-primary-bg-hover: var(--button-secondary-hover);
+  --ant-color-primary-border: var(--theme-primary);
+  --ant-color-primary-border-hover: var(--button-primary-hover);
+  --ant-color-link: var(--text-link);
+  --ant-color-link-hover: var(--text-link-hover);
+  --ant-color-link-active: var(--text-link-hover);
+  --ant-control-outline: var(--alert-info-bg);
+  --ant-control-item-bg-active: var(--button-secondary-bg);
+  --ant-control-item-bg-active-hover: var(--button-secondary-hover);
+  --ant-control-item-bg-hover: var(--surface-hover);
+  --ant-control-item-bg-active-disabled: var(--button-disabled-bg);
+  --ant-box-shadow-secondary: var(--shadow-card-hover);
+  --ant-form-label-color: var(--text-primary);
+  --ant-input-active-bg: var(--surface);
+  --ant-input-hover-bg: var(--surface);
+  --ant-input-active-border-color: var(--theme-primary);
+  --ant-input-hover-border-color: var(--theme-primary);
+  --ant-input-active-shadow: 0 0 0 2px var(--alert-info-bg);
+  --ant-input-number-active-bg: var(--surface);
+  --ant-input-number-hover-bg: var(--surface);
+  --ant-input-number-active-border-color: var(--theme-primary);
+  --ant-input-number-hover-border-color: var(--theme-primary);
+  --ant-input-number-active-shadow: 0 0 0 2px var(--alert-info-bg);
+  --ant-input-number-handle-bg: var(--surface);
+  --ant-input-number-handle-active-bg: var(--surface-hover);
+  --ant-input-number-handle-border-color: var(--surface-border);
+  --ant-input-number-handle-hover-color: var(--text-link);
+  --ant-select-selector-bg: var(--surface);
+  --ant-select-clear-bg: var(--surface);
+  --ant-select-hover-border-color: var(--theme-primary);
+  --ant-select-active-border-color: var(--theme-primary);
+  --ant-select-active-outline-color: var(--alert-info-bg);
+  --ant-select-option-selected-bg: var(--button-secondary-bg);
+  --ant-select-option-selected-color: var(--text-primary);
+  --ant-select-option-active-bg: var(--surface-hover);
+  --ant-select-multiple-item-bg: var(--chip-neutral-bg);
+  --ant-select-multiple-selector-bg-disabled: var(--button-disabled-bg);
+  --ant-date-picker-active-bg: var(--surface);
+  --ant-date-picker-hover-bg: var(--surface);
+  --ant-date-picker-active-border-color: var(--theme-primary);
+  --ant-date-picker-hover-border-color: var(--theme-primary);
+  --ant-date-picker-active-shadow: 0 0 0 2px var(--alert-info-bg);
+  --ant-date-picker-cell-hover-bg: var(--button-secondary-bg);
+  --ant-date-picker-cell-active-with-range-bg: var(--button-secondary-bg);
+  --ant-date-picker-cell-hover-with-range-bg: var(--button-secondary-hover);
+  --ant-date-picker-cell-range-border-color: var(--theme-primary);
+  --ant-date-picker-cell-bg-disabled: var(--button-disabled-bg);
+}
+
+.ds-button {
+  --button-bg: var(--button-normal-bg);
+  --button-hover-bg: var(--button-normal-hover);
+  --button-text: var(--button-normal-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: var(--control-height);
+  padding: 6px 16px;
+  border: var(--button-border-width) solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--button-bg);
+  color: var(--button-text);
+  font-family: inherit;
+  font-size: var(--font-size-button);
+  font-weight: var(--font-weight-button);
+  line-height: var(--line-height-button);
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.ds-button[data-variant='primary'] {
+  --button-bg: var(--button-primary-bg);
+  --button-hover-bg: var(--button-primary-hover);
+  --button-text: var(--button-primary-text);
+}
+
+.ds-button[data-variant='secondary'] {
+  --button-bg: var(--button-secondary-bg);
+  --button-hover-bg: var(--button-secondary-hover);
+  --button-text: var(--button-secondary-text);
+}
+
+.ds-button[data-variant='danger'] {
+  --button-bg: var(--button-danger-bg);
+  --button-hover-bg: var(--button-danger-hover);
+  --button-text: var(--button-danger-text);
+}
+
+.ds-button:not(:disabled):hover,
+.ds-button[data-preview-state='hover'] {
+  background: var(--button-hover-bg);
+}
+
+.ds-button:focus-visible,
+.ds-surface:focus-visible,
+.ds-link:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+.ds-button:disabled {
+  background: var(--button-disabled-bg);
+  color: var(--button-disabled-text);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Override Ant Design's state variables as well as the base .ds-button colors.
+   Its hover/active selectors otherwise restore the default outlined palette. */
+html .ant-btn.ds-button[data-variant] {
+  --ant-btn-border-width: var(--button-border-width);
+  --ant-btn-text-color: var(--button-text);
+  --ant-btn-text-color-hover: var(--button-text);
+  --ant-btn-text-color-active: var(--button-text);
+  --ant-btn-text-color-disabled: var(--button-disabled-text);
+  --ant-btn-bg-color: var(--button-bg);
+  --ant-btn-bg-color-hover: var(--button-hover-bg);
+  --ant-btn-bg-color-active: var(--button-hover-bg);
+  --ant-btn-bg-color-disabled: var(--button-disabled-bg);
+  --ant-btn-shadow: none;
+  box-shadow: none;
+}
+
+.ds-surface,
+.ant-card.ds-surface {
+  border: var(--surface-border-width) solid var(--surface-border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  transition: background-color 200ms ease, box-shadow 200ms ease;
+}
+
+.ds-surface:hover,
+.ds-surface:focus-visible,
+.ds-surface[data-preview-state='hover'],
+.ant-card.ds-surface:hover,
+.ant-card.ds-surface:focus-visible {
+  background: var(--surface-hover);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.ds-link {
+  color: var(--text-link);
+  text-decoration: none;
+  text-underline-offset: 3px;
+}
+
+.ds-link:hover {
+  color: var(--text-link-hover);
+  text-decoration: underline;
+}
+
+.ds-chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-height: 24px;
+  padding: 2px 8px;
+  border-radius: var(--radius-control);
+  background: var(--chip-neutral-bg);
+  color: var(--chip-neutral-text);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-body);
+  overflow-wrap: anywhere;
+}
+
+.ds-chip[data-variant='orange'] {
+  background: var(--chip-orange-bg);
+  color: var(--chip-orange-text);
+}
+
+.ds-tooltip-bubble {
+  position: relative;
+  width: max-content;
+  max-width: min(240px, 100%);
+  padding: 8px 12px;
+  border-radius: var(--radius-control);
+  background: var(--tooltip-bg);
+  color: var(--tooltip-text);
+  box-shadow: var(--shadow-card-hover);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-body);
+  overflow-wrap: anywhere;
+}
+
+.ds-tooltip-bubble::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  border: 5px solid transparent;
+  border-top-color: var(--tooltip-bg);
+  transform: translateX(-50%);
+}
+
+.ds-alert {
+  --alert-bg: var(--alert-info-bg);
+  --alert-border: var(--alert-info-border);
+  --alert-text: var(--alert-info-text);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  border: var(--alert-border-width) solid var(--alert-border);
+  border-radius: var(--radius-card);
+  background: var(--alert-bg);
+  color: var(--alert-text);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+
+.ds-alert[data-variant='warning'] {
+  --alert-bg: var(--alert-warning-bg);
+  --alert-border: var(--alert-warning-border);
+  --alert-text: var(--alert-warning-text);
+}
+
+.ds-alert[data-variant='error'] {
+  --alert-bg: var(--alert-error-bg);
+  --alert-border: var(--alert-error-border);
+  --alert-text: var(--alert-error-text);
+}
+
+.ds-alert > .anticon {
+  flex: none;
+  margin-top: 3px;
+  font-size: var(--font-size-icon);
+}
+
+.ds-alert strong {
+  display: block;
+  font-weight: var(--font-weight-semibold);
+}
+
+.ds-alert p { margin: 4px 0 0; }
+
+.ds-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.ds-tab-list {
+  display: flex;
+  gap: var(--tabs-gap);
+  overflow-x: auto;
+  border-bottom: 1px solid var(--tabs-divider);
+}
+
+.ds-tab {
+  position: relative;
+  flex: none;
+  min-height: var(--tabs-height);
+  padding: 8px 2px;
+  border: 0;
+  background: transparent;
+  color: var(--tabs-text);
+  font-family: inherit;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-body);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 160ms ease;
+}
+
+.ds-tab::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: var(--tabs-indicator-size);
+  border-radius: var(--tabs-indicator-size);
+  background: transparent;
+}
+
+.ds-tab[aria-selected='true'] { color: var(--tabs-active-text); }
+.ds-tab:not(:disabled):hover { color: var(--tabs-hover-text); }
+.ds-tab[aria-selected='true'] { font-weight: var(--font-weight-medium); }
+.ds-tab[aria-selected='true']::after { background: var(--tabs-indicator); }
+.ds-tab[aria-selected='true']:hover::after { background: var(--tabs-hover-indicator); }
+.ds-tab:disabled { color: var(--text-disabled); cursor: not-allowed; }
+.ds-tab-panel { padding-top: 20px; }
+.ds-tab-panel:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
+.ds-tab:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: -3px; border-radius: var(--radius-control); }
+
+.ds-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: var(--radius-card);
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+.ds-table {
+  width: 100%;
+  min-width: 480px;
+  table-layout: fixed;
+  border-collapse: collapse;
+  background: var(--table-bg);
+  color: var(--text-primary);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+
+.ds-table th,
+.ds-table td {
+  height: var(--table-row-height);
+  padding: var(--table-cell-padding-block) var(--table-cell-padding-inline);
+  border: 0;
+  border-bottom: 1px solid var(--table-divider);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.ds-table th { background: var(--table-header-bg); color: var(--table-header-text); font-weight: var(--font-weight-medium); }
+.ds-table tbody tr:last-child td { border-bottom: 0; }
+.ds-table tbody tr:hover { background: var(--table-row-hover); }
+.ds-table tbody tr:has(.ds-table-empty):hover { background: transparent; }
+.ds-table [data-align='right'] { text-align: right; font-variant-numeric: tabular-nums; }
+.ds-table-cell { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ds-table-sort { display: inline-flex; align-items: center; justify-content: inherit; gap: 6px; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; white-space: nowrap; cursor: pointer; }
+.ds-table-sort:hover,
+.ds-table th[aria-sort='ascending'] .ds-table-sort,
+.ds-table th[aria-sort='descending'] .ds-table-sort { color: var(--text-link); }
+.ds-table-empty { display: flex; min-height: var(--table-empty-height); flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--text-secondary); }
+.ds-table-empty-symbol { font-size: var(--font-size-title); color: var(--text-disabled); }
+.ds-table-empty-hint { font-size: var(--font-size-caption); }
+.ds-text-button { padding: 0; border: 0; background: transparent; color: var(--text-link); font: inherit; cursor: pointer; text-underline-offset: 3px; }
+.ds-text-button:hover { color: var(--text-link-hover); text-decoration: underline; }
+
+.ds-pagination { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; font-size: var(--font-size-body); line-height: var(--line-height-body); }
+.ds-pagination-summary { color: var(--text-secondary); font-size: var(--font-size-caption); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ds-pagination-pages { display: flex; flex-wrap: wrap; align-items: center; gap: var(--pagination-gap); }
+.ds-page-button,
+.ds-pagination-gap {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--pagination-item-size);
+  height: var(--pagination-item-size);
+  padding: 0 4px;
+  border: var(--pagination-border-width) solid var(--border);
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--pagination-text);
+  font-family: inherit;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.ds-page-button:not(:disabled):hover,
+.ds-page-button[data-preview-state='hover'] { background: var(--pagination-hover-bg); color: var(--pagination-hover-text); }
+.ds-page-button[aria-current='page'],
+.ds-page-button[aria-current='page']:not(:disabled):hover,
+.ds-page-button[data-preview-state='active'] { background: var(--pagination-active-bg); color: var(--pagination-active-text); font-weight: var(--font-weight-semibold); }
+.ds-page-button:disabled { background: transparent; color: var(--pagination-disabled-text); cursor: not-allowed; }
+.ds-pagination-gap { color: var(--text-secondary); cursor: default; }
+.ds-page-button .anticon { font-size: var(--font-size-caption); }
+.ds-segmented.ant-segmented { max-width: 100%; border-radius: var(--radius-control); background: var(--canvas); color: var(--text-secondary); font-size: var(--font-size-body); }
+.ds-segmented .ant-segmented-item-selected,
+.ds-segmented .ant-segmented-thumb { background: var(--button-secondary-bg); color: var(--text-primary); }
+.ds-segmented .ant-segmented-item:hover:not(.ant-segmented-item-selected):not(.ant-segmented-item-disabled) { color: var(--text-primary); }
+.ds-segmented.ant-segmented-disabled .ant-segmented-item { color: var(--text-disabled); }
+.ds-pagination-size { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; color: var(--text-secondary); font-size: var(--font-size-caption); }
+.ds-page-size-segmented.ant-segmented { font-size: var(--font-size-caption); }
+.ds-page-size-segmented .ant-segmented-item-selected,
+.ds-page-size-segmented .ant-segmented-thumb { background: var(--pagination-active-bg); color: var(--pagination-active-text); }
+.ds-page-size-select.ant-select { min-width: 108px; max-width: 100%; border-radius: var(--radius-control); background: var(--pagination-active-bg); font-size: var(--font-size-caption); }
+.ds-page-size-select .ant-select-content { color: var(--pagination-active-text); }
+.ds-page-size-select.ant-select-disabled { background: transparent; }
+.ds-page-size-select.ant-select-disabled .ant-select-content { color: var(--pagination-disabled-text); }
+.ds-page-size-popup.ant-select-dropdown { background: var(--surface); color: var(--text-primary); }
+.ds-page-size-popup .ant-select-item { color: var(--text-primary); }
+.ds-page-size-popup .ant-select-item-option-selected:not(.ant-select-item-option-disabled) { background: var(--pagination-active-bg); color: var(--pagination-active-text); }
+.ds-page-size-popup .ant-select-item-option-active:not(.ant-select-item-option-selected) { background: var(--pagination-hover-bg); }
+.ds-page-button:focus-visible,
+.ds-segmented .ant-segmented-item:has(:focus-visible),
+.ds-table-sort:focus-visible,
+.ds-text-button:focus-visible,
+.ds-table-scroll:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+
+@container (max-width: 360px) {
+  .ds-pagination { --pagination-item-size: var(--pagination-item-size-compact); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ds-button,
+  .ds-surface,
+  .ds-tab,
+  .ds-page-button { transition: none; }
+}

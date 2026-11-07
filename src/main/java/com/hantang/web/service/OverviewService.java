@@ -1,10 +1,12 @@
 package com.hantang.web.service;
 
 import com.hantang.web.dao.OverviewDao;
+import com.hantang.web.service.cache.Zhongshu50DailyCache;
 import com.hantang.web.dos.overview.OverviewGateCrossingsResponse;
 import com.hantang.web.dos.overview.OverviewIndicatorsResponse;
 import com.hantang.web.dos.overview.OverviewPartitionSubmissionsResponse;
 import com.hantang.web.dos.overview.OverviewRequest;
+import com.hantang.web.dos.overview.OverviewViewHistogramResponse;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -26,9 +28,11 @@ public class OverviewService {
     private static final int MAX_GATE_CROSSING_PAGE_SIZE = 100;
 
     private final OverviewDao overviewDao;
+    private final Zhongshu50DailyCache zhongshu50DailyCache;
 
     public OverviewService() {
         this.overviewDao = new OverviewDao();
+        this.zhongshu50DailyCache = new Zhongshu50DailyCache(overviewDao::sumViewAndFavoriteForRecordDate);
     }
 
     public OverviewIndicatorsResponse getIndicators(OverviewRequest request) {
@@ -37,20 +41,38 @@ public class OverviewService {
         }
         LocalDate start = request.getStartDate();
         LocalDate end = request.getEndDate();
+        long started = System.nanoTime();
+        try {
+            return buildIndicators(request, start, end, started);
+        } catch (RuntimeException e) {
+            System.out.println(
+                    "overview get-indicators 失败 range=" + start + ".." + end
+                            + " elapsedMs=" + elapsedMs(started)
+                            + " error=" + e.getMessage()
+            );
+            throw e;
+        }
+    }
 
-        OverviewIndicatorValues current = computeIndicatorValues(request);
+    private OverviewIndicatorsResponse buildIndicators(
+            OverviewRequest request,
+            LocalDate start,
+            LocalDate end,
+            long started
+    ) {
+        OverviewIndicatorValues current = computeIndicatorValues("current", request);
 
         long spanDays = ChronoUnit.DAYS.between(start, end) + 1;
         LocalDate dodStart = start.minusDays(spanDays);
         LocalDate dodEnd = start.minusDays(1);
         OverviewIndicatorValues dodBase = computeIndicatorValues(
+                "dod",
                 new OverviewRequest(dodStart, dodEnd, request.getAddtionalParams())
         );
 
-        LocalDate yoyStart = start.minusYears(1);
-        LocalDate yoyEnd = end.minusYears(1);
-        OverviewIndicatorValues yoyBase = computeIndicatorValues(
-                new OverviewRequest(yoyStart, yoyEnd, request.getAddtionalParams())
+        System.out.println(
+                "overview get-indicators 完成 range=" + start + ".." + end
+                        + " totalMs=" + elapsedMs(started)
         );
 
         return new OverviewIndicatorsResponse(
@@ -58,50 +80,70 @@ public class OverviewService {
                         new OverviewIndicatorsResponse.Indicator(
                                 "newVideoCount",
                                 current.submissionCountInRange(),
-                                ratio(current.submissionCountInRange(), yoyBase.submissionCountInRange()),
                                 ratio(current.submissionCountInRange(), dodBase.submissionCountInRange())
                         ),
                         new OverviewIndicatorsResponse.Indicator(
                                 "activeUserCount",
                                 current.distinctUpCountInRange(),
-                                ratio(current.distinctUpCountInRange(), yoyBase.distinctUpCountInRange()),
                                 ratio(current.distinctUpCountInRange(), dodBase.distinctUpCountInRange())
                         ),
                         new OverviewIndicatorsResponse.Indicator(
                                 "view",
                                 current.viewDelta(),
-                                ratio(current.viewDelta(), yoyBase.viewDelta()),
-                                ratio(current.viewDelta(), dodBase.viewDelta())
+                                nullableRatio(current.viewDelta(), dodBase.viewDelta())
                         ),
                         new OverviewIndicatorsResponse.Indicator(
                                 "favorite",
                                 current.favoriteDelta(),
-                                ratio(current.favoriteDelta(), yoyBase.favoriteDelta()),
-                                ratio(current.favoriteDelta(), dodBase.favoriteDelta())
+                                nullableRatio(current.favoriteDelta(), dodBase.favoriteDelta())
                         )
                 )
         );
     }
 
     /**
-     * 单个区间只取 4 个值：投稿数、UP 数、播放增量、收藏增量。
+     * 单个区间只取 4 个值：投稿数、UP 数、中术50播放增量、中术50收藏增量。
+     * 投稿数和活跃创作者在同一次 processed_videos 扫描里算出，日志里的 processedVideosMs 覆盖这两项。
      */
-    private OverviewIndicatorValues computeIndicatorValues(OverviewRequest request) {
-        OverviewDao.ProcessedVideoUserCounts range = overviewDao.countProcessedVideosAndUsers(request);
-
+    private OverviewIndicatorValues computeIndicatorValues(String window, OverviewRequest request) {
         LocalDate start = request.getStartDate();
         LocalDate end = request.getEndDate();
         LocalDate endPlusOne = end.plusDays(1);
 
-        OverviewDao.DailyViewFavoriteSums atStart = overviewDao.sumViewAndFavoriteForRecordDate(start);
-        OverviewDao.DailyViewFavoriteSums atEndPlusOne = overviewDao.sumViewAndFavoriteForRecordDate(endPlusOne);
+        long processedStarted = System.nanoTime();
+        OverviewDao.ProcessedVideoUserCounts range = overviewDao.countProcessedVideosAndUsers(request);
+        long processedVideosMs = elapsedMs(processedStarted);
+
+        long dailyStartStarted = System.nanoTime();
+        OverviewDao.DailyViewFavoriteSums atStart = zhongshu50DailyCache.get(start);
+        long dailyStartMs = elapsedMs(dailyStartStarted);
+
+        long dailyEndStarted = System.nanoTime();
+        OverviewDao.DailyViewFavoriteSums atEndPlusOne = zhongshu50DailyCache.get(endPlusOne);
+        long dailyEndMs = elapsedMs(dailyEndStarted);
+
+        System.out.println(
+                "overview get-indicators 分段 window=" + window
+                        + " range=" + start + ".." + end
+                        + " processedVideosMs=" + processedVideosMs
+                        + " videoCount=" + range.videoCount()
+                        + " activeUserCount=" + range.userCount()
+                        + " dailyStart=" + start
+                        + " dailyStartMs=" + dailyStartMs
+                        + " dailyEnd=" + endPlusOne
+                        + " dailyEndMs=" + dailyEndMs
+        );
 
         return new OverviewIndicatorValues(
                 range.videoCount(),
                 range.userCount(),
-                atEndPlusOne.viewSum() - atStart.viewSum(),
-                atEndPlusOne.favoriteSum() - atStart.favoriteSum()
+                difference(atEndPlusOne.viewSum(), atStart.viewSum()),
+                difference(atEndPlusOne.favoriteSum(), atStart.favoriteSum())
         );
+    }
+
+    private static long elapsedMs(long startedNanos) {
+        return (System.nanoTime() - startedNanos) / 1_000_000L;
     }
 
     /** 相对增幅：(current - base) / base；base 为 0 时返回 0。 */
@@ -112,11 +154,21 @@ public class OverviewService {
         return (double) (current - base) / (double) base;
     }
 
+    /** 任一快照缺数据时，不把缺失值当成 0 作差。 */
+    static Long difference(Long end, Long start) {
+        return end == null || start == null ? null : end - start;
+    }
+
+    /** 缺少当期/环比数据，或分母为 0 时，百分比不可计算。 */
+    static Double nullableRatio(Long current, Long base) {
+        return current == null || base == null || base == 0L ? null : ratio(current, base);
+    }
+
     private record OverviewIndicatorValues(
             long submissionCountInRange,
             long distinctUpCountInRange,
-            long viewDelta,
-            long favoriteDelta
+            Long viewDelta,
+            Long favoriteDelta
     ) {
     }
 
@@ -133,6 +185,9 @@ public class OverviewService {
         }
 
         List<Map<String, Object>> trendRows = overviewDao.getTrend(request, trendType);
+        if ("videoStats".equals(trendType)) {
+            return buildVideoStatsTrend(request, trendRows);
+        }
         List<OverviewTrendResponse.TrendRow> rows = new ArrayList<>();
         for (Map<String, Object> row : trendRows) {
             Object dateObj = row.get("date");
@@ -152,6 +207,30 @@ public class OverviewService {
                 }
             }
             rows.add(new OverviewTrendResponse.TrendRow(dateObj.toString(), indicators));
+        }
+        return new OverviewTrendResponse(rows);
+    }
+
+    /** 仅相邻自然日的完整快照可作差；按请求日期补齐行，并显式保留每项 null。 */
+    static OverviewTrendResponse buildVideoStatsTrend(
+            OverviewRequest request, List<Map<String, Object>> snapshots
+    ) {
+        Map<LocalDate, Map<String, Object>> byDate = new LinkedHashMap<>();
+        for (Map<String, Object> snapshot : snapshots) {
+            Object date = snapshot.get("date");
+            if (date != null) {
+                byDate.put(LocalDate.parse(date.toString()), snapshot);
+            }
+        }
+        List<OverviewTrendResponse.TrendRow> rows = new ArrayList<>();
+        for (LocalDate date = request.getStartDate(); !date.isAfter(request.getEndDate()); date = date.plusDays(1)) {
+            Map<String, Object> start = byDate.getOrDefault(date, Map.of());
+            Map<String, Object> end = byDate.getOrDefault(date.plusDays(1), Map.of());
+            Map<String, Long> indicators = new LinkedHashMap<>();
+            for (String metric : OverviewDao.ZHONGSHU50_METRICS) {
+                indicators.put(metric, difference(toNullableLong(end.get(metric)), toNullableLong(start.get(metric))));
+            }
+            rows.add(new OverviewTrendResponse.TrendRow(date.toString(), indicators));
         }
         return new OverviewTrendResponse(rows);
     }
@@ -184,6 +263,40 @@ public class OverviewService {
             resultRows.add(new OverviewPartitionSubmissionsResponse.PartitionSubmissionRow(typeIdNum.intValue(), count));
         }
         return new OverviewPartitionSubmissionsResponse(resultRows);
+    }
+
+    public OverviewViewHistogramResponse getViewHistogram(OverviewRequest request) {
+        List<Map<String, Object>> rows = overviewDao.getViewHistogram(request);
+        List<OverviewViewHistogramResponse.ViewHistogramRow> resultRows = new ArrayList<>();
+        for (Map<String, Object> row : rows) {
+            Object codeObj = row.get("code");
+            if (!(codeObj instanceof String code)) {
+                continue;
+            }
+            long count = 0L;
+            Object countObj = row.get("cnt");
+            if (countObj instanceof Number countNum) {
+                count = countNum.longValue();
+            } else if (countObj instanceof String countStr) {
+                count = Long.parseLong(countStr);
+            }
+            resultRows.add(new OverviewViewHistogramResponse.ViewHistogramRow(code, histogramLabel(code), count));
+        }
+        return new OverviewViewHistogramResponse(resultRows);
+    }
+
+    private static String histogramLabel(String code) {
+        return switch (code) {
+            case "E01" -> "<0";
+            case "E02" -> "0-10";
+            case "E03" -> "10-100";
+            case "E04" -> "100-1k";
+            case "E05" -> "1k-1w";
+            case "E06" -> "1w-10w";
+            case "E07" -> "10w-100w";
+            case "E08" -> "100w-1000w";
+            default -> "1000w+";
+        };
     }
 
     public OverviewGateCrossingsResponse getGateCrossings(OverviewRequest request) {

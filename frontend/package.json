@@ -1,0 +1,30 @@
+{
+  "name": "icedata-web-react",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "vite",
+    "dev": "vite",
+    "build": "vite build",
+    "test": "node --test tests/*.test.mjs",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^6.3.4",
+    "@visactor/vchart": "^2.2.1",
+    "antd": "^6.7.0",
+    "dayjs": "^1.11.23",
+    "i18next": "^26.7.1",
+    "i18next-browser-languagedetector": "^8.3.0",
+    "i18next-http-backend": "^4.0.10",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-i18next": "^17.1.12",
+    "react-router-dom": "^7.18.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.2.1",
+    "vite": "^8.3.5"
+  }
+}

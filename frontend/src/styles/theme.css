@@ -1,0 +1,305 @@
+/*
+ * 主题唯一编辑入口：颜色、字体、字号、字重、圆角、阴影和边框宽度。
+ * 配色分三层：基础色 → 日夜混色比例 → 公共派生配方。
+ * 改基础色即可联动所有语义色；需要单独调深浅时只改对应比例。
+ * Danger、Error、上涨色均取自当前主题的 --highlight-red。
+ * 黑、白是混色的明暗端点，不另设独立的按钮或提示业务色。
+ * 按钮 14px / 400；按钮、卡片描边宽度均为 0px。
+ */
+:root,
+[data-theme='light'],
+[data-theme='dark'] {
+  /* 字体与排版 */
+  --font-size-title: 24px;
+  --font-size-heading: 18px;
+  --font-size-body: 14px;
+  --font-size-caption: 12px;
+  --font-weight-regular: 400;
+  --font-weight-medium: 400;
+  --font-weight-semibold: 500;
+  --line-height-body: 1.6;
+  --font-family-latin: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  --font-family-zh: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', 'Noto Sans CJK SC', var(--font-family-latin);
+  --font-family-en: var(--font-family-latin);
+  --font-family-ja: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', 'Yu Gothic', Meiryo, 'Noto Sans JP', 'Noto Sans CJK JP', var(--font-family-latin);
+  --font-family-sans: var(--font-family-zh);
+  --font-family-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-size-xs: 10px;
+  --font-size-meta: 11px;
+  --font-size-label: 13px;
+  --font-size-display: 30px;
+  --font-size-display-compact: 26px;
+  --font-size-vocal-name: clamp(44px, 5.5vw, 78px);
+  --line-height-vocal-name: 1.15;
+  --font-size-button: var(--font-size-body);
+  --font-size-icon: 16px;
+  --media-action-icon-size: 36px;
+  --font-weight-button: var(--font-weight-regular);
+  --line-height-title: 1.4;
+  --line-height-heading: 1.5;
+  --line-height-button: 22px;
+
+  /* 表面、控件与边框 */
+  --canvas: var(--bg);
+  --surface: var(--navbar-bg);
+  --surface-hover: var(--bg-hover);
+  --surface-border: var(--border);
+  --text-primary: var(--text);
+  --focus-ring: var(--theme-primary);
+  --radius-card: 8px;
+  --radius-control: 6px;
+  --control-height: 36px;
+  --button-border-width: 0px;
+  --surface-border-width: 0px;
+  --alert-border-width: 0px;
+  --honor-fill-strength: 16%;
+  --entity-tag-fill-strength: 16%;
+
+  /* 导航与数据展示的尺寸 */
+  --tabs-height: 40px;
+  --tabs-gap: 24px;
+  --tabs-indicator-size: 2px;
+  --table-row-height: 52px;
+  --table-cell-padding-block: 12px;
+  --table-cell-padding-inline: 16px;
+  --table-empty-height: 208px;
+  --pagination-item-size: 32px;
+  --pagination-item-size-compact: 28px;
+  --pagination-gap: 4px;
+  --pagination-border-width: 0px;
+
+  /* 基础明暗端点与品牌色 */
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --theme-primary: #438bed;
+  --scrollbar-size: 8px;
+}
+
+/* Bind at language boundaries and theme previews, so both global UI and mixed-language samples agree. */
+:root:lang(zh),
+[data-theme]:lang(zh),
+[lang]:lang(zh) {
+  --font-family-sans: var(--font-family-zh);
+}
+
+:root:lang(en),
+[data-theme]:lang(en),
+[lang]:lang(en) {
+  --font-family-sans: var(--font-family-en);
+}
+
+:root:lang(ja),
+[data-theme]:lang(ja),
+[lang]:lang(ja) {
+  --font-family-sans: var(--font-family-ja);
+}
+
+/* 白天：基础中性色、九种强调色，以及派生比例 */
+:root,
+[data-theme='light'] {
+  --bg: #f4f4f4;
+  --bg-hover: var(--color-white);
+  --text: #333333;
+  --card-bg: var(--color-white);
+  --navbar-bg: #fafafa;
+
+  --highlight-red: #f05454;
+  --highlight-orange: #ff9745;
+  --highlight-yellow: #e6c837;
+  --highlight-green: #46b970;
+  --highlight-cyan: #33b9c9;
+  --highlight-blue: var(--theme-primary);
+  --highlight-indigo: #6355d1;
+  --highlight-violet: #9d5ed8;
+  --highlight-faint-purple: #b089d0;
+
+  /* 百分比表示原色占比：与黑混合越低越深，与白混合越低越浅。 */
+  --text-secondary-strength: 72%;
+  --text-disabled-strength: 45%;
+  --link-strength: 100%;
+  --link-hover-strength: 80%;
+  --link-anchor: var(--color-black);
+  --tabs-idle-text: var(--theme-primary);
+  --tabs-hover-text: var(--text-link-hover);
+  --tabs-hover-indicator: var(--text-link-hover);
+  --primary-solid-strength: 100%;
+  --primary-hover-strength: 80%;
+  --danger-solid-strength: 100%;
+  --danger-hover-strength: 78%;
+  --secondary-fill-strength: 8%;
+  --secondary-hover-strength: 14%;
+  --disabled-fill-strength: 6%;
+  --chip-orange-text-strength: 55%;
+  --entity-tag-text-strength: 45%;
+  --honor-text-strength: 45%;
+  --vocal-accent-text-strength: 45%;
+  --vocal-hatch-square-opacity: 0.15;
+  --vocal-hatch-circle-opacity: 0.28;
+  --vocal-hatch-square-width: 5;
+  --vocal-hatch-circle-width: 10;
+  --alert-fill-strength: 20%;
+  --alert-border-strength: 28%;
+  --alert-text-strength: 60%;
+  --alert-text-anchor: var(--text);
+  --border-strength: 12%;
+  --shadow-strength: 12%;
+  --shadow-card-strength: 6%;
+  --shadow-card-detail-strength: 4%;
+}
+
+/* 夜间：保留独立的基础色，复用同一套派生配方。 */
+[data-theme='dark'] {
+  --bg: #1e1f22;
+  --bg-hover: #27282d;
+  --text: #e0e0e0;
+  --card-bg: #24262b;
+  --navbar-bg: #212226;
+
+  --highlight-red: #ff7875;
+  --highlight-orange: #ffa940;
+  --highlight-yellow: #f0d060;
+  --highlight-green: #73d13d;
+  --highlight-cyan: #36cfc9;
+  --highlight-blue: #69b1ff;
+  --highlight-indigo: #8578e0;
+  --highlight-violet: #b37feb;
+  --highlight-faint-purple: #c4a8d4;
+
+  --text-secondary-strength: 72%;
+  --text-disabled-strength: 35%;
+  --link-strength: 70%;
+  --link-hover-strength: 55%;
+  --link-anchor: var(--color-white);
+  --tabs-idle-text: var(--text-secondary);
+  --tabs-hover-text: var(--text-link);
+  --tabs-hover-indicator: var(--theme-primary);
+  --primary-solid-strength: 100%;
+  --primary-hover-strength: 80%;
+  --danger-solid-strength: 80%;
+  --danger-hover-strength: 60%;
+  --secondary-fill-strength: 18%;
+  --secondary-hover-strength: 28%;
+  --disabled-fill-strength: 8%;
+  --chip-orange-text-strength: 85%;
+  --entity-tag-text-strength: 85%;
+  --honor-text-strength: 85%;
+  --vocal-accent-text-strength: 85%;
+  --vocal-hatch-square-opacity: 0.2;
+  --vocal-hatch-circle-opacity: 0.4;
+  --vocal-hatch-square-width: 2.5;
+  --vocal-hatch-circle-width: 5;
+  --alert-fill-strength: 16%;
+  --alert-border-strength: 35%;
+  --alert-text-strength: 70%;
+  --alert-text-anchor: var(--text);
+  --border-strength: 12%;
+  --shadow-strength: 35%;
+  --shadow-card-strength: 25%;
+  --shadow-card-detail-strength: 20%;
+}
+
+/* 公共派生配方：每个显式主题容器都重新计算，保证日夜对照互不串色。 */
+:root,
+[data-theme='light'],
+[data-theme='dark'] {
+  --theme-accent: color-mix(in srgb, var(--theme-primary) 70%, var(--color-white));
+  --border: color-mix(in srgb, var(--text) var(--border-strength), var(--surface));
+  --shadow: color-mix(in srgb, var(--color-black) var(--shadow-strength), transparent);
+  --shadow-card: 0 1px 8px color-mix(in srgb, var(--color-black) var(--shadow-card-strength), transparent), 0 1px 2px color-mix(in srgb, var(--color-black) var(--shadow-card-detail-strength), transparent);
+  --shadow-card-hover: 0 10px 24px var(--shadow);
+  --scrollbar-thumb: color-mix(in srgb, var(--text) 22%, transparent);
+  --scrollbar-thumb-hover: color-mix(in srgb, var(--text) 38%, transparent);
+
+  --text-secondary: color-mix(in srgb, var(--text) var(--text-secondary-strength), var(--canvas));
+  --text-disabled: color-mix(in srgb, var(--text) var(--text-disabled-strength), var(--canvas));
+  --text-link: color-mix(in srgb, var(--theme-primary) var(--link-strength), var(--link-anchor));
+  --text-link-hover: color-mix(in srgb, var(--theme-primary) var(--link-hover-strength), var(--link-anchor));
+
+  --chip-neutral-bg: color-mix(in srgb, var(--text) 8%, var(--surface));
+  --chip-neutral-text: var(--text-secondary);
+  --chip-orange-bg: color-mix(in srgb, var(--highlight-orange) 16%, var(--surface));
+  --chip-orange-text: color-mix(in srgb, var(--highlight-orange) var(--chip-orange-text-strength), var(--text));
+  /* 实体类型：歌手紫、创作者橙、歌曲绿，避免与品牌蓝及文字链接混淆。 */
+  --entity-vocal-tag-bg: color-mix(in srgb, var(--highlight-violet) var(--entity-tag-fill-strength), var(--surface));
+  --entity-vocal-tag-text: color-mix(in srgb, var(--highlight-violet) var(--entity-tag-text-strength), var(--text));
+  --entity-producer-tag-bg: color-mix(in srgb, var(--highlight-orange) var(--entity-tag-fill-strength), var(--surface));
+  --entity-producer-tag-text: color-mix(in srgb, var(--highlight-orange) var(--entity-tag-text-strength), var(--text));
+  --entity-video-tag-bg: color-mix(in srgb, var(--highlight-green) var(--entity-tag-fill-strength), var(--surface));
+  --entity-video-tag-text: color-mix(in srgb, var(--highlight-green) var(--entity-tag-text-strength), var(--text));
+  /* 播放荣誉：殿堂蓝、传说橙、神话紫，仅从既有 highlight 色派生。 */
+  --honor-hall-bg: color-mix(in srgb, var(--highlight-blue) var(--honor-fill-strength), var(--surface));
+  --honor-hall-text: color-mix(in srgb, var(--highlight-blue) var(--honor-text-strength), var(--text));
+  --honor-legend-bg: color-mix(in srgb, var(--highlight-orange) var(--honor-fill-strength), var(--surface));
+  --honor-legend-text: color-mix(in srgb, var(--highlight-orange) var(--honor-text-strength), var(--text));
+  --honor-myth-bg: color-mix(in srgb, var(--highlight-violet) var(--honor-fill-strength), var(--surface));
+  --honor-myth-text: color-mix(in srgb, var(--highlight-violet) var(--honor-text-strength), var(--text));
+  --media-overlay-bg: color-mix(in srgb, var(--color-black) 56%, transparent);
+  --media-overlay-text: var(--color-white);
+  --media-overlay-gradient: linear-gradient(transparent 35%, var(--media-overlay-bg));
+
+  --button-primary-bg: color-mix(in srgb, var(--theme-primary) var(--primary-solid-strength), var(--color-black));
+  --button-primary-hover: color-mix(in srgb, var(--theme-primary) var(--primary-hover-strength), var(--color-black));
+  --button-primary-text: var(--color-white);
+  --button-secondary-bg: color-mix(in srgb, var(--theme-primary) var(--secondary-fill-strength), var(--surface));
+  --button-secondary-hover: color-mix(in srgb, var(--theme-primary) var(--secondary-hover-strength), var(--surface));
+  --button-secondary-text: var(--text-link);
+  --button-normal-bg: var(--surface);
+  --button-normal-hover: var(--surface-hover);
+  --button-normal-text: var(--text-primary);
+  --button-danger-bg: color-mix(in srgb, var(--highlight-red) var(--danger-solid-strength), var(--color-black));
+  --button-danger-hover: color-mix(in srgb, var(--highlight-red) var(--danger-hover-strength), var(--color-black));
+  --button-danger-text: var(--color-white);
+  --button-disabled-bg: color-mix(in srgb, var(--text) var(--disabled-fill-strength), var(--surface));
+  --button-disabled-text: var(--text-disabled);
+
+  --tooltip-bg: var(--surface);
+  --tooltip-text: var(--text-primary);
+
+  /* 信息取品牌蓝，警告取强调橙，错误取强调红。 */
+  --alert-info-bg: color-mix(in srgb, var(--theme-primary) var(--alert-fill-strength), var(--surface));
+  --alert-info-border: color-mix(in srgb, var(--theme-primary) var(--alert-border-strength), var(--surface));
+  --alert-info-text: color-mix(in srgb, var(--theme-primary) var(--alert-text-strength), var(--alert-text-anchor));
+  --alert-warning-bg: color-mix(in srgb, var(--highlight-orange) var(--alert-fill-strength), var(--surface));
+  --alert-warning-border: color-mix(in srgb, var(--highlight-orange) var(--alert-border-strength), var(--surface));
+  --alert-warning-text: color-mix(in srgb, var(--highlight-orange) var(--alert-text-strength), var(--alert-text-anchor));
+  --alert-error-bg: color-mix(in srgb, var(--highlight-red) var(--alert-fill-strength), var(--surface));
+  --alert-error-border: color-mix(in srgb, var(--highlight-red) var(--alert-border-strength), var(--surface));
+  --alert-error-text: color-mix(in srgb, var(--highlight-red) var(--alert-text-strength), var(--alert-text-anchor));
+
+  /* Tabs、Table、Pagination 均引用已有派生色。 */
+  --tabs-text: var(--tabs-idle-text);
+  --tabs-active-text: var(--text-link);
+  --tabs-indicator: var(--theme-primary);
+  --tabs-divider: var(--border);
+  --table-bg: var(--surface);
+  --table-header-bg: color-mix(in srgb, var(--text) 4%, var(--surface));
+  --table-header-text: var(--text-secondary);
+  --table-divider: var(--border);
+  --table-row-hover: var(--button-secondary-bg);
+  --pagination-text: var(--text-primary);
+  --pagination-active-bg: var(--alert-info-bg);
+  --pagination-active-text: var(--alert-info-text);
+  --pagination-hover-bg: color-mix(in srgb, var(--alert-info-bg) 60%, var(--surface));
+  --pagination-hover-text: var(--alert-info-text);
+  --pagination-disabled-text: var(--text-disabled);
+
+  --trend-up: var(--highlight-red);
+  --trend-down: var(--highlight-green);
+  --trend-flat: color-mix(in srgb, var(--text) 50%, var(--canvas));
+  --picker-header-text: var(--text-secondary);
+  --picker-body-text: var(--text-primary);
+  --selection-bg: color-mix(in srgb, var(--theme-primary) 20%, transparent);
+  --selection-text: var(--color-white);
+}
+
+/* 角色档案：标签使用 highlight；应援色仅以局部数据变量用于色块和斜线几何底纹。 */
+[data-vocal-accent='blue'] { --vocal-accent: var(--highlight-blue); }
+[data-vocal-accent='red'] { --vocal-accent: var(--highlight-red); }
+
+:root,
+[data-theme='light'],
+[data-theme='dark'],
+[data-vocal-accent] {
+  --vocal-accent-bg: color-mix(in srgb, var(--vocal-accent) 12%, var(--surface));
+  --vocal-accent-text: color-mix(in srgb, var(--vocal-accent) var(--vocal-accent-text-strength), var(--text));
+}

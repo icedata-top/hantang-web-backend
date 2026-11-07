@@ -1,0 +1,355 @@
+# icedata-web-react
+
+本目录是仓库中的前端，基于 React。与后端分开启动，包管理使用 npm。
+
+## Quick start
+
+在本目录执行：
+
+1. 安装依赖：`npm install`
+2. 启动开发服务器：`npm run dev`
+3. 打包构建：`npm run build`
+
+锁文件使用 `package-lock.json`。仓库里仍留有 `pnpm-lock.yaml`，当前环境不安装、不使用 pnpm。
+
+启动后默认在 `http://localhost:5173/` 访问。
+
+## 语言选择
+
+导航桌面端显示当前语言，点击按钮展开语言菜单；移动端在 Drawer 中使用 Segmented。选项统一按「中文、English、日本語」排列，以语言名称表示，不使用国旗或 Emoji。
+
+界面文案通过 i18next 读取中、英、日资源，统一放在 `src/locales/{zh,en,ja}.js`。普通文案使用中文原文作为 key，动态文案使用插值，包含链接或强调的完整句子使用 `Trans`；新增文案同步补齐三套资源，不再编写语言二选一表达式。业务数据（歌曲标题、创作者简介、角色设定等）保留原文。
+
+语言代码、名称及日期和数字格式在 `src/locales/languages.js` 维护，区域代码会归一化，未知语言回退中文。Ant Design 内置控件、日期快捷选项、图表、相对时间与数字缩写均支持三种语言，页面根元素的 `lang` 同步更新。非 React 工具使用 `getTranslator(language)` 绑定语言。日夜主题继续独立切换。
+
+中、英、日各自的系统字体栈在 `theme.css` 配置，正文与 Ant Design 控件使用相同的语言字体变量；不下载网络字体。`/admin/design/spec#spec-typography` 可同时对照三种语言的标题、正文、数字和汉字字形，实际字体依赖本机安装情况。日文核心用语及官方参考资料见[本地化约定](../doc/design/localization-ja.md)。
+
+## 详情页路由
+
+- 视频详情：`/videos/:aid`，例如 `/videos/6009789`。
+- BV 入口：例如 `/videos/BV1Qs411k7Qv`，前端本地转换后以 `replace` 跳到 `/videos/6009789`，保留查询参数和锚点；不使用 HTTP 301/308，API 始终只接收数字 aid。
+- 创作者详情：`/producers/:userId`，例如 `/producers/396194`。
+
+视频详情已接入基本信息与最新日快照两个接口，展示标题、分区、投稿时间、封面、投稿人、七项累计指标、简介及标签；创作者详情接入账号资料与分页投稿，支持图标切换列表 / 卡片（默认卡片）、第一作者 / 参与作者切换、按播放量 / 投稿时间排序及升降序，默认每页 20 条。接口及数据口径见[创作者详情 API](src/services/Producer/producer.md)。详情页分别选中「歌曲」和「创作者」导航项。视频 ID 接受不带前导零的正整数 AV 号或完整 BV 号，格式错误显示「你输入的ID不合法」；基本信息无记录显示「你输入的ID，在哔哩哔哩不存在或者冰数据未收录」，不调用哔哩哔哩 API 区分这两种情况。创作者 ID 只接受不带前导零的正 64 位整数。`/videos`、`/producers` 保留原有列表待开发入口。
+
+运行 `npm test` 检查视频 ID 格式、BV 转换、大整数精度、播放荣誉阈值、历史指标的差分与缺失数据、播放过线取整精度筛选，以及虚拟歌手编号和素材路径。
+
+视频标题下展示当前最高播放荣誉：10万为「殿堂」、100万为「传说」、1000万为「神话」，阈值含等号。荣誉按最新收录快照的累计播放量判定，使用奖杯图标及 highlight 蓝 / 橙 / 紫派生的无边框标签；未达到门槛或播放数据暂缺时不展示。完整规则见[视频播放荣誉](../doc/design/video-view-honors.md)，三个等级的日夜预览位于 `/admin/design/spec` 的「Tag / Chip」。
+
+虚拟歌手详情已注册 `/vocals/:vocalId`，赤羽示例为 `/vocals/304`。角色资料与立绘直接读取 `src/constants/vocal/vocal-frontend-info.json`，在 DEV / PROD / MOCK 均无需后端；立绘直接放在 Canvas 上，配合大标题、轻量装饰与 Ant Design 资料展示。仅展示已配置的基本信息、应援色色号和来源链接，不查询或生成歌曲关联与统计。布局、素材路径和编号说明见[虚拟歌手详情](../doc/design/vocal-detail.md)。
+
+白底立绘在素材维护时提前烘焙为透明无损 WebP，原图保留为 `*-raw`；已有透明背景的素材不加工。页面直接引用静态成品，`npm run build` 不执行抠图。去底机制、Pillow 安装、重烘焙命令和新增素材步骤见[立绘烘焙说明](../doc/design/vocal-image-baking.md)。
+
+视频简介下方的「数据趋势」支持日期范围筛选与累计值 / 增量切换，默认累计值及最近 14 天，结束日为 Daily 最新快照的前一天。默认与 7 / 14 / 30 天快捷范围均不早于该视频的北京时间投稿日；手动上限仍为昨天。七项指标使用与总览相同的 highlight 配色。所选范围包含投稿日且当日无快照时，以七项 0 作为初始基线并显示说明；其他缺日或部分指标缺失仍保留缺口。后端每日明细 API 只返回原始累计快照，前端仅对相邻自然日的有效值作差，并可展开具体缺失日期及指标。摘要显示所选区间的播放增长和按完整天数计算的日均。日期范围采用与总览一致的 S 至 E+1 快照口径，详情见[单视频历史数据与趋势](../doc/design/video-metrics-history.md)。
+
+趋势下方的「播放过线记录」读取采集侧已记录的播放里程碑，显示过线值、前后累计播放、增量与过线时间。过线时间以北京时间显示到分，悬停查看相对时间等详情；卡片可按过线值的取整精度筛选全部 / 整千 / 整万 / 整十万 / 整百万 / 整千万 / 整亿，每个过线值只归入最粗的一档（1,930,000 归整万，2,000,000 归整百万），选项显示该视频命中条数；筛选纯前端完成，不重新请求。没有记录时明确显示暂无记录，不补造过线值。接口与分档规则见[单视频播放过线与取整精度筛选](../doc/design/video-gate-crossings.md)。
+
+视频页沿用视觉规范：标题与简要信息放在 Canvas 上，桌面端封面与右侧创作者/数据卡片等高，右侧收窄至 320px、卡片留白更紧凑，移动端改为单列。投稿人使用 ProducerInfo，名字旁显示头像；认证头衔使用橙色标签，个人简介只显示一行，超出以 `...` 省略，悬停或键盘聚焦查看全文。投稿时间使用 RelativeTime，显示北京时间及按 24 小时计算的日期差。数据卡片保留“最新数据”标题、去掉副说明，七项指标沿用原有纵向间距。封面悬停或键盘聚焦显示下载与观看操作，触屏设备常显操作；统计日期位于数据卡片右下角，仍写作「统计于 yyyy-MM-dd 凌晨」，缺失指标保留为 `—`。标题、简介、标签中的 `&amp;` 仅在前端按纯文本替换为 `&`；开头为宽开口标点的标题做首行视觉悬挂。
+
+接口、返回字段和错误约定见[视频详情 API](src/services/Video/video.md)。MOCK 模式仅提供文档中世末歌者的公开基本信息；没有真实日快照样本，最新指标按无记录处理，不编造数值。
+
+完整约定见[详情页 URL 设计](../doc/design/detail-page-urls.md)。
+
+## 环境与后端配置
+
+项目支持三个运行环境：`MOCK`、`DEV`、`PROD`。环境配置与 API base URL 定义在：
+
+- `src/config/runtimeEnv.js`
+  - `CURRENT_APP_ENV`：当前环境（优先读取 `VITE_APP_ENV`）
+  - `BASE_URL_BY_ENV`：`DEV` / `PROD` 的 base url
+
+### 三个环境的作用
+
+- `MOCK`
+  - 各 `xxx.api.js` 直接返回本地 MOCK 数据，不发起后端请求
+  - 启动命令：`VITE_APP_ENV=MOCK npm run dev`
+- `DEV`
+  - 浏览器直接请求本机后端 `http://localhost:8080`
+  - `npm run dev` 未设置 `VITE_APP_ENV` 时使用此环境
+  - 需要先在仓库根目录启动后端
+- `PROD`
+  - 前端会发起真实 HTTP 请求
+  - 默认请求同源 `/api`，容器部署时由 Caddy 转发到后端服务
+
+### 如何修改 API base URL
+
+容器部署时可通过环境变量注入：
+
+```sh
+ICEDATA_API_BASE_URL=/api
+ICEDATA_API_UPSTREAM=http://icedata-backend:8080
+ICEDATA_DB_URL_LOCAL=jdbc:mysql://...
+ICEDATA_DB_USER_LOCAL=...
+ICEDATA_DB_PASSWORD_LOCAL=...
+ICEDATA_POSTGRE_HOST=...
+ICEDATA_POSTGRE_PORT=5432
+ICEDATA_POSTGRE_DATABASE=...
+ICEDATA_POSTGRE_USER=...
+ICEDATA_POSTGRE_PASSWORD=...
+ICEDATA_WEB_IMAGE=ghcr.io/icedata-top/icedata-web-react:main
+ICEDATA_BACKEND_IMAGE=ghcr.io/icedata-top/hantang-web-backend:main
+```
+
+其中 `ICEDATA_API_BASE_URL` 是浏览器请求的同源前缀，`ICEDATA_API_UPSTREAM` 是 Caddy 容器内访问后端的地址。
+`ICEDATA_DB_*` 和 `ICEDATA_POSTGRE_*` 会由 `docker-compose.yml` 生成后端需要的 `/app/config.secret.properties`。
+`docker-compose.yml` 默认直接从 GHCR 拉取前端和后端的 `main` 镜像，可通过 `ICEDATA_WEB_IMAGE` 和 `ICEDATA_BACKEND_IMAGE` 覆盖。
+
+### 如何切换环境
+
+通过 Vite 环境变量 `VITE_APP_ENV` 设置（可在启动命令前临时设置，或写入 `.env.local`）：
+
+- `VITE_APP_ENV=MOCK`
+- `VITE_APP_ENV=DEV`
+- `VITE_APP_ENV=PROD`
+
+`npm run dev` 未设置时默认使用 `DEV`，直接请求 `http://localhost:8080`。`npm run build` 未设置时默认使用 `PROD`。
+
+## 管理配置页面
+
+管理配置页面位于 `/admin`。顶部「管理配置」是一级，左侧分组是二级，分组下的页面是三级。「运行环境」展示当前环境、API 地址和管理入口状态；「视觉规范」位于 `/admin/design/spec`，支持白天、夜间和对照预览，展示 Canvas、Surface、按钮三态、文字、Tooltip、三种 Alert、Tabs、Table 与 Pagination。「组件预览」位于 `/admin/design/components`：[RelativeTime](src/components/custom/RelativeTime/README.md) 提供时间输入、三种模式和过去 / 未来示例；[ProducerInfo](src/components/custom/ProducerInfo/README.md) 提供用户 ID 输入、头像开关及创作者资料悬停卡片；[VideoInfo](src/components/custom/VideoInfo/README.md) 提供 AV 号 / aid 输入、视频资料气泡、开头标点对齐开关与标题宽度预览。其余条目为施工占位，复用开发中插图，尚未接通数据或写入。
+只有显式启用开关时，才注册页面路由和顶部「管理配置」菜单；未配置、空值或 `false` 均关闭，直接访问 `/admin` 返回 404 页面。
+
+本地开发在 `frontend/.env.local` 中配置后重启开发服务器：
+
+```dotenv
+VITE_ADMIN_ENABLED=true
+```
+
+`.env.local` 已加入 Git 忽略，不提交本地开关。删除此项或设置为 `false` 即可关闭。
+Vite 构建也会读取 `.env.local`，发布时应确认开关值。
+
+Docker 部署设置 `ICEDATA_ADMIN_ENABLED=true` 并重新创建前端容器即可开启，无需重新构建镜像；默认关闭。
+运行时的 `adminEnabled` 优先于 Vite 的 `VITE_ADMIN_ENABLED`。
+
+此开关仅控制前端页面与菜单，不是身份认证。不要在前端环境变量中存放密码或密钥；后续管理写入接口需要后端权限校验。
+
+## 目录树
+
+```
+icedata-web-react/
+├── index.html                 # 入口 HTML（站点标题、favicon）
+├── package.json
+├── package-lock.json
+├── pnpm-lock.yaml
+├── Caddyfile
+├── docker-compose.yml
+├── vite.config.js
+├── public/
+│   ├── png/                   # Logo 等位图
+│   └── svg/                   # unDraw 等插图
+├── src/
+│   ├── main.jsx               # React 挂载、全局样式入口
+│   ├── App.jsx                # 根组件与路由
+│   ├── components/
+│   │   ├── IcedataNavbar.jsx
+│   │   └── IcedataNavbar.css
+│   ├── pages/
+│   │   ├── Home/
+│   │   ├── About/
+│   │   ├── Overview/
+│   │   ├── UniSeek/           # 统一搜索结果页（歌曲复用共享 VideoCard）
+│   │   ├── video/             # VideoDetail：视频详情、最新日快照与展示格式化
+│   │   ├── vocal/             # VocalDetail：本地角色资料与立绘，无后端请求
+│   │   ├── producer/          # ProducerDetail：创作者资料、排序及分页投稿，列表 / 卡片切换
+│   │   └── …
+│   ├── services/              # API / MOCK
+│   ├── hooks/
+│   └── styles/
+│       ├── theme.css          # 统一主题变量，手动调整颜色、字号、字重等
+│       ├── global.css         # 全局基础样式与既有组件适配
+│       ├── design-system.css  # 可复用的按钮、卡片、Tooltip、Alert 样式
+│       └── meshBackground.css # 首页 / 关于弥散背景
+└── tests/
+```
+
+## 基础组件选型
+
+开发约定见 [Git commit 规范](../doc/rule/commit-conventions.md)与 [UI 与配色规范](../doc/design/visual-spec.md)。提交标题统一使用 `type(scope): 中文摘要`，文档类型为 `doc`。
+
+Ant Design 已提供的基础组件应直接复用，不重复实现，也不使用原生 HTML 表单控件替代。输入框使用 `Input` / `InputNumber` / `Input.TextArea`，日期使用 `DatePicker`；主题样式及业务组合在现有组件上扩展。
+
+输入框直接使用组件本体，不额外包一层相同外观的圆角矩形。新业务组件复用已有基础能力并注册到 `/admin/design/components`；VideoInfo、ProducerInfo、RelativeTime、VideoHonor 等直接复用现有实现。
+
+- 少量简短选项（通常 2–4 个）使用 `Segmented` 或 `Radio.Group` 横排展示，避免放进下拉框。
+- 选项较多时使用 Ant Design `Select`；需要搜索时启用搜索，不使用原生 `<select>` / `<option>`。
+- 独立布尔设置使用 `Switch`，多选使用 `Checkbox`，不使用原生复选框重新实现控件。
+
+UI 规范页 `/admin/design/spec` 同步展示这条约定。共用分页器的每页条数选项不超过 4 个时横排，更多时使用 `Select`，修改后仍由调用页面重置到第 1 页。
+
+## 配色方案
+
+颜色、字体、字号、字重、圆角、阴影与边框宽度统一在 **`src/styles/theme.css`** 中手动编辑。公共参数同时影响两种主题，白天为 `:root` 或 `[data-theme='light']`，夜间为 `[data-theme='dark']`（与导航栏主题切换一致）。**品牌色在深浅主题下相同**。
+
+`src/styles/design-system.css` 只负责可复用组件样式，通过变量引用主题；`src/styles/global.css` 负责全局基础样式与既有组件适配。规范页的布局在 `src/pages/Admin/DesignSpec.css`，不重复定义色值与字号。完整约定与页面使用示例见 [视觉规范](../doc/design/visual-spec.md)。
+
+常用手调入口：`--font-size-button`（当前 14px）、`--font-weight-button`（当前 400）、`--font-size-body`、`--text-secondary`，以及 `--button-{类型}-bg/hover/text`。四类按钮、新规范卡片及三种 Alert 均无描边，由 `--button-border-width: 0px`、`--surface-border-width: 0px`、`--alert-border-width: 0px` 控制。后续页面直接使用 `ds-button`、`ds-surface`、`ds-alert` 等公共类与主题变量。Tabs、Table、Pagination 的公共 React 组件从 `src/components/design-system/DataDisplay.jsx` 导入；尺寸和配色仍集中在 `theme.css`，分页器全状态无边框，选中配色直接引用 Info Alert。
+
+白天文字链接、行内「查看」和可用 Tab 文字直接使用 100% 品牌蓝，悬停加深；夜间沿用现有链接派生色。
+
+业务色通过 `color-mix()` 从基础色推导：Primary / Info 使用品牌蓝，Danger / Error / 上涨色统一使用 `--highlight-red`，Warning 使用 `--highlight-orange`。日夜主题分别设置混色比例，正文与辅助、禁用文字也由基础文本色和背景色混合生成。只改基础色即可联动全部相关组件；深浅程度可单独调整 `*-strength` 比例。
+
+强调色从现有九种 `--highlight-*` 中选择，再按业务定义语义变量。组件 CSS、行内样式及图表配置均不硬编码颜色，也不用 Ant Design 的预设色代替项目主题色。品牌主色在日夜一致，highlight 有独立的日夜色值；字号、字重等同样引用变量，不按变量名称猜测数值。完整色板名称、语义映射与维护方法见[视觉规范](../doc/design/visual-spec.md#highlight-与业务配色)。
+
+### 品牌色（冰数据）
+
+| 用途 | 变量名 | 色值 | 说明 |
+|------|--------|------|------|
+| 主题主色 | `--theme-primary` | `#438BED` | 链接、强调、导航高亮、搜索按钮默认色等 |
+| 品牌高亮 | `--theme-accent` | 品牌蓝 70% + 白 30% | 品牌强调、既有搜索按钮悬停等；随品牌主色联动 |
+
+### 涨跌色（同环比等）
+
+与 **A 股等常见行情色** 一致：**上升为红、下降为绿**；持平为中性灰。变量在 `src/styles/theme.css` 中定义，组件内用 `var(--trend-up)` 等引用。
+
+| 变量名 | 浅色（`:root`） | 深色（`[data-theme='dark']`） | 含义 |
+|--------|------------------|-------------------------------|------|
+| `--trend-up` | `#F05454` | `#FF7875` | 上升（红），引用 `--highlight-red` |
+| `--trend-down` | `#46B970` | `#73D13D` | 下降（绿），引用 `--highlight-green` |
+| `--trend-flat` | 正文色与 Canvas 各 50% | 正文色与 Canvas 各 50% | 持平 / 无变化 |
+
+### 浅色主题（`:root`）
+
+| 变量 | 色值 | 典型用途 |
+|------|------|----------|
+| `--bg` | `#f4f4f4` | 页面主背景 |
+| `--bg-hover` | `#ffffff` | 卡片、可悬停表面在 pointer 悬停时的背景 |
+| `--text` | `#333333` | 正文与标题文字 |
+| `--card-bg` | `#ffffff` | 表单控件、次级块背景等 |
+| `--navbar-bg` | `#fafafa` | Surface：导航栏卡片、总览卡片等默认表面背景，悬停使用 `--bg-hover` 提亮 |
+| `--border` | 正文色 12% + Surface 88% | 边框、分割线 |
+| `--shadow` | 黑色 12% + 透明 88% | **悬停卡片阴影**等较重阴影的基准色 |
+
+### 深色主题（`[data-theme='dark']`）
+
+| 变量 | 色值 | 典型用途 |
+|------|------|----------|
+| `--bg` | `#1E1F22` | 页面主背景 |
+| `--bg-hover` | `#27282D` | 卡片等表面悬停背景 |
+| `--text` | `#e0e0e0` | 正文与标题文字 |
+| `--card-bg` | `#24262b` | 表单控件、次级块背景等 |
+| `--navbar-bg` | `#212226` | Surface：导航栏卡片、总览卡片等默认表面背景 |
+| `--border` | 正文色 12% + Surface 88% | 边框 |
+| `--shadow` | 黑色 35% + 透明 65% | 悬停卡片阴影的基准色 |
+
+### 卡片与阴影（全局）
+
+| 变量 | 说明 |
+|------|------|
+| `--radius-card` | 卡片圆角（默认 `8px`，小于早期 `12px`） |
+| `--shadow-card` | **默认**较轻、较淡的阴影 |
+| `--shadow-card-hover` | **悬停**时加深阴影（与原先「常显重阴影」一致的量级） |
+
+导航栏 `Card`、总览页 `Card` 等使用上述变量，并在 `:hover` 时切换为 `--shadow-card-hover` 与 `--bg-hover`。可选工具类：`.app-card-surface` / `.app-card-surface:hover`（定义在 `global.css`）。
+
+既有样式里的独立色值属于遗留适配，不作为新增组件的配色来源；修改对应样式时使用主题语义变量。新 Surface 默认无边框，需要分割线时引用 `--surface-border`。
+
+浅色下导航条外层背景与 `--bg` 一致，不再使用向白色混合的渐变，避免出现卡片背后类似 `#fafafa` 的色带；Ant Design `Card` 的默认填充色已通过局部样式覆盖为 `var(--navbar-bg)`。
+
+### 使用约定
+
+- 新增样式时优先使用 `var(--theme-primary)`、`var(--text)`、`var(--bg-hover)` 等变量；**同环比涨跌**使用 `var(--trend-up)` / `var(--trend-down)` / `var(--trend-flat)`，勿在组件内写死红绿色值。
+- 新建「卡片式」块时优先复用 `--radius-card`、`--shadow-card`、`--shadow-card-hover`，避免写死圆角与阴影。
+- Tag / Chip 无边框；过线值等数字标签保持单行并随数值列右对齐。Tooltip / Popover 随内容收缩并限制在视口内，避免简短内容右侧留白。
+- 表格在常规桌面宽度下优先适应容器，名称列伸缩、数值列按内容分配；窄屏再使用局部滚动。七项视频图表共用 `src/constants/video/metrics.js` 的顺序与 highlight 配色。
+- 数据缺失明确展示暂缺，折线断开，不补零或跨缺口计算增量；真实零和负增量保留。加载失败与查询成功但暂无数据分开提示。
+- 移动端顶栏使用 Ant Design Drawer；详情、菜单等操作同时考虑点击与键盘，不能仅依赖鼠标悬停。具体布局、配色和验收约定见[视觉规范](../doc/design/visual-spec.md)。
+
+## 术语约定
+
+- 本项目前端显示的是「歌曲」，但歌曲本质都是带有 MV 的视频，所以变量命名和后端全部使用 `video`
+- 前端显示的是「创作者」，**前端约定与领域命名使用 `producer`**（路由、UniSeek 类型、文案等）
+- **后端与 HTTP 契约暂时不改**，接口字段与指标名仍可能使用 `user`（如 `userCount`、`activeUserCount`）；前端展示层映射为「创作者 / Producer」，待后端对齐后再统一改名
+
+## 总览页：中术50
+
+前端中文使用「中术50」，日文使用「中ボ50」，英文使用「China-V 50」。名称中的「中术」指中国 VOCALOID／歌声合成音乐；日文悬停展开为「中国ボカロ」，英文展开为「Chinese Vocaloid and vocal-synth music」。顶部播放、收藏标题和视频数据趋势 Tab 共用 `ZhongshuLabel`，悬停及键盘聚焦说明分为名称含义、样本口径两段。它借鉴上证指数等样本观察方式，以相对固定的 50 个作品观察播放、收藏等指标变化，不随日期筛选实时选取 Top 50。
+
+总览页跟随导航栏的中、英、日语言切换，覆盖筛选、日期面板与快捷范围、时间窗说明、指标、趋势图例和坐标轴、直方图、过线表格及分页提示。英文创作者使用「Producer」；指标标题与趋势图 Tab 的悬停说明同步翻译。内部代码和配置命名继续使用 `zhongshu`。直方图按分桶 code 和当前语言显示数量单位（英文 K / M，中文 万 / 亿，日文 万 / 億）；切换语言保留当前日期、图表选项和页码。
+
+播放过线记录使用 VideoInfo 显示视频标题，支持悬停或点击查看资料并跳转；长标题单行省略，开头标点沿用组件的左悬挂处理。过线时间使用 RelativeTime，按北京时间显示相对时间，悬停或聚焦查看绝对时间等详情。
+
+作品名单在后端 `src/main/resources/config/zhongshu-50.json` 的 `aids` 数组中维护。后端在启动时校验并加载 50 个不重复的正整数 aid 到内存，查询通过参数化的 `WHERE aid IN (...)` 限定样本；前端不自行维护或筛选名单。更新配置需重新打包并重启后端。
+
+顶部播放、收藏为样本的结束日次日快照合计减去开始日快照合计，只展示当期值与环比。视频数据趋势为同一名单的逐日快照增量，覆盖播放、收藏、点赞、硬币、分享、评论、弹幕。顶部中术50指标的任一端点缺少完整样本或对应字段时，后端返回 `value=null`，前端显示「暂缺」；环比数据缺失或分母为 0 时，`dod=null`，同样显示「暂缺」。真实零增量显示 0。趋势图逐指标检查 D 与 D+1 快照完整性，任一端缺失则 D 日该指标返回 `null`；前端保留日期并在缺口断线，不补零。MOCK 仍为演示数据。基期、权重、指数点位和样本调整规则尚未定义。
+
+## 路由与页面约定
+
+导航进入「歌曲 / 虚拟歌手 / 创作者」均为**列表页**（复数路径）；从列表或 UniSeek 结果点击某一 Item，进入对应**详情页**（资源路径 + ID）。
+
+详情 ID 使用**路径参数**（如 `/videos/123456`），**不使用**查询串（避免 `/video?id=123456`）。
+
+### URL 一览
+
+| 页面 | URL | 说明 |
+|------|-----|------|
+| 歌曲列表 | `/videos` | 导航「歌曲」入口 |
+| 歌曲详情 | `/videos/:aid` | 接受 AV / BV 入口，统一为数字 aid 路径 |
+| 虚拟歌手列表 | `/vocals` | 导航「虚拟歌手」入口 |
+| 虚拟歌手详情 | `/vocals/:vocalId` | 前端配置中的稳定 ID；赤羽为 304 |
+| 创作者列表 | `/producers` | 导航「创作者」入口 |
+| 创作者详情 | `/producers/:userId` | `userId` 为创作者的数字用户 ID |
+| 统一搜索 | `/uniseek` | 首页搜索跳转；可带 `?keyword=` |
+| 总览 | `/overview` | |
+| 关于 | `/about` | |
+| 收藏夹（隐藏） | `/stash` | 无导航入口 |
+
+示例：
+
+```text
+/videos
+/videos/2129461
+/vocals
+/vocals/304
+/producers
+/producers/123456
+/uniseek?keyword=普通DISCO
+```
+
+### 页面关系
+
+```text
+导航栏
+  ├─ 歌曲      → /videos         （VideoList）
+  ├─ 虚拟歌手  → /vocals         （VocalList）
+  └─ 创作者    → /producers      （ProducerList）
+
+列表 / 投稿 Item 点击 → /videos/:aid · /producers/:userId
+虚拟歌手角色资料 → /vocals/:vocalId
+
+首页搜索 → /uniseek?keyword=…   （UniSeek 结果页）
+  └─ 结果 Item 点击 → 同上详情页 URL
+```
+
+### UniSeek beta
+
+`/uniseek?keyword=天依` 独立展示本地虚拟歌手、创作者和歌曲，网络结果按到达顺序追加，后续只翻页加载歌曲。歌曲关键词及 AV/BV 精确查询已改读后端的 `hantang_dynamic.adm_uniseek_videos`：只展示已发布数据日收藏数 > 100 的收录视频，封面和累计指标直接来自宽表，`payload.recordDate` 为其来源日期。歌手本地匹配和创作者查询保持独立。
+
+接口和无限滚动契约保持不变：page 从 1 开始，默认每页 30 首、最多返回 1,000 首。短关键词也支持标题子串；后端结果缓存按发布批次区分，同日补算后重新读取新批次。跨批次翻页仍可能出现顺序变化，由前端去重，固定快照游标留作后续。详见 [搜索接口说明](src/services/UniSeek/uniseek.md)、[ADM 部署说明](../sql/adm_uniseek_videos.md) 与 [剩余 TODO](../doc/todo/uniseek-adm-search-snapshot.md)。
+
+开发者反馈新路径首次视频响应约 700 ms，第二次及后续下滑约 100 ms/次。与旧聊天记录首次约 3–4 秒粗比，体验已有改善；这些是不同条件的响应样本。宽表方案、开发者/Codex 分工和结果边界见 [技改复盘](../doc/design/uniseek/adm-search-retrospective.md)。
+
+### 组件约定
+
+- 歌曲卡片复用 `src/components/custom/VideoCard/VideoCard.jsx`：UniSeek 的歌曲分支与创作者详情的卡片模式使用同一组件。搜索页继续独立管理关键词、类型、相关性与查询，通过适配器传入展示数据，不复制第二套卡片。歌手和创作者搜索 Item 仍由 `UniSeekItem` 管理。
+- 创作者详情的投稿支持图标 Segmented 切换列表 / 卡片，默认卡片；桌面端按宽度展示多列，窄屏减列。切换展示保留身份、排序、页码与每页条数，不额外请求数据。加载、空数据和错误均有对应展示。组件参数与预览见 [VideoCard](src/components/custom/VideoCard/README.md)。
+- 视频与创作者详情为共用落点：歌曲卡片跳到 `/videos/:aid`，创作者跳到 `/producers/:userId`，以当前已注册路由为准。
+- 已实现的详情页面与共享卡片：
+
+```text
+src/pages/video/VideoDetail.jsx
+src/pages/producer/ProducerDetail.jsx
+src/pages/vocal/VocalDetail.jsx
+src/components/custom/VideoCard/VideoCard.jsx
+```
+
+> 路由以 `src/App.jsx` 为准。歌曲、虚拟歌手和创作者列表均已实现；虚拟歌手详情仅展示本地配置，暂不展示歌曲关联。歌曲卡片用于统一搜索、歌曲列表及创作者详情的投稿区。
+
+创作者列表 `/producers` 默认表格，支持卡片；按最低粉丝数、最低收录投稿数筛选，按粉丝、收录投稿或 UID 排序，提供 20 / 50 / 100 条分页。切换展示保留 URL 中的条件和页码，不重复请求。名称复用带完整列表资料的 ProducerInfo，点击进入详情，浮层不逐行再查接口。没有搜索输入框，查找具体账号引导到 UniSeek；接口与验收见[创作者列表 API](src/services/Producer/producerList.md)。
+
+歌曲列表 `/videos` 支持投稿日期、最高播放荣誉、历史二级分区、最低播放量筛选，以及播放 / 收藏 / 投稿时间排序；提供表格和卡片切换及分页，URL 保留当前条件。表格与卡片隐藏点赞数。后端直接读取 UniSeek 发布宽表，仅在筛选分区时按 aid 查基础资料，不关联日历史表。列表页本身不新增表；收藏 >100 收录规则需要按[迁移与重刷步骤](../sql/adm_uniseek_videos_favorite_migration.md)升级既有 ADM 约束和刷新过程。收录范围和接口约定见 [歌曲列表](src/services/Video/videoList.md)。
+
+## 使用的第三方组件/素材
+
+- Ant Design 组件库
+- VChart 图表
+- unDraw 图片素材

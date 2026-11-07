@@ -1,0 +1,116 @@
+/* 全局基础样式；主题值统一在 theme.css 中编辑。 */
+html,
+[lang] {
+  font-family: var(--font-family-sans);
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-body);
+  background: var(--bg);
+  color: var(--text);
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+/* 悬浮层沿用当前主题的 Surface，容纳文本或自定义组件时均保持正常配色。 */
+html .ant-tooltip,
+html .ant-popover {
+  --ant-tooltip-arrow-background-color: var(--tooltip-bg);
+}
+
+html .ant-tooltip .ant-tooltip-container,
+html .ant-tooltip-unique-container,
+html .ant-popover .ant-popover-container {
+  background: var(--tooltip-bg);
+  color: var(--tooltip-text);
+  box-shadow: var(--shadow-card-hover);
+}
+
+html .ant-tooltip .ant-tooltip-container,
+html .ant-tooltip-unique-container {
+  padding: 8px 12px;
+  border-radius: var(--radius-control);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-body);
+}
+
+html .ant-popover .ant-popover-title,
+html .ant-popover .ant-popover-content {
+  color: var(--tooltip-text);
+}
+
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
+}
+
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
+}
+
+html::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/**
+ * 通用卡片表面（可选类名）：默认轻阴影 + 小圆角，悬停加深阴影并切换为 --bg-hover
+ */
+.app-card-surface {
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  background: var(--navbar-bg);
+  border: 1px solid var(--border);
+  transition:
+    box-shadow 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.app-card-surface:hover {
+  box-shadow: var(--shadow-card-hover);
+  background: var(--bg-hover);
+}
+
+[data-theme='dark'] .app-card-surface {
+  border-color: var(--surface-border);
+}
+
+.page-result {
+  padding: 48px 20px 80px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.page-result .ant-result-title {
+  color: var(--text) !important;
+}
+
+.page-result .ant-result-subtitle {
+  color: var(--text) !important;
+  opacity: 0.72;
+}
+
+.page-result-illustration {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+  margin: 0 auto;
+}

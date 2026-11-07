@@ -12,8 +12,8 @@ permissions:
   packages: write
 
 jobs:
-  build:
-    name: Build Java and Docker image
+  backend:
+    name: Build backend image
     runs-on: ubuntu-latest
 
     steps:
@@ -48,10 +48,46 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and publish Docker image
+      - name: Build and publish backend image
         uses: docker/build-push-action@v6
         with:
           context: .
+          push: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  frontend:
+    name: Build frontend image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          # 前端从本仓库 frontend/ 构建，镜像发布到同组织的独立包名。
+          images: ghcr.io/${{ github.repository_owner }}/hantang-web-frontend
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr,prefix=pr-,suffix=-head
+            type=sha,format=short
+
+      - name: Log in to GitHub Container Registry
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and publish frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: frontend
+          file: frontend/Dockerfile
           push: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

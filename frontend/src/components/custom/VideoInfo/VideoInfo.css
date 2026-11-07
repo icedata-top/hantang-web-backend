@@ -1,0 +1,29 @@
+.video-info { --video-info-hanging-offset: 0.45em; display: inline-flex; align-items: baseline; min-width: 0; max-width: 100%; padding: 0; border: 0; border-radius: 2px; background: transparent; color: inherit; font: inherit; line-height: inherit; vertical-align: baseline; text-align: start; cursor: pointer; }
+/* Move the trigger itself so ellipsis never clips the opening punctuation. */
+.video-info--hanging { margin-inline-start: calc(-1 * var(--video-info-hanging-offset)); max-width: calc(100% + var(--video-info-hanging-offset)); }
+.video-info-title { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.video-info:hover .video-info-title { color: var(--text-link-hover); }
+.video-info:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
+.video-info-invalid { color: var(--text-secondary); }
+.video-info-popover { max-width: calc(100vw - 24px); }
+.video-info-card { --video-info-hanging-offset: 0.45em; box-sizing: border-box; width: 360px; max-width: calc(100vw - 48px); max-height: min(640px, calc(100dvh - 80px)); overflow-y: auto; padding-inline: 10px; color: var(--text-primary); font-family: var(--font-family-sans); font-size: var(--font-size-body); line-height: var(--line-height-body); }
+.video-info-cover-wrap { position: relative; margin-bottom: 14px; }
+.video-info-cover { display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: var(--radius-control); object-fit: cover; }
+.video-info-cover--fallback { display: flex; align-items: center; justify-content: center; background: var(--button-secondary-bg); color: var(--text-secondary); font-size: var(--font-size-display); }
+.video-info-duration { position: absolute; right: 8px; bottom: 8px; padding: 2px 6px; border-radius: var(--radius-control); background: var(--surface); color: var(--text-primary); font: var(--font-size-caption)/var(--line-height-body) var(--font-family-mono); }
+.video-info-card-title { display: block; font-size: var(--font-size-heading); font-weight: var(--font-weight-semibold); line-height: var(--line-height-heading); overflow-wrap: anywhere; }
+/* Only the first line hangs; wrapped lines keep the normal content edge. */
+.video-info-card-title--hanging { text-indent: calc(-1 * var(--video-info-hanging-offset)); }
+.video-info-identifiers { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 6px; color: var(--text-secondary); font: var(--font-size-caption)/var(--line-height-body) var(--font-family-mono); overflow-wrap: anywhere; }
+.video-info-metadata { display: grid; gap: 6px; margin: 14px 0; font-size: var(--font-size-caption); }
+.video-info-metadata > div { display: grid; grid-template-columns: 6em minmax(0, 1fr); gap: 10px; }
+.video-info-metadata dt { color: var(--text-secondary); }
+.video-info-metadata dd { min-width: 0; margin: 0; overflow-wrap: anywhere; }
+.video-info-description { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; margin: 14px 0 0; color: var(--text-secondary); font-size: var(--font-size-caption); white-space: pre-wrap; overflow-wrap: anywhere; }
+.video-info-status { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 14px 0; color: var(--text-secondary); font-size: var(--font-size-caption); }
+.video-info-status .ds-button { min-height: 28px; padding: 2px 8px; font-size: inherit; }
+.video-info-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.video-info-actions .ds-button { flex: 1 1 auto; background: var(--button-bg); color: var(--button-text); text-decoration: none; }
+.video-info-actions .ds-button:is(:hover, :active, :focus) { color: var(--button-text); text-decoration: none; }
+.video-info-actions .ds-button:hover { background: var(--button-hover-bg); }
+.video-info-actions .ds-button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }

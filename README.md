@@ -1,6 +1,113 @@
-# 项目结构说明
+# 汉唐 Web
 
-本项目基于 Javalin 构建，采用简洁的分层结构，方便后期维护和扩展。
+本仓库同时包含前端和后端。两边独立构建、独立启动，互不打包进对方的产物。
+
+本项目负责数据查询接口、查询口径及前端展示。数据爬取、MySQL 到 PostgreSQL 的数据同步、上游数据预处理由其他仓库及其 owner 负责；本仓库记录相关外部依赖，并在查询与展示中正确处理数据缺失。已确认的同步缺失问题见[MySQL 到 PostgreSQL 同步数据缺失](doc/todo/mysql-postgresql-sync-data-loss.md)。
+
+## 目录
+
+| 路径 | 说明 |
+|------|------|
+| `frontend/` | 前端 |
+| `src/` | 后端源码 |
+| `sql/` | 数据库 DDL、表文档、查询示例与实例数据 |
+| `doc/todo/`、`doc/design/`、`doc/rule/` | 待办、设计、约定 |
+
+## 开发规范
+
+- [Git commit 规范](doc/rule/commit-conventions.md)：使用 `type(scope): 中文摘要`；文档类型为 `doc`，无关功能及其他 Agent 的独立工作分开提交。
+- [UI 与配色规范](doc/design/visual-spec.md)：复用 Ant Design 与项目公共组件，主题参数集中在 `theme.css`，业务强调色使用既有 highlight 派生变量，不硬编码色值。预览入口为 `/admin/design/spec` 与 `/admin/design/components`。
+- [验收方式](.cursor/rules/verification.mdc)：按改动完成必要检查、测试或构建，常规界面由用户手动验收。
+
+## 视频与创作者数据
+
+视频静态信息（标题、投稿时间、简介、封面、上传者等）的源表为 PostgreSQL 的 `hantang_dynamic.processed_videos`；UniSeek 歌曲搜索读取由它与指定日期 Daily 数据离线生成的 `hantang_dynamic.adm_uniseek_videos`。如无必要，不得使用 `hantang_dynamic.video_static`，也不得将其作为默认回退来源。创作者账号信息来自 `hantang_dynamic.discovered_users`，上传者关联为 `processed_videos.user_id = discovered_users.user_id`。
+
+字段含义、时间及缺失值口径见[视频与创作者表文档](sql/video_creator_reference.md)，可执行的只读 SQL 见[查询示例](sql/video_creator_queries.sql)，世末歌者（`aid=6009789`）与 COPY（`user_id=396194`）的完整实例见[实例数据说明](sql/examples/video_creator_sample.md)。
+
+创作者详情提供账号基本信息和分页投稿两个接口，支持以第一作者（`user_id`）或参与作者（`staff`）筛选，按播放量 / 投稿时间升降序排列；接口约定与验证方式见[创作者详情 API](frontend/src/services/Producer/producer.md)。
+
+创作者列表 `/producers` 已接入 `GET /producers`，提供表格／卡片、粉丝与收录投稿数筛选、排序和分页；页面不提供搜索，指向 UniSeek。收录与字段口径见[创作者列表 API](frontend/src/services/Producer/producerList.md)。
+
+单视频每日明细通过 `GET /videos/{aid}/daily-metrics?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD` 查询七项累计指标。按请求日期补齐行，未收录快照显式标记 `snapshotMissing`，缺失指标保留 `null`，不在后端计算增量。视频详情简介下方提供累计 / 增量图表与区间播放增长摘要；前端只对相邻有效快照作差。日期边界、日均及缺失数据口径见[单视频历史数据与趋势](doc/design/video-metrics-history.md)和[视频详情 API](frontend/src/services/Video/video.md)。
+
+单视频播放过线记录通过 `GET /videos/{aid}/gate-crossings` 读取 `hantang_dynamic.video_collection_gate_crossings`，按过线值降序返回；没有记录时返回 200 与空数组。详情页趋势图下方按过线值的取整精度（整千 / 整万 / 整十万 / 整百万 / 整千万 / 整亿）筛选，每个过线值只归入最粗的一档，筛选在前端完成；过线时间以北京时间显示到分。接口、分档规则与页面口径见[单视频播放过线与取整精度筛选](doc/design/video-gate-crossings.md)。
+
+## 技术栈
+
+### 前端
+
+目录：`frontend/`。细节见 `frontend/README.md`。
+
+- React 18、Vite 5、Ant Design、React Router、i18next、VChart
+- 包管理使用 npm，锁文件是 `frontend/package-lock.json`
+- 开发服务器端口 `5173`
+
+### 后端
+
+目录：仓库根目录，源码在 `src/main/java`。
+
+- Java 21、Maven、Javalin 6
+- MySQL、PostgreSQL（HikariCP）
+- 入口类 `com.hantang.web.App`，监听 `8080`
+- 数据库连接读取仓库根目录的 `config.secret.properties`。该文件已在 `.gitignore` 中，不提交
+
+## 总览页：中术50
+
+「中术50」借鉴上证指数等以样本观察整体变化的思路，选取相对固定的 50 个作品作为观测对象，跟踪这些作品的播放、收藏等指标变化。它不是按所选日期实时排序得到的 Top 50。作品名单已配置；样本调整规则及是否采用指数化计算尚未确定，目前不定义基期、权重或指数点位。
+
+- 顶部展示名称为「中术50播放」「中术50收藏」，趋势图对应「中术50视频数据」。
+- 样本配置位于 `src/main/resources/config/zhongshu-50.json`，`aids` 数组维护 50 个作品的 aid，`name` 为名称。
+- Java 后端在启动 HTTP 服务前读取配置，校验恰好 50 个不重复的正整数 aid，并缓存为不可变内存名单；配置缺失或不合法时启动失败。修改名单后需重新打包并重启（Docker 需重新构建镜像）。
+- 顶部播放、收藏及视频数据趋势均使用参数化的 `WHERE aid IN (?, ...)` 限定这份样本；新投稿、活跃创作者及其他图表不受此名单影响。
+- 顶部播放、收藏按 `hantang_dynamic.video_daily` 中样本的结束日次日快照合计减去开始日快照合计；视频数据趋势按相同样本计算每天的次日快照减去当日快照，返回播放、收藏、点赞、硬币、分享、评论、弹幕增量。顶部指标逐项校验两个端点均有完整的 50 个样本及对应字段，任一端缺失则该项 `value=null`，不作差；缺少当期或上期增量、或上期增量为 0 时，`dod=null`。前端以「暂缺」展示，真实零增量仍为 0。趋势图逐指标检查 D 与 D+1 快照完整性，任一端缺失则 D 日该指标返回 `null`；前端保留日期并在缺口断线，不补零。
+- 顶部指标保留当期值与前一等长区间的环比，不计算同比。
+- 顶部指标的中术50每日累计播放、累计收藏在 Service 与 DAO 之间按 `record_date` 缓存，复用 `CacheDao` 的线程安全内存 Map：成功加载后有效期 60 分钟，最多 64 个日期，容量满时按写入顺序淘汰。过期后由下一次读取重新查询；同一天并发未命中时合并查询，失败或样本不完整时不缓存，补数后下次请求重查。缓存随进程重启清空，不缓存整个日期区间，也不缓存新投稿、活跃创作者或趋势图。
+
+## 启动
+
+前后端各开一个终端。
+
+### 前端
+
+```sh
+cd frontend
+npm install
+npm run dev
+```
+
+浏览器访问 `http://localhost:5173/`。`npm run dev` 默认直接请求本机后端 `http://localhost:8080/`，请先启动后端。只使用前端 MOCK 数据时：
+
+```sh
+VITE_APP_ENV=MOCK npm run dev
+```
+
+生产打包：
+
+```sh
+npm run build
+```
+
+产物在 `frontend/dist/`，该目录不提交。
+
+### 后端
+
+在仓库根目录准备好 `config.secret.properties`，然后运行主类 `com.hantang.web.App`。
+
+用 Maven 打包后启动：
+
+```sh
+mvn package
+java -jar target/hantang-web-backend-1.0-SNAPSHOT.jar
+```
+
+接口在 `http://localhost:8080/`。开发环境已允许跨域，前端可以从 `5173` 访问后端。
+
+---
+
+# 后端结构说明
+
+后端基于 Javalin，采用分层结构。
 
 ## Docker 运行
 
@@ -31,7 +138,7 @@ src/main/java
 │ └── data.reader # 与“数据读取”功能相关的请求/响应体
 ├── mapper # JSON序列化/反序列化等映射器封装
 ├── service # 服务层（可选）：编写核心业务逻辑，解耦控制器和DAO
-└── Main # 应用入口
+└── App # 应用入口 com.hantang.web.App
 ```
 
 
@@ -149,3 +256,15 @@ POST `/hantang/metric-achieved-time`
     "target": 3000000
 }
 ```
+
+### UniSeek beta
+
+统一搜索入口 `/uniseek`。歌手在前端即时匹配；歌曲、UP 主关键词和 AV/BV/UID 精确查询并发调用，按到达顺序追加，后续只分页加载歌曲。
+
+歌曲关键词与 AV/BV 查询统一读取 `hantang_dynamic.adm_uniseek_videos`，在线不再 JOIN `processed_videos` 或 Daily，也不探测 Daily 最新日期。宽表按显式确认的数据日离线生成，只收录未删除、该日收藏数 **> 100** 的视频，直接提供封面、标签和累计指标。关键词支持一、二字标题子串及精确标签匹配；所有匹配项先按临时相关性与有上限的播放量加分排序，再保留最多 1,000 首供分页。排序结果按关键词和发布批次 UUID 缓存 60 秒，最多 16 个键，同日重新发布也会使旧缓存失效。
+
+旧点赞 >100 环境需要由对象所有者按[收藏门槛迁移、重刷与 CRON 操作顺序](sql/adm_uniseek_videos_favorite_migration.md)升级。脚本保留表与授权；第一次确认日期并成功重刷后生效，不代表业务库已经完成迁移。
+
+开发者已完成首批宽表构建并实际运行新搜索，反馈首次视频响应约 **700 ms**、后续滚动分页约 **100 ms/次**；旧路径聊天记录中的热门二字词未缓存首查约 **3–4 秒**，粗略相当于首次提速约 4–6 倍。样本的关键词、负载和测量条件未统一，不作为 P50/P95。开发者提出宽表化方向并负责业务库操作，Codex 补充发布校验、查询迁移、批次缓存及回归；过程、分工与结果见 [技改复盘](doc/design/uniseek/adm-search-retrospective.md)。
+
+无需 `pg_trgm`，应用不建表、不注册 CRON；独立 Java 账号需授予 schema USAGE 和宽表 SELECT，后续每日同步仍须确认完整数据日。接口与回归说明见 [UniSeek 说明](frontend/src/services/UniSeek/uniseek.md)，部署及授权见 [ADM SQL 使用说明](sql/adm_uniseek_videos.md)，剩余调度、运行验收见 [ADM TODO](doc/todo/uniseek-adm-search-snapshot.md)。

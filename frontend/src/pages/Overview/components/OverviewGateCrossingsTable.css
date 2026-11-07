@@ -1,0 +1,75 @@
+.overview-gate-crossings {
+  display: flex;
+  min-width: 0;
+  min-height: 224px;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.overview-gate-crossings-table {
+  min-width: 0;
+  width: 100%;
+}
+
+.overview-gate-crossings-table .overview-gate-crossings-value-cell {
+  width: 1%;
+  white-space: nowrap;
+}
+
+/* Keep long titles out of intrinsic table sizing; they use the space left by numeric columns. */
+.overview-gate-crossings-video {
+  width: 0;
+  min-width: 100%;
+}
+
+.overview-gate-crossings-table .ant-table {
+  background: transparent;
+  color: var(--text);
+}
+
+.overview-gate-crossings-table .ant-table-container,
+.overview-gate-crossings-table .ant-table-thead > tr > th,
+.overview-gate-crossings-table .ant-table-tbody > tr > td {
+  border-color: var(--border) !important;
+}
+
+.overview-gate-crossings-table .ant-table-thead > tr > th {
+  background: rgba(15, 23, 42, 0.035) !important;
+  color: var(--text) !important;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.overview-gate-crossings-table .ant-table-tbody > tr > td {
+  background: transparent !important;
+  color: var(--text) !important;
+  font-size: 12px;
+}
+
+.overview-gate-crossings-table .ant-table-tbody > tr:hover > td {
+  background: rgba(15, 23, 42, 0.04) !important;
+}
+
+.overview-gate-crossings-gate {
+  margin: 0;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.overview-gate-crossings-footer .ds-pagination {
+  justify-content: space-between;
+}
+
+[data-theme='dark'] .overview-gate-crossings-table .ant-table-thead > tr > th {
+  background: rgba(255, 255, 255, 0.055) !important;
+}
+
+[data-theme='dark'] .overview-gate-crossings-table .ant-table-tbody > tr:hover > td {
+  background: rgba(255, 255, 255, 0.055) !important;
+}
+
+@media (max-width: 767px) {
+  .overview-gate-crossings {
+    min-height: 260px;
+  }
+}
