@@ -29,3 +29,15 @@ export async function fetchVideoDailyMetrics(aid, startDate, endDate, options) {
   const query = new URLSearchParams({ startDate, endDate });
   return getJson(`/videos/${encodeURIComponent(aid)}/daily-metrics?${query}`, options);
 }
+
+/**
+ * 单视频播放过线记录：接口一次返回全部记录（已按 gateValue 降序），无记录时 rows 为空数组。
+ * 分页与量级筛选都在前端完成，不会重复请求。
+ */
+export async function fetchVideoGateCrossings(aid, options) {
+  if (isMockEnv()) {
+    // MOCK has no real crossing sample; never invent milestones.
+    return { aid, rows: [] };
+  }
+  return getJson(`/videos/${encodeURIComponent(aid)}/gate-crossings`, options);
+}

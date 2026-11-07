@@ -1,5 +1,6 @@
 package com.hantang.web.utils;
 
+import java.sql.Timestamp;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -34,6 +35,30 @@ public class IsoTimeUtils {
                 return (int) localDate.atStartOfDay().toEpochSecond(ZoneOffset.UTC);
             }
         }
+    }
+
+    /**
+     * 将数据库返回的时间对象渲染为 ISO 8601 字符串；{@code null} 保持 {@code null}。
+     * 支持 {@link Timestamp} / {@link OffsetDateTime} / {@link Instant} / {@link LocalDateTime}，
+     * 其他对象回退到 {@code toString()}。
+     */
+    public static String toIsoString(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof OffsetDateTime offsetDateTime) {
+            return offsetDateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+        }
+        if (value instanceof Timestamp timestamp) {
+            return timestamp.toInstant().toString();
+        }
+        if (value instanceof Instant instant) {
+            return instant.toString();
+        }
+        if (value instanceof LocalDateTime localDateTime) {
+            return localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        }
+        return value.toString();
     }
 
     /**

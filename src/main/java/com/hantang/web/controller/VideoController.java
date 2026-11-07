@@ -28,6 +28,7 @@ public class VideoController extends BaseController {
         app.get("/videos/{aid}/info", this::getInfo);
         app.get("/videos/{aid}/latest-metrics", this::getLatestMetrics);
         app.get("/videos/{aid}/daily-metrics", this::getDailyMetrics);
+        app.get("/videos/{aid}/gate-crossings", this::getGateCrossings);
     }
 
     void getInfo(Context context) {
@@ -51,6 +52,22 @@ public class VideoController extends BaseController {
         } catch (Exception e) {
             logger.error("Video daily metrics query failed, request={}", request, e);
             context.status(500).json(ResponseDTO.error(500, "Unable to load video daily metrics"));
+        }
+    }
+
+    void getGateCrossings(Context context) {
+        long aid;
+        try {
+            aid = parseAid(context);
+        } catch (IllegalArgumentException e) {
+            context.status(400).json(ResponseDTO.error(400, e.getMessage()));
+            return;
+        }
+        try {
+            context.json(ResponseDTO.success(videoService.getGateCrossings(aid)));
+        } catch (Exception e) {
+            logger.error("Video gate crossings query failed, aid={}", aid, e);
+            context.status(500).json(ResponseDTO.error(500, "Unable to load video gate crossings"));
         }
     }
 

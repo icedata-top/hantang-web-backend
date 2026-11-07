@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-FROM node:22-alpine AS deps
+FROM node:24.22.2-alpine AS deps
 
 WORKDIR /app
 
@@ -12,7 +12,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
     pnpm install --frozen-lockfile
 
-FROM node:22-alpine AS build
+FROM node:24.22.2-alpine AS build
 
 WORKDIR /app
 
@@ -27,7 +27,7 @@ ARG VITE_APP_ENV=PROD
 ENV VITE_APP_ENV=$VITE_APP_ENV
 RUN pnpm run build
 
-FROM caddy:2-alpine
+FROM caddy:2.11-alpine
 
 COPY Caddyfile /etc/caddy/Caddyfile
 COPY docker-entrypoint.sh /usr/bin/docker-entrypoint.sh

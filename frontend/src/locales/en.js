@@ -723,5 +723,19 @@ export default {
   "正在加载歌曲…": "Loading songs…",
   "歌曲分页": "Song pagination",
   "筛选控件": "Filter controls",
-  "日期、选择、数字输入及浮层跟随当前主题，保留悬停、聚焦和禁用状态。": "Dates, selects, number inputs and popups follow the current theme, including hover, focus and disabled states."
+  "日期、选择、数字输入及浮层跟随当前主题，保留悬停、聚焦和禁用状态。": "Dates, selects, number inputs and popups follow the current theme, including hover, focus and disabled states.",
+  "全部": "All",
+  "整千": "Thousands",
+  "整万": "Tens of thousands",
+  "整十万": "Hundreds of thousands",
+  "整百万": "Millions",
+  "整千万": "Tens of millions",
+  "整亿": "Hundreds of millions",
+  "{{value0}}（{{value1}} 条）": "{{value0}} ({{value1}} total)",
+  "过线值精度": "Milestone precision",
+  "按取整精度分档：整千为千位整数，整万为万位整数，依次到整亿；每个过线值只归入最粗的一档。过线时间以北京时间显示到分，悬停查看相对时间等详情。": "Grouped by rounding precision: thousands are whole thousands, ten thousands are whole ten-thousands, up to hundreds of millions. Each milestone appears only in its coarsest group. Times are shown in Beijing time to the minute; hover for relative time details.",
+  "正在加载过线记录…": "Loading view milestones…",
+  "过线记录加载失败，请重试。": "View milestones failed to load. Please try again.",
+  "该视频暂无过线记录": "This video has no view milestones yet",
+  "播放过线记录明细": "View milestone details"
 };

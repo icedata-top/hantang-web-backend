@@ -6,6 +6,8 @@ import com.hantang.web.dos.video.VideoInfoResponse;
 import com.hantang.web.dos.video.VideoLatestMetricsResponse;
 import com.hantang.web.dos.video.VideoDailyMetricsRequest;
 import com.hantang.web.dos.video.VideoDailyMetricsResponse;
+import com.hantang.web.dos.video.VideoGateCrossingsResponse;
+import com.hantang.web.utils.IsoTimeUtils;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -46,6 +48,16 @@ public class VideoService {
                 aid, text(row, "record_date"), number(row, "view"), number(row, "like"),
                 number(row, "coin"), number(row, "favorite"), number(row, "share"),
                 number(row, "reply"), number(row, "danmaku")));
+    }
+
+    public VideoGateCrossingsResponse getGateCrossings(long aid) {
+        var rows = new ArrayList<VideoGateCrossingsResponse.GateCrossingRow>();
+        for (Map<String, Object> row : videoDao.findGateCrossings(aid)) {
+            rows.add(new VideoGateCrossingsResponse.GateCrossingRow(
+                    number(row, "gate_value"), number(row, "previous_view"),
+                    number(row, "current_view"), IsoTimeUtils.toIsoString(row.get("crossed_at"))));
+        }
+        return new VideoGateCrossingsResponse(aid, rows);
     }
 
     public VideoDailyMetricsResponse getDailyMetrics(VideoDailyMetricsRequest request) {
