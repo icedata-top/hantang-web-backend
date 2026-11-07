@@ -1,0 +1,72 @@
+name: Build & Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build with Maven
+        run: mvn package -q -DskipTests
+
+      - name: Upload JAR
+        uses: actions/upload-artifact@v5
+        with:
+          name: hantang-web-backend
+          path: target/*.jar
+          retention-days: 30
+
+  release:
+    needs: build
+    if: (github.event_name == 'pull_request' && github.event.pull_request.merged == true) || startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Download JAR
+        uses: actions/download-artifact@v5
+        with:
+          name: hantang-web-backend
+          path: artifact
+
+      - name: Generate version
+        id: version
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/}"
+          else
+            TAG=$(git tag --points-at HEAD | grep '^v' | head -n 1)
+            if [[ -n "$TAG" ]]; then
+              VERSION="$TAG"
+            else
+              VERSION="v$(date +'%Y.%m.%d')-$(git rev-parse --short HEAD)"
+            fi
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: ${{ steps.version.outputs.version }}
+          generate_release_notes: true
+          files: artifact/*.jar
