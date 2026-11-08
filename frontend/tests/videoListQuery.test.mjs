@@ -3,7 +3,7 @@ import test from 'node:test';
 import { parseVideoListQuery, videoListParams, VIDEO_LIST_DEFAULTS } from '../src/pages/video/videoListQuery.js';
 
 test('song browse URLs round-trip filters and pagination independently of layout', () => {
-  const query = { ...VIDEO_LIST_DEFAULTS, startDate: '2026-02-01', endDate: '2026-02-28', honor: 'legend', typeId: 30, minView: 0, page: 3, pageSize: 50, sortBy: 'favorite', order: 'asc' };
+  const query = { ...VIDEO_LIST_DEFAULTS, startDate: '2026-02-01', endDate: '2026-02-28', honor: 'legend', typeId: 30, page: 3, pageSize: 50, sortBy: 'favorite', order: 'asc' };
   const params = videoListParams({ ...query, layout: 'cards' });
   assert.equal(params.has('layout'), false);
   params.set('layout', 'cards');
@@ -17,5 +17,9 @@ test('invalid dates and numeric limits cannot reach the browse API from a shared
   assert.equal(reversed.startDate, ''); assert.equal(reversed.endDate, '');
   assert.equal(parseVideoListQuery(new URLSearchParams('startDate=2024-02-29')).startDate, '2024-02-29');
   assert.equal(parseVideoListQuery(new URLSearchParams('endDate=2026-11-04')).endDate, '2026-11-04');
-  assert.equal(parseVideoListQuery(new URLSearchParams('minView=9007199254740992')).minView, null);
+});
+
+test('retired minimum-view parameters cannot apply an invisible filter', () => {
+  assert.deepEqual(parseVideoListQuery(new URLSearchParams('minView=500000')), VIDEO_LIST_DEFAULTS);
+  assert.equal(videoListParams({ ...VIDEO_LIST_DEFAULTS, minView: 500000 }).has('minView'), false);
 });

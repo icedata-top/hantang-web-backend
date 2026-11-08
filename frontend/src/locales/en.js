@@ -1,7 +1,7 @@
 export default {
   "about.activities": "We continuously collect, clean, and analyze uploads of <song>songs</song> performed by <vocal>virtual singers</vocal>, delivering insights to <creator>creators</creator> and fans through web apps, ChatBI conversations, and data-visualization videos. Our technology evolves, but the goal stays the same: make publicly available upload data easier to understand and use.",
   "about.backToAbout": "Back to About icedata",
-  "video.listIntroduction": "Browse collected <song>songs</song> by publication date, view milestone and category.",
+  "video.listIntroduction": "Browse collected <song>songs</song>.",
   "producer.listIntroduction": "Discover indexed <creator>creators</creator> and explore their profiles and work.",
   "about.songs.introduction": "On icedata, a “song” generally means an upload whose main subject is a song and its vocal performance. We focus on songs performed by <vocal>virtual singers</vocal>, including original works, covers, and new vocal-synth renditions of existing songs. Lyrics, a still image, or a full music video are all possible ways to present a song.",
   "about.songs.exclusions": "Dance performances, xiangsheng comedy, video edits, rankings, tutorials, and album previews fall outside what we mean by song uploads. They may use a song as background music or include part or all of a vocal performance, but containing a song does not make the song the main subject of the video.",
@@ -714,6 +714,9 @@ export default {
   "按投稿时间、播放荣誉和分区浏览已收录的歌曲。": "Browse collected songs by publication date, view milestone and category.",
   "查找歌曲、歌手或创作者？前往 Uni Seek →": "Looking for a song, vocalist or creator? Open Uni Seek →",
   "歌曲筛选": "Song filters",
+  "收录与统计说明": "Collection and statistics information",
+  "投稿日期": "Publication date",
+  "荣誉": "Honor",
   "投稿日期（北京时间）": "Publication date (Beijing time)",
   "播放荣誉": "View milestone",
   "不限荣誉": "All milestones",

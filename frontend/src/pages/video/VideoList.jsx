@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
-import { Button, DatePicker, Empty, Form, InputNumber, Segmented, Select, Spin } from 'antd';
-import { AppstoreOutlined, ReloadOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import { Button, DatePicker, Drawer, Empty, Form, Grid, Radio, Segmented, Select, Spin, Tooltip } from 'antd';
+import { AppstoreOutlined, FilterOutlined, QuestionCircleOutlined, ReloadOutlined, SearchOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { fetchVideoList } from '../../services/Video/videoList.api.js';
 import { DsPagination, DsTable } from '../../components/design-system/DataDisplay.jsx';
@@ -13,7 +13,8 @@ import RelativeTime from '../../components/custom/RelativeTime/RelativeTime.jsx'
 import VideoHonor from '../../components/custom/VideoHonor/VideoHonor.jsx';
 import { BILIBILI_SUB_PARTITION_ID_TO_NAME, BILIBILI_SUB_PARTITION_IDS_BY_REGION } from '../../constants/bilibili/type.id.js';
 import { formatNumber } from '../../utils/formatNumber.js';
-import { VIDEO_LIST_DEFAULTS, parseVideoListQuery, videoListParams } from './videoListQuery.js';
+import { createDebouncedAction } from '../../utils/debounce.js';
+import { parseVideoListQuery, videoListParams } from './videoListQuery.js';
 import './VideoList.css';
 
 function useVideos(queryKey) {
@@ -29,7 +30,8 @@ function useVideos(queryKey) {
     );
     return () => controller.abort();
   }, [queryKey, key]);
-  return { ...(state.key === key ? state : { status: 'loading', data: null }), retry: () => setAttempt(value => value + 1) };
+  const retry = useCallback(() => setAttempt(value => value + 1), []);
+  return { ...(state.key === key ? state : { status: 'loading', data: null }), retry };
 }
 
 export default function VideoList() {
@@ -37,25 +39,56 @@ export default function VideoList() {
   const [params, setParams] = useSearchParams();
   const query = useMemo(() => parseVideoListQuery(params), [params]);
   const queryKey = JSON.stringify(query);
-  const [draft, setDraft] = useState(query);
-  useEffect(() => { setDraft(JSON.parse(queryKey)); }, [queryKey]);
+  const filterKey = JSON.stringify({ startDate: query.startDate, endDate: query.endDate, honor: query.honor, typeId: query.typeId });
+  const [draft, setDraft] = useState(() => JSON.parse(filterKey));
+  useEffect(() => { setDraft(JSON.parse(filterKey)); }, [filterKey]);
+  const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const { md = true } = Grid.useBreakpoint();
+  const isMobile = !md;
   const videos = useVideos(queryKey);
   const rows = videos.data?.rows ?? [];
   const viewMode = params.get('layout') === 'cards' ? 'cards' : 'table';
   const total = videos.data?.total ?? 0;
 
-  function updateQuery(next, resetPage = true) {
+  const updateQuery = useCallback((next, resetPage = true) => {
     const updated = videoListParams({ ...query, ...next, ...(resetPage ? { page: 1 } : {}) });
     if (viewMode === 'cards') updated.set('layout', 'cards');
     setParams(updated);
-  }
+  }, [query, viewMode, setParams]);
   useEffect(() => {
     if (videos.status === 'ready') {
       const last = Math.max(1, Math.ceil(total / query.pageSize));
       if (query.page > last) updateQuery({ page: last }, false);
     }
-  }, [videos.status, total, query.page, query.pageSize]);
-  const setFilter = (key, value) => setDraft(current => ({ ...current, [key]: value }));
+  }, [videos.status, total, query.page, query.pageSize, updateQuery]);
+
+  useEffect(() => {
+    setPickerOpen(false);
+    if (!isMobile) setFilterDrawerOpen(false);
+  }, [isMobile]);
+
+  const debouncedQuery = useMemo(() => createDebouncedAction((nextFilter) => {
+    const nextQuery = { ...query, ...nextFilter, page: 1 };
+    if (JSON.stringify(nextQuery) === queryKey) videos.retry();
+    else updateQuery(nextFilter);
+    setFilterDrawerOpen(false);
+  }), [query, queryKey, updateQuery, videos.retry]);
+
+  useEffect(() => () => debouncedQuery.cancel(), [debouncedQuery]);
+  useEffect(() => {
+    if (videos.status === 'loading') debouncedQuery.cancel();
+  }, [videos.status, debouncedQuery]);
+
+  const setFilter = (next) => {
+    debouncedQuery.cancel();
+    setDraft(current => ({ ...current, ...next }));
+  };
+  const resetFilter = () => {
+    debouncedQuery.cancel();
+    setDraft(JSON.parse(filterKey));
+  };
+  const queryLoading = videos.status === 'loading';
   const columns = [
     { key: 'title', title: t('歌曲'), render: (title, row) => <div className="video-list-title">
       <VideoInfo aid={row.aid} initialTitle={title || `av${row.aid}`} linkToDetail />
@@ -72,53 +105,59 @@ export default function VideoList() {
   const partitions = Object.entries(BILIBILI_SUB_PARTITION_IDS_BY_REGION);
   partitions.sort(([a], [b]) => Number(b === '音乐区') - Number(a === '音乐区'));
   const partitionOptions = partitions.map(([region, ids]) => ({ label: t(region), options: ids.map(id => ({ value: id, label: t(BILIBILI_SUB_PARTITION_ID_TO_NAME.get(id)) })) }));
-  const filtersActive = ['startDate', 'endDate', 'honor', 'typeId', 'minView'].some(key => query[key] !== VIDEO_LIST_DEFAULTS[key]);
+
+  const filterBlock = <Form layout="vertical" onFinish={() => { if (!queryLoading) debouncedQuery(draft); }}>
+    <div className="video-list-filter-grid">
+      <Form.Item label={t('投稿日期')} htmlFor="video-list-start-date">
+        <DatePicker.RangePicker className="ds-filter-control video-list-dates" variant="borderless"
+          data-open={pickerOpen} onOpenChange={setPickerOpen} allowEmpty={[true, true]}
+          id={{ start: 'video-list-start-date', end: 'video-list-end-date' }}
+          minDate={dayjs('2009-01-01')} maxDate={dayjs('2100-12-31')} format="YYYY-MM-DD"
+          placeholder={[t('开始日期'), t('结束日期')]}
+          value={draft.startDate || draft.endDate ? [draft.startDate ? dayjs(draft.startDate) : null, draft.endDate ? dayjs(draft.endDate) : null] : null}
+          onChange={dates => setFilter({ startDate: dates?.[0]?.format('YYYY-MM-DD') ?? '', endDate: dates?.[1]?.format('YYYY-MM-DD') ?? '' })} />
+      </Form.Item>
+      <Form.Item label={t('荣誉')}>
+        <Radio.Group className="ds-radio-group-vertical" role="radiogroup" aria-label={t('荣誉')} name="video-list-honor" value={draft.honor}
+          onChange={event => setFilter({ honor: event.target.value })} options={[
+            { value: 'all', label: t('不限') }, { value: 'none', label: t('未达殿堂（<10万）') },
+            { value: 'hall', label: t('殿堂（10万–100万）') }, { value: 'legend', label: t('传说（100万–1000万）') }, { value: 'myth', label: t('神话（≥1000万）') },
+          ]} />
+      </Form.Item>
+      <Form.Item label={t('分区限定')}>
+        <Select className="ds-filter-control" variant="borderless" aria-label={t('分区限定')} allowClear placeholder={t('全部分区')}
+          value={draft.typeId} onChange={value => setFilter({ typeId: value ?? null })} options={partitionOptions} />
+      </Form.Item>
+    </div>
+    <div className="video-list-actions">
+      <Button className="ds-button" data-variant="secondary" icon={<ReloadOutlined aria-hidden="true" />} onClick={resetFilter}>{t('重置')}</Button>
+      <Button className="ds-button" data-variant="primary" icon={<SearchOutlined aria-hidden="true" />} htmlType="submit"
+        loading={queryLoading} disabled={queryLoading} aria-busy={queryLoading}>{t('查询')}</Button>
+    </div>
+  </Form>;
 
   return <main className="video-list-page">
     <header className="video-list-heading">
-      <div><h1>{t('歌曲')}</h1><p><Trans i18nKey="video.listIntroduction" components={{ song: <Link className="ds-link" to="/about/songs" /> }} /></p></div>
-      <Link className="ds-link" to="/uniseek">{t('查找歌曲、歌手或创作者？前往 Uni Seek →')}</Link>
-    </header>
-    <section className="ds-surface video-list-filters" aria-label={t('歌曲筛选')}>
-      <Form layout="vertical" onFinish={() => updateQuery(draft)}>
-        <div className="video-list-filter-grid">
-          <Form.Item label={t('投稿日期（北京时间）')} htmlFor="video-list-start-date">
-            <DatePicker.RangePicker className="video-list-dates" allowEmpty={[true, true]} id={{ start: 'video-list-start-date', end: 'video-list-end-date' }}
-              minDate={dayjs('2009-01-01')} maxDate={dayjs('2100-12-31')}
-              placeholder={[t('开始日期'), t('结束日期')]}
-              value={draft.startDate || draft.endDate ? [draft.startDate ? dayjs(draft.startDate) : null, draft.endDate ? dayjs(draft.endDate) : null] : null}
-              onChange={dates => setDraft(current => ({ ...current, startDate: dates?.[0]?.format('YYYY-MM-DD') ?? '', endDate: dates?.[1]?.format('YYYY-MM-DD') ?? '' }))} />
-          </Form.Item>
-          <Form.Item label={t('播放荣誉')}>
-            <Select aria-label={t('播放荣誉')} value={draft.honor} onChange={value => setFilter('honor', value)} options={[
-              { value: 'all', label: t('不限荣誉') }, { value: 'none', label: t('未达殿堂（<10万）') },
-              { value: 'hall', label: t('殿堂（10万–100万）') }, { value: 'legend', label: t('传说（100万–1000万）') }, { value: 'myth', label: t('神话（≥1000万）') },
-            ]} />
-          </Form.Item>
-          <Form.Item label={t('分区限定')}>
-            <Select aria-label={t('分区限定')} allowClear placeholder={t('全部分区')} value={draft.typeId} onChange={value => setFilter('typeId', value ?? null)}
-              options={partitionOptions} />
-          </Form.Item>
-          <Form.Item label={t('最低播放量')}>
-            <InputNumber aria-label={t('最低播放量')} min={0} max={Number.MAX_SAFE_INTEGER} precision={0} step={10000} placeholder={t('不限')}
-              value={draft.minView} onChange={value => setFilter('minView', value)} />
-          </Form.Item>
-        </div>
-        <div className="video-list-filter-footer">
-          <span className="video-list-caption">{t('荣誉按当前快照的最高等级划分；上限不包含在内。')}</span>
-          <div className="video-list-actions">
-            <Button className="ds-button" data-variant="secondary" onClick={() => { setDraft({ ...VIDEO_LIST_DEFAULTS }); updateQuery(VIDEO_LIST_DEFAULTS); }}>{t('重置')}</Button>
-            <Button className="ds-button" data-variant="primary" htmlType="submit">{t('应用筛选')}</Button>
-          </div>
-        </div>
-      </Form>
-    </section>
-
-    <section className="video-list-results" aria-label={t('歌曲列表')} aria-busy={videos.status === 'loading'}>
-      <div className="video-list-toolbar">
-        <h2>{filtersActive ? t('筛选结果') : t('全部歌曲')}{videos.status === 'ready' && <span>{t('共 {{value0}} 条', { value0: formatNumber(total, 'comma') })}</span>}</h2>
+      <div className="video-list-heading-copy">
+        <h1>{t('歌曲')}</h1>
+        <p className="video-list-summary">
+          <Trans i18nKey="video.listIntroduction" components={{ song: <Link className="ds-link" to="/about/songs" /> }} />
+          {' '}<span className="video-list-count" aria-live="polite">{videos.status === 'ready' && t('共 {{value0}} 条', { value0: formatNumber(total, 'comma') })}</span>
+          <Tooltip classNames={{ root: 'video-list-info-tooltip' }} trigger={['hover', 'focus', 'click']} title={<div className="video-list-info-copy">
+            <p>{t('仅展示已发布收录集中未删除、累计收藏大于 100 的投稿，不代表全站全部作品。')}</p>
+            {videos.data?.recordDate && <p>{t('统计日期：{{value0}}', { value0: videos.data.recordDate })}</p>}
+            <p>{t('累计指标来自该日快照，缺失值显示 —。')}</p>
+          </div>}>
+            <Button className="ds-text-button video-list-info-trigger" type="text" icon={<QuestionCircleOutlined aria-hidden="true" />} aria-label={t('收录与统计说明')} />
+          </Tooltip>
+        </p>
+      </div>
+      <div className="video-list-heading-actions">
+        <Link className="ds-link video-list-search-link" to="/uniseek" aria-label={t('查找歌曲、歌手或创作者？前往 Uni Seek →')}>Uni Seek →</Link>
         <div className="video-list-controls">
-          <Select aria-label={t('排序依据')} value={query.sortBy} onChange={sortBy => updateQuery({ sortBy })} options={[
+          {isMobile && <Button className="ds-button" data-variant="secondary" icon={<FilterOutlined aria-hidden="true" />}
+            aria-expanded={filterDrawerOpen} aria-controls="video-list-filter-drawer" onClick={() => setFilterDrawerOpen(true)}>{t('筛选条件')}</Button>}
+          <Select className="ds-filter-control" variant="borderless" aria-label={t('排序依据')} value={query.sortBy} onChange={sortBy => updateQuery({ sortBy })} options={[
             { value: 'pubdate', label: t('投稿时间') }, { value: 'view', label: t('播放量') }, { value: 'favorite', label: t('收藏量') },
           ]} />
           <Segmented className="ds-segmented" aria-label={t('排序方向')} value={query.order} onChange={order => updateQuery({ order })}
@@ -130,9 +169,16 @@ export default function VideoList() {
             ]} />
         </div>
       </div>
-      <p className="video-list-scope">{t('仅展示已发布收录集中未删除、累计收藏大于 100 的投稿，不代表全站全部作品。')}
-        {videos.data?.recordDate && <> {t('统计日期：{{value0}}', { value0: videos.data.recordDate })}</>}
-        {' '}{t('累计指标来自该日快照，缺失值显示 —。')}</p>
+    </header>
+    <div className="video-list-layout">
+    {isMobile ? <Drawer id="video-list-filter-drawer" title={t('筛选条件')} placement="left" width={320}
+      open={filterDrawerOpen} onClose={() => setFilterDrawerOpen(false)} className="video-list-filter-drawer">
+      {filterBlock}
+    </Drawer> : <aside className="ds-surface video-list-filters" aria-label={t('歌曲筛选')}>
+      <h2>{t('筛选条件')}</h2>
+      {filterBlock}
+    </aside>}
+    <section className="video-list-results" aria-label={t('歌曲列表')} aria-busy={videos.status === 'loading'}>
       {videos.status === 'error' ? <div className="ds-alert video-list-error" data-variant="error" role="alert">
         <span>{t('歌曲列表加载失败，请稍后重试。')}</span><Button className="ds-button" data-variant="secondary" icon={<ReloadOutlined />} onClick={videos.retry}>{t('重试')}</Button>
       </div> : viewMode === 'table' ? <div className="ds-surface video-list-table">
@@ -146,5 +192,6 @@ export default function VideoList() {
         disabled={videos.status !== 'ready'} pageSizeOptions={[20, 50, 100]} label={t('歌曲分页')}
         onChange={page => updateQuery({ page }, false)} onPageSizeChange={pageSize => updateQuery({ pageSize })} /></div>
     </section>
+    </div>
   </main>;
 }

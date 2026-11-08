@@ -1,6 +1,6 @@
 import { useId, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Card, DatePicker, Form, Input, InputNumber, Segmented, Select, Switch } from 'antd';
+import { Button, Card, DatePicker, Form, Input, InputNumber, Radio, Segmented, Select, Switch } from 'antd';
 import {
   InfoCircleOutlined,
   MoonOutlined,
@@ -237,6 +237,10 @@ function FilterControls({ t }) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [honor, setHonor] = useState('all');
   const [minView, setMinView] = useState(null);
+  const honorOptions = [
+    { value: 'all', label: t('不限') }, { value: 'none', label: t('未达殿堂（<10万）') },
+    { value: 'hall', label: t('殿堂（10万–100万）') }, { value: 'legend', label: t('传说（100万–1000万）') }, { value: 'myth', label: t('神话（≥1000万）') },
+  ];
   return <>
     <div className="spec-control-disabled"><Switch id={disabledId} checked={disabled} onChange={setDisabled} /><label htmlFor={disabledId}>{t('禁用')}</label></div>
     <Form layout="vertical" disabled={disabled} onFinish={() => {}}>
@@ -248,10 +252,11 @@ function FilterControls({ t }) {
           <DatePicker.RangePicker className="ds-filter-control" variant="borderless" data-open={pickerOpen} onOpenChange={setPickerOpen} aria-label={t('投稿日期（北京时间）')} value={dates} onChange={setDates} placeholder={[t('开始日期'), t('结束日期')]} />
         </Form.Item>
         <Form.Item label={t('播放荣誉')}>
-          <Select className="ds-filter-control" variant="borderless" aria-label={t('播放荣誉')} value={honor} onChange={setHonor} options={[
-            { value: 'all', label: t('不限荣誉') }, { value: 'none', label: t('未达殿堂（<10万）') },
-            { value: 'hall', label: t('殿堂（10万–100万）') }, { value: 'legend', label: t('传说（100万–1000万）') }, { value: 'myth', label: t('神话（≥1000万）') },
-          ]} />
+          <Select className="ds-filter-control" variant="borderless" aria-label={t('播放荣誉')} value={honor} onChange={setHonor} options={honorOptions} />
+        </Form.Item>
+        <Form.Item label={t('荣誉')}>
+          <Radio.Group className="ds-radio-group-vertical" role="radiogroup" aria-label={t('荣誉')} value={honor}
+            onChange={event => setHonor(event.target.value)} options={honorOptions} />
         </Form.Item>
         <Form.Item label={t('最低播放量')}>
           <InputNumber className="ds-filter-control" variant="borderless" aria-label={t('最低播放量')} value={minView} onChange={setMinView} min={0} precision={0} placeholder={t('不限')} />

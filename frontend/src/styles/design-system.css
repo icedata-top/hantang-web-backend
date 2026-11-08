@@ -116,6 +116,9 @@ html .ds-filter-control.ant-picker .ant-picker-active-bar {
   display: none;
 }
 
+.ds-radio-group-vertical.ant-radio-group { display: flex; flex-direction: column; gap: 8px; }
+.ds-radio-group-vertical .ant-radio-wrapper { margin-inline-end: 0; white-space: normal; line-height: var(--line-height-body); }
+
 .ds-button {
   --button-bg: var(--button-normal-bg);
   --button-hover-bg: var(--button-normal-hover);

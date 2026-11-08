@@ -346,7 +346,7 @@ src/components/custom/VideoCard/VideoCard.jsx
 
 创作者列表 `/producers` 默认表格，支持卡片；按最低粉丝数、最低收录投稿数筛选，按粉丝、收录投稿或 UID 排序，提供 20 / 50 / 100 条分页。切换展示保留 URL 中的条件和页码，不重复请求。名称复用带完整列表资料的 ProducerInfo，点击进入详情，浮层不逐行再查接口。没有搜索输入框，查找具体账号引导到 UniSeek；接口与验收见[创作者列表 API](src/services/Producer/producerList.md)。
 
-歌曲列表 `/videos` 支持投稿日期、最高播放荣誉、历史二级分区、最低播放量筛选，以及播放 / 收藏 / 投稿时间排序；提供表格和卡片切换及分页，URL 保留当前条件。表格与卡片隐藏点赞数。后端直接读取 UniSeek 发布宽表，仅在筛选分区时按 aid 查基础资料，不关联日历史表。列表页本身不新增表；收藏 >100 收录规则需要按[迁移与重刷步骤](../sql/adm_uniseek_videos_favorite_migration.md)升级既有 ADM 约束和刷新过程。收录范围和接口约定见 [歌曲列表](src/services/Video/videoList.md)。
+歌曲列表 `/videos` 支持投稿日期、荣誉、历史二级分区筛选，以及播放 / 收藏 / 投稿时间排序；PC 左侧筛选卡吸顶，移动端默认折叠为左侧抽屉。日期与 Select 无边框，荣誉采用竖向单选；「重置」恢复已应用条件，「查询」提交并可刷新相同条件。页面移除最低播放量筛选，旧 URL 中的 `minView` 不再生效，后端仍保留该参数。提供表格和卡片切换及分页，URL 保留当前条件；表格与卡片隐藏点赞数。后端直接读取 UniSeek 发布宽表，仅在筛选分区时按 aid 查基础资料，不关联日历史表。列表页本身不新增表；收藏 >100 收录规则需要按[迁移与重刷步骤](../sql/adm_uniseek_videos_favorite_migration.md)升级既有 ADM 约束和刷新过程。收录范围和接口约定见 [歌曲列表](src/services/Video/videoList.md)。
 
 ## 使用的第三方组件/素材
 

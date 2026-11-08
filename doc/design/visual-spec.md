@@ -137,6 +137,8 @@ Ant Design Button 的状态变量同样由 `.ds-button` 适配，悬停与按下
 - 禁用时使用公共禁用底色与文字色，不响应悬停和聚焦，保留组件原有禁用及键盘行为。浮层继续使用标准 Surface 与现有主题配色。
 - 三态背景统一由 `theme.css` 中的 `--filter-control-{bg|hover-bg|active-bg}` 维护，总览已有的 `--overview-filter-control-*` 变量引用同一组值；业务页面直接复用，不重复实现配色。尊重系统减少动态效果设置。
 
+歌曲列表的「荣誉」使用竖向 Ant Design `Radio.Group`，配合公共类 `.ds-radio-group-vertical`，完整列出不限、未达殿堂、殿堂、传说和神话五项互斥条件。单选项保留组件原有的主题配色、选中态与键盘焦点；`/admin/design/spec#spec-controls` 提供同款单选样本。
+
 ## 字体与文字颜色
 
 使用本机系统无衬线字体，按内容的 `lang` 选择字体栈，唯一配置入口为 `theme.css`：中文 `--font-family-zh` 优先 PingFang SC / Microsoft YaHei / Noto Sans SC，英文 `--font-family-en` 使用系统拉丁字体，日文 `--font-family-ja` 优先 Hiragino Sans / Yu Gothic UI / Meiryo / Noto Sans JP。`--font-family-sans` 随页面语言绑定，Ant Design 的 `fontFamily` token 使用同一个变量，浮层和控件保持一致。嵌入其他语言的内容须标注自身 `lang`；日夜主题预览同样遵循语言边界。
@@ -255,7 +257,13 @@ RelativeTime 的四项悬停详情使用 Ant Design `Descriptions`，单列、�
 
 歌曲卡片复用 [VideoCard](../../frontend/src/components/custom/VideoCard/README.md)，统一搜索和创作者详情共享封面、标题、标识与指标展示。创作者投稿用带图标及可访问名称的 Segmented 切换列表 / 卡片，桌面卡片一行多列、窄屏减列；两种视图保留同一查询和分页状态。未提供的额外指标不生成计数，明确缺失的指标显示 `—`，真实零仍为 `0`。
 
-歌曲列表 `/videos` 同样复用 VideoCard、DsTable 和 DsPagination，默认紧凑表格，通过图标 Segmented 切换卡片；两种视图共用筛选、排序和页码。筛选使用 DatePicker.RangePicker、Select 和 InputNumber，提供明确的应用与重置操作。标题复用 VideoInfo 的已有标题模式：点击进入详情，悬停或聚焦后加载资料气泡；播放量旁显示 VideoHonor，投稿人复用 ProducerInfo。页面使用现有主题变量，不另建配色或基础控件。
+歌曲列表 `/videos` 同样复用 VideoCard、DsTable 和 DsPagination，默认紧凑表格，通过图标 Segmented 切换卡片；两种视图共用筛选、排序和页码。PC 筛选卡在左侧吸顶，移动端（不超过 767px）默认折叠为左侧 Drawer，页面保持整页纵向滚动。筛选仅提供「投稿日期」「荣誉」和「分区限定」：日期范围与分区 Select 复用无边框样式，荣誉采用竖向 Radio.Group，不提供最低播放量输入框，日期标签不附加时区备注，实际日期口径仍为北京时间。排序 Select 同样无边框；卡片列数按结果区可用宽度调整。
+
+页面顶部集中展示简短介绍、当前结果总数、排序与视图切换，Uni Seek 使用小字号入口；移动端的筛选入口也放在此处。收录范围、统计日期和快照缺失值说明放入介绍旁的问号 Tooltip，支持悬停、键盘聚焦和触屏点击。右侧正文不再重复「全部歌曲 / 筛选结果」小标题及说明，表格或首排歌曲卡片与左侧筛选卡顶边对齐。
+
+歌曲筛选的「重置」使用 Secondary，「查询」使用 Primary，两者携带图标、常驻显示并整体居右。重置撤销尚未提交的修改，恢复最近一次已应用条件；查询在最后一次点击后等待 300ms 执行，连续点击合并，查询期间显示加载并禁用查询。修改条件、重置或卸载时取消待执行查询；相同条件可以再次查询，查询从第 1 页开始，移动端提交后收起抽屉，关闭抽屉不清空条件。
+
+标题复用 VideoInfo 的已有标题模式：点击进入详情，悬停或聚焦后加载资料气泡；播放量旁显示 VideoHonor，投稿人复用 ProducerInfo。页面使用现有主题变量，不另建配色或基础控件。
 
 创作者列表 `/producers` 复用 ProducerInfo、DsTable 和 DsPagination，默认表格，可切换卡片；名称直接链接详情，头像、简介及资料浮层使用列表已返回的公开资料，不逐行请求。筛选使用 InputNumber，排序使用 Select 和 Segmented；收录投稿数注明本站收录口径，不展示为账号全站总投稿数。页面不提供搜索框，引导到 UniSeek，日夜主题与窄屏布局沿用歌曲列表规范。
 
@@ -294,7 +302,7 @@ RelativeTime 的四项悬停详情使用 Ant Design `Descriptions`，单列、�
 - **PC 端左侧固定**：筛选项在页面左侧单列排列，结果或数据内容位于右侧。浏览右侧内容时，筛选区保持固定可见，并避开顶部导航；筛选卡片复用标准 Surface 与现有 Ant Design 控件。
 - **移动端默认折叠**：仅保留「筛选条件」入口，点击后通过左侧 Ant Design Drawer 展开筛选项。页面使用整页纵向滚动，关闭抽屉不清空已应用的条件。
 
-以上为统一布局规范；歌曲与创作者列表的布局改造另行实施。
+总览与歌曲列表已采用上述布局；创作者列表的布局改造另行实施。
 
 总览 `/overview` 在不超过 767px 时使用整页纵向滚动，筛选入口和所有内容卡片一起向上移动，仅顶部 NavBar 保持吸顶。移除 PC 主列的固定高度、内部纵向滚动、额外左右内边距及滚动条预留空间；卡片与 NavBar 共同使用 `--page-gutter-inline`（20px）对齐外沿。移动端表格保留局部横向滚动，表头不设置纵向吸顶；PC 的左右分栏与主列内部滚动继续保留。
 
