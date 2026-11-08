@@ -31,7 +31,9 @@ export default function IcedataNavbar() {
   const { i18n, t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const isHome = location.pathname === '/';
   const [isDark, setIsDark] = useState(false);
+  const [homeNavScrolled, setHomeNavScrolled] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
   const isNarrow = useNarrowNav();
@@ -104,6 +106,14 @@ export default function IcedataNavbar() {
   }, []);
 
   useEffect(() => {
+    if (!isHome) return;
+    const syncScrolled = () => setHomeNavScrolled(window.scrollY > 24);
+    syncScrolled();
+    window.addEventListener('scroll', syncScrolled, { passive: true });
+    return () => window.removeEventListener('scroll', syncScrolled);
+  }, [isHome]);
+
+  useEffect(() => {
     if (!isNarrow) setDrawerOpen(false);
     else setLanguageMenuOpen(false);
   }, [isNarrow]);
@@ -134,8 +144,13 @@ export default function IcedataNavbar() {
   }
 
   return (
-    <header className="icedata-navbar-wrap">
-      <Card className="icedata-navbar-card ds-surface" variant="borderless" styles={{ body: { padding: '0 16px' } }}>
+    <header className={`icedata-navbar-wrap${isHome ? ' icedata-navbar-wrap--home' : ''}`}>
+      <Card
+        className={`icedata-navbar-card ${isHome ? 'icedata-navbar-card--home' : 'ds-surface'}`}
+        data-scrolled={isHome ? homeNavScrolled : undefined}
+        variant="borderless"
+        styles={{ body: { padding: '0 16px' } }}
+      >
         <div className="icedata-navbar-inner">
           <Link to="/" className="icedata-navbar-logo-link" aria-label={t('冰数据首页')}>
             <img

@@ -46,6 +46,11 @@
 .spec-surface { min-width: 0; padding: 16px; }
 .spec-surface strong { display: block; margin-top: 16px; font-size: var(--font-size-body); font-weight: var(--font-weight-semibold); }
 .spec-surface p { margin: 5px 0 14px; color: var(--text-secondary); font-size: var(--font-size-caption); }
+.spec-home-navbar-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 16px; margin-top: 24px; }
+.spec-home-navbar-sample { display: grid; min-width: 0; gap: 8px; }
+.spec-home-navbar-stage { padding: 12px; border-radius: var(--radius-card); background: linear-gradient(135deg, var(--button-secondary-bg), var(--canvas)); }
+.spec-home-navbar-inner { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; }
+.spec-home-navbar-inner img { width: 112px; max-width: 50%; height: auto; }
 .spec-swatch-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 10px; margin-top: 24px; }
 .spec-swatch { display: flex; min-width: 0; align-items: center; gap: 8px; }
 .spec-swatch-color { flex: 0 0 28px; height: 28px; border: 1px solid var(--surface-border); border-radius: 6px; }

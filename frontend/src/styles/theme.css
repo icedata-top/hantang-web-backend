@@ -56,6 +56,9 @@
   --entity-tag-fill-strength: 16%;
 
   /* 导航与数据展示的尺寸 */
+  --page-gutter-inline: 20px;
+  --navbar-home-backdrop-blur: 16px;
+  --navbar-home-indicator-size: 1px;
   --tabs-height: 40px;
   --tabs-gap: 24px;
   --tabs-indicator-size: 2px;
@@ -145,6 +148,8 @@
   --shadow-strength: 12%;
   --shadow-card-strength: 6%;
   --shadow-card-detail-strength: 4%;
+  --navbar-home-fill-strength: 12%;
+  --navbar-home-scrolled-fill-strength: 60%;
 }
 
 /* 夜间：保留独立的基础色，复用同一套派生配方。 */
@@ -196,6 +201,8 @@
   --shadow-strength: 35%;
   --shadow-card-strength: 25%;
   --shadow-card-detail-strength: 20%;
+  --navbar-home-fill-strength: 18%;
+  --navbar-home-scrolled-fill-strength: 72%;
 }
 
 /* 公共派生配方：每个显式主题容器都重新计算，保证日夜对照互不串色。 */
@@ -214,6 +221,11 @@
   --text-disabled: color-mix(in srgb, var(--text) var(--text-disabled-strength), var(--canvas));
   --text-link: color-mix(in srgb, var(--theme-primary) var(--link-strength), var(--link-anchor));
   --text-link-hover: color-mix(in srgb, var(--theme-primary) var(--link-hover-strength), var(--link-anchor));
+
+  --navbar-home-bg: color-mix(in srgb, var(--surface) var(--navbar-home-fill-strength), transparent);
+  --navbar-home-scrolled-bg: color-mix(in srgb, var(--surface) var(--navbar-home-scrolled-fill-strength), transparent);
+  --navbar-home-control-hover-bg: color-mix(in srgb, var(--surface-hover) 48%, transparent);
+
 
   --chip-neutral-bg: color-mix(in srgb, var(--text) 8%, var(--surface));
   --chip-neutral-text: var(--text-secondary);

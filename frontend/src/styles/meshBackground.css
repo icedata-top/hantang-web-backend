@@ -58,7 +58,7 @@ html[data-mesh='on'][data-theme='dark']::before {
     );
 }
 
-/* 导航外层透出弥散背景；卡片本身使用统一的 Surface。 */
+/* 导航外层透出弥散背景；首页卡片使用轻填充，其余页面沿用 Surface。 */
 html[data-mesh='on'] .icedata-navbar-wrap,
 html[data-mesh='on'][data-theme='dark'] .icedata-navbar-wrap {
   background: transparent;

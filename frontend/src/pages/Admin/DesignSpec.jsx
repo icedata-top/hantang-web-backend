@@ -1,6 +1,6 @@
 import { useId, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, DatePicker, Form, InputNumber, Segmented, Select, Switch } from 'antd';
+import { Button, Card, DatePicker, Form, InputNumber, Segmented, Select, Switch } from 'antd';
 import {
   InfoCircleOutlined,
   MoonOutlined,
@@ -18,6 +18,7 @@ import { LANGUAGE_OPTIONS } from '../../locales/languages.js';
 
 const TOKEN_NAMES = [
   'canvas', 'surface', 'surface-hover', 'surface-border', 'theme-primary', 'theme-accent',
+  'navbar-home-bg', 'navbar-home-scrolled-bg',
   'text-primary', 'text-secondary', 'text-disabled', 'text-link', 'text-link-hover',
   'button-primary-bg', 'button-primary-hover', 'button-primary-text',
   'button-secondary-bg', 'button-secondary-hover', 'button-secondary-text',
@@ -130,6 +131,27 @@ function Surfaces({ t }) {
         <Swatch name="theme-accent" label={t("品牌高亮")} />
       </div>
       <p className="spec-footnote">{t("圆角")} <Value name="radius-card" /> · {t("描边")} <Value name="surface-border-width" /> · {t("过渡 200ms。左侧卡片支持实际悬停与键盘聚焦。")}</p>
+      <div className="spec-home-navbar-grid">
+        {[false, true].map((scrolled) => (
+          <div className="spec-home-navbar-sample" key={String(scrolled)}>
+            <span className="spec-layer-label">{t("首页导航")} · {scrolled ? t("滚动后") : t("首屏")}</span>
+            <div className="spec-home-navbar-stage">
+              <Card
+                className="icedata-navbar-card icedata-navbar-card--home"
+                data-scrolled={scrolled}
+                variant="borderless"
+              >
+                <div className="spec-home-navbar-inner">
+                  <img src="/png/icedata_logo_with_name_512x.png" alt={t("冰数据")} />
+                  <Button className="ds-button" data-variant="normal" type="text" href="/">{t("首页")}</Button>
+                </div>
+              </Card>
+            </div>
+            <Token name={scrolled ? 'navbar-home-scrolled-bg' : 'navbar-home-bg'} />
+          </div>
+        ))}
+      </div>
+      <p className="spec-footnote">{t("首页导航融入背景，滚动后以轻薄的模糊底层保持可读性。")}</p>
     </>
   );
 }

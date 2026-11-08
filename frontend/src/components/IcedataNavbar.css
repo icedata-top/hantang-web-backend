@@ -2,7 +2,7 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  padding: 16px 20px 0;
+  padding: 16px var(--page-gutter-inline) 0;
   /* 与页面主背景一致，避免与 Card 叠加产生偏 #fafafa 的渐变条带 */
   background: var(--bg);
 }
@@ -48,8 +48,8 @@
 }
 
 .icedata-navbar-menu.ant-menu-horizontal > .ant-menu-item {
-  color: var(--text);
-  font-weight: 500;
+  color: var(--navbar-item-text, var(--text));
+  font-weight: var(--navbar-item-weight, 500);
   background: transparent !important;
 }
 
@@ -59,13 +59,13 @@
 }
 
 .icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu {
-  color: var(--text);
-  font-weight: 500;
+  color: var(--navbar-item-text, var(--text));
+  font-weight: var(--navbar-item-weight, 500);
 }
 
 /* SubMenu 标题单独着色，避免 Ant Design 默认 token 在暗色下仍为深色文字 */
 .icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu .ant-menu-submenu-title {
-  color: var(--text) !important;
+  color: var(--navbar-item-text, var(--text)) !important;
 }
 
 .icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu .ant-menu-submenu-title .ant-menu-title-content {
@@ -73,12 +73,12 @@
 }
 
 .icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu .ant-menu-submenu-arrow {
-  color: var(--text);
+  color: var(--navbar-item-text, var(--text));
 }
 
 .icedata-navbar-menu.ant-menu-horizontal > .ant-menu-item::after,
 .icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu::after {
-  border-bottom: 2px solid transparent !important;
+  border-bottom: var(--navbar-indicator-size, 2px) solid transparent !important;
 }
 
 .icedata-navbar-menu.ant-menu-horizontal > .ant-menu-item:hover,
@@ -141,7 +141,7 @@
 }
 
 .icedata-menu-overflow-icon {
-  color: var(--text);
+  color: var(--navbar-item-text, var(--text));
   font-weight: 600;
   letter-spacing: 1px;
 }
@@ -151,19 +151,59 @@
 }
 
 [data-theme='dark'] .icedata-navbar-menu.ant-menu {
-  color: var(--text);
+  color: var(--navbar-item-text, var(--text));
 }
 
 [data-theme='dark'] .icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu .ant-menu-submenu-title {
-  color: var(--text) !important;
+  color: var(--navbar-item-text, var(--text)) !important;
 }
 
 [data-theme='dark'] .icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu .ant-menu-submenu-title .ant-menu-title-content {
-  color: var(--text) !important;
+  color: inherit !important;
 }
 
 [data-theme='dark'] .icedata-navbar-menu.ant-menu-horizontal > .ant-menu-submenu .ant-menu-submenu-arrow {
-  color: var(--text);
+  color: var(--navbar-item-text, var(--text));
+}
+
+/* 首页让导航融入弥散背景；交互反馈落在具体控件上，不抬升整张卡片。 */
+.icedata-navbar-wrap.icedata-navbar-wrap--home {
+  background: transparent;
+}
+
+.ant-card.icedata-navbar-card.icedata-navbar-card--home {
+  --navbar-item-text: var(--text-secondary);
+  --navbar-item-weight: var(--font-weight-regular);
+  --navbar-indicator-size: var(--navbar-home-indicator-size);
+  border: var(--surface-border-width) solid var(--surface-border);
+  background: var(--navbar-home-bg);
+  box-shadow: none;
+  transition: background-color 200ms ease;
+}
+
+/* 不支持背景模糊时，滚动后的实色表面仍保证内容不会透过导航文字。 */
+.ant-card.icedata-navbar-card.icedata-navbar-card--home[data-scrolled='true'] {
+  background: var(--surface);
+}
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .ant-card.icedata-navbar-card.icedata-navbar-card--home[data-scrolled='true'] {
+    background: var(--navbar-home-scrolled-bg);
+    -webkit-backdrop-filter: blur(var(--navbar-home-backdrop-blur));
+    backdrop-filter: blur(var(--navbar-home-backdrop-blur));
+  }
+}
+
+.icedata-navbar-card--home .ds-button {
+  --button-bg: transparent;
+  --button-hover-bg: var(--navbar-home-control-hover-bg);
+  --button-text: var(--text-secondary);
+}
+
+.icedata-navbar-card--home .icedata-navbar-logo-link:focus-visible {
+  border-radius: var(--radius-control);
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 4px;
 }
 
 [data-theme='dark'] .ant-menu-submenu-popup .ant-menu {
@@ -285,6 +325,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .ant-card.icedata-navbar-card.icedata-navbar-card--home,
   .icedata-language-trigger.ant-btn {
     transition: none;
   }
