@@ -183,6 +183,8 @@ Ant Design Button 的状态变量同样由 `.ds-button` 适配，悬停与按下
 
 播放荣誉复用 Ant Design `Tag variant="filled"`，统一使用 `TrophyOutlined` 奖杯图标，无边框。殿堂（≥10万）、传说（≥100万）、神话（≥1000万）分别从 `--highlight-blue`、`--highlight-orange`、`--highlight-violet` 派生颜色；背景和文字使用 `--honor-{hall|legend|myth}-bg/text`，不硬编码颜色。视频详情标题下只显示最高荣誉；本页三个日夜样本各自对应独立播放量。完整数据口径见[视频播放荣誉](video-view-honors.md)。
 
+歌曲列表的表格、卡片模式及 UniSeek 歌曲结果统一复用 `VideoHonor`，使用 `.ds-chip.video-honor-tag` 保持同款形状、颜色和奖杯图标；图标跟随标签文字色。表格中的荣誉位于播放量旁，卡片中与绿色「歌曲」标签并排成组，av 号独立展示。每首作品仅显示达到的最高一级，未达 10 万或播放量缺失时不展示；UniSeek 直接使用搜索结果的累计播放量，不追加逐首快照请求。门槛说明支持悬停、键盘聚焦和触屏点击。
+
 视频封面悬停操作使用 `--media-overlay-bg` 的半透明黑色蒙层，按钮为无背景白字，文字引用 `--media-overlay-text`。键盘聚焦同样显示操作；移动端或无悬停设备常显底部操作，并使用 `--media-overlay-gradient`。这些媒体蒙层不随日夜主题变成浅色，以保证白字可读。
 
 桌面端的「下载封面」「在哔哩哔哩观看」作为左右两组操作，整体居于封面中央；每组图标在上、文字在下，均居中对齐。图标使用 `--media-action-icon-size`（36px），文字使用正文字号（14px）。移动端图标缩为 26px，文字缩为 12px，保留上下结构。

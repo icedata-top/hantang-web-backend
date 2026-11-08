@@ -16,8 +16,8 @@ export default function VideoHonor({ views }) {
   const threshold = formatNumber(honor.threshold, normalizeLanguage(language));
   const description = t("{{value0}}：累计播放量 ≥ {{value1}}，仅显示最高荣誉。", { value0: name, value1: threshold });
 
-  return <Tooltip title={description} trigger={['hover', 'focus']}>
-    <Tag className="video-honor-tag" data-honor={honor.id} variant="filled" icon={<TrophyOutlined aria-hidden="true" />}
+  return <Tooltip title={description} trigger={['hover', 'focus', 'click']}>
+    <Tag className="ds-chip video-honor-tag" data-honor={honor.id} variant="filled" icon={<TrophyOutlined aria-hidden="true" />}
       tabIndex={0} aria-label={description}>{name}</Tag>
   </Tooltip>;
 }

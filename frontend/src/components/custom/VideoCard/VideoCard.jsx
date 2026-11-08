@@ -41,8 +41,10 @@ export default function VideoCard({ video, keyword = '', showProducer = false, t
     {href ? <Link className="video-card-cover video-card-link" to={href} aria-label={title}>{cover}</Link>
       : <div className="video-card-cover">{cover}</div>}
     <div className="video-card-top">
-      <Tag className="video-card-type" variant="filled">{t("歌曲")}</Tag>
-      {showHonor && <VideoHonor views={video.view} />}
+      <div className="video-card-tags">
+        <Tag className="video-card-type" variant="filled">{t("歌曲")}</Tag>
+        {showHonor && <VideoHonor views={video.view} />}
+      </div>
       {aid && <span className="video-card-id">av{aid}</span>}
     </div>
     <div className="video-card-title-wrap">

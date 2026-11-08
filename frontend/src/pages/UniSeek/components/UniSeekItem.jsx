@@ -79,7 +79,7 @@ export default function UniSeekItem({ item, keyword = '' }) {
   const field = (name) => Object.hasOwn(item.payload ?? {}, name) ? item.payload[name] : item[name];
   const href = item.type === 'vocal' ? `/vocals/${item.id}` : `/producers/${item.id}`;
 
-  if (item.type === 'video') return <VideoCard video={videoCardFromSearchItem(item)} keyword={keyword} />;
+  if (item.type === 'video') return <VideoCard video={videoCardFromSearchItem(item)} keyword={keyword} showHonor />;
 
   const typeLabels = typeLabelMap[item.type];
   const tagText = typeLabels ? t(typeLabels.zh) : item.type;

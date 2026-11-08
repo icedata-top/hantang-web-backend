@@ -22,6 +22,8 @@
 
 页面以紫色虚拟歌手 Tag、橙色创作者 Tag、绿色歌曲 Tag 区分实体类型，均适配日夜主题。虚拟歌手的内部 ID 只用于链接与去重，不在卡片上展示。
 
+歌曲结果同时显示达到的最高播放荣誉，复用歌曲列表的 `VideoHonor`：殿堂蓝、传说橙、神话紫，统一为带奖杯图标的无边框 Tag / Chip，与绿色歌曲标签并排。直接使用 `payload.play` 判定，缺失或未达 10 万时不显示，不回退显式 NULL，也不追加逐项快照请求。
+
 每项为 type、id、title、subTitle、coverUrl、jumpUrl、payload，不对外提供可跨类型比较的 score。所有列表实体 ID 为字符串。
 
 视频封面来自 ADM 的 pic，头像来自 discovered_users.face，立绘复用 frontend/public/vocals。歌曲关键词与编号查询的 payload 包含 bvid、play、favorite、like、coin、publishDate（Unix 秒）、producerId、recordDate。recordDate 为已发布批次的来源日 D，不要求是今天，也不使用每个视频各自的最新日期。ADM 离线发布时已过滤 `processed_videos.is_deleted = false`、D 日有 Daily 记录且累计收藏数严格 **> 100** 的视频；100、0、NULL 均不入表。其他指标缺失时保留 null，真实 0 保留 0。

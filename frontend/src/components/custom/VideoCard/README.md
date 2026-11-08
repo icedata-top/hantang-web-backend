@@ -1,6 +1,8 @@
 # VideoCard
 
-歌曲列表 `/videos` 同样复用此卡片。可选 `titlePreview` 启用标题的 VideoInfo 懒加载预览及直接详情链接，`showHonor` 展示当前播放量的最高荣誉；均默认关闭，已有搜索与投稿卡片沿用原行为。
+歌曲列表 `/videos` 同样复用此卡片。可选 `titlePreview` 启用标题的 VideoInfo 懒加载预览及直接详情链接，`showHonor` 展示当前播放量的最高荣誉；均默认关闭，歌曲列表和 UniSeek 歌曲结果显式开启 `showHonor`，创作者投稿沿用原行为。
+
+荣誉与绿色「歌曲」标签并排成组，av 号单独展示。荣誉统一复用 `VideoHonor`：殿堂蓝、传说橙、神话紫，均为带奖杯图标的无边框 Tag / Chip；只显示最高一级，未达门槛或播放量缺失不展示。搜索以结果携带的 `payload.play` 判定，显式 NULL 不回退到旧兼容字段，也不额外请求快照。
 
 从 UniSeek 原有的歌曲结果 Item 提取的共享歌曲卡片。统一搜索与创作者详情使用同一个组件，不复制第二套卡片展示；搜索的类型选择、关键词、排序和请求仍由搜索页管理。
 
@@ -8,7 +10,7 @@
 import VideoCard from './components/custom/VideoCard/VideoCard.jsx';
 
 <VideoCard video={video} />
-<VideoCard video={video} keyword="世末" showProducer />
+<VideoCard video={video} keyword="世末" showProducer showHonor />
 ```
 
 - `video`：直接接受创作者分页投稿接口的行数据，含 `aid`、`title`、`pic`、`view`、`recordDate`、`pubdate`、`userId`。大整数 ID 使用十进制字符串。
