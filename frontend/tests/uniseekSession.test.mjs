@@ -23,11 +23,24 @@ const defaults = overrides => ({
 });
 
 function setup(keyword, overrides) {
-  let state;
-  const session = createUniSeekSession(keyword, defaults(overrides), next => { state = next; });
+  let state, timerId = 0;
+  const timers = new Map();
+  const scheduler = {
+    setTimeout(callback, delay) { assert.equal(delay, 90); timers.set(++timerId, callback); return timerId; },
+    clearTimeout(id) { timers.delete(id); },
+  };
+  const tick = () => {
+    const entry = timers.entries().next().value;
+    if (!entry) return false;
+    timers.delete(entry[0]); entry[1](); return true;
+  };
+  const drain = () => { let ticks = 0; while (tick()) assert.ok(++ticks < 2000); };
+  const session = createUniSeekSession(keyword, defaults(overrides), next => { state = next; }, scheduler);
   session.start();
-  return { session, state: () => state };
+  return { session, state: () => state, tick, drain, timers };
 }
+
+async function settle(h) { await flush(); h.drain(); }
 
 test('local partial names and aliases include 初音→初音未来 and 天依→洛天依 without network', () => {
   assert.equal(catalog.length, 18);
@@ -50,7 +63,7 @@ test('numeric text additionally targets AV and UID; explicit AV/BV target only v
 
 test('filtered exact-ID results can be empty while numeric keyword searches continue', async () => {
   const h = setup('123456', { searchVideos: async () => ({ list: [item('video', '9')], hasMore: false }) });
-  await flush();
+  await settle(h);
   assert.deepEqual(ids(h.state()), ['video-9']);
   assert.deepEqual(h.state().errors, {});
   assert.deepEqual(h.state().pending, []);
@@ -64,11 +77,11 @@ test('local singers show synchronously, keyword calls start together, and faster
     searchProducers: () => { calls.push(['producers']); return producers.promise; },
   });
   assert.deepEqual(ids(h.state()), ['vocal-101']);
-  await flush(); assert.equal(calls.length, 2);
-  producers.resolve({ list: [item('producer', '1')] }); await flush();
+  await settle(h); assert.equal(calls.length, 2);
+  producers.resolve({ list: [item('producer', '1')] }); await settle(h);
   assert.deepEqual(ids(h.state()), ['vocal-101', 'producer-1']);
   assert.deepEqual(h.state().pending, ['videos']);
-  videos.resolve({ list: [item('video', '2', { score: 10000 })], hasMore: false }); await flush();
+  videos.resolve({ list: [item('video', '2', { score: 10000 })], hasMore: false }); await settle(h);
   assert.deepEqual(ids(h.state()), ['vocal-101', 'producer-1', 'video-2']);
   assert.deepEqual(h.state().pending, []);
   h.session.dispose();
@@ -80,11 +93,11 @@ test('faster songs keep their position when creators arrive later; empty sources
     searchProducers: () => creators.promise,
     searchVideos: async () => ({ list: [item('video', '1')], hasMore: false }),
   });
-  await flush(); assert.deepEqual(ids(h.state()), ['video-1']);
-  creators.resolve({ list: [item('producer', '2')] }); await flush();
+  await settle(h); assert.deepEqual(ids(h.state()), ['video-1']);
+  creators.resolve({ list: [item('producer', '2')] }); await settle(h);
   assert.deepEqual(ids(h.state()), ['video-1', 'producer-2']);
   h.session.dispose();
-  const empty = setup('初音', {}); await flush();
+  const empty = setup('初音', {}); await settle(empty);
   assert.deepEqual(ids(empty.state()), ['vocal-401']);
   assert.deepEqual(empty.state().errors, {});
   empty.session.dispose();
@@ -99,13 +112,13 @@ test('numeric searches start four requests and deduplicate exact and keyword hit
     searchVideos: q => { calls.push(['videos', q.keyword]); return videos.promise; },
     searchProducers: q => { calls.push(['producers', q]); return producers.promise; },
   });
-  await flush(); assert.equal(calls.length, 4);
+  await settle(h); assert.equal(calls.length, 4);
   assert.ok(calls.some(([type, id]) => type === 'aid' && id === '123456'));
   assert.ok(calls.some(([type, id]) => type === 'uid' && id === '123456'));
-  videoId.resolve({ list: [item('video', '123456', { bvid: 'BV123' })] }); await flush();
-  producerId.resolve({ list: [item('producer', '123456', { fanCount: 0 })] }); await flush();
-  producers.resolve({ list: [item('producer', '123456', { videoCount: 20 })] }); await flush();
-  videos.resolve({ list: [item('video', '123456', { play: 99 }), item('video', '9')], hasMore: false }); await flush();
+  videoId.resolve({ list: [item('video', '123456', { bvid: 'BV123' })] }); await settle(h);
+  producerId.resolve({ list: [item('producer', '123456', { fanCount: 0 })] }); await settle(h);
+  producers.resolve({ list: [item('producer', '123456', { videoCount: 20 })] }); await settle(h);
+  videos.resolve({ list: [item('video', '123456', { play: 99 }), item('video', '9')], hasMore: false }); await settle(h);
   assert.deepEqual(ids(h.state()), ['video-123456', 'producer-123456', 'video-9']);
   assert.deepEqual(h.state().list[0].payload, { bvid: 'BV123', play: 99 });
   assert.deepEqual(h.state().list[1].payload, { fanCount: 0, videoCount: 20 });
@@ -118,9 +131,9 @@ test('one failed source can retry without refetching successful sources or clear
     searchProducers: async () => { if (++creatorCalls === 1) throw new Error('offline'); return { list: [item('producer', '2')] }; },
     searchVideos: async () => { videoCalls++; return { list: [item('video', '1')], hasMore: false }; },
   });
-  await flush(); assert.deepEqual(ids(h.state()), ['vocal-101', 'video-1']);
+  await settle(h); assert.deepEqual(ids(h.state()), ['vocal-101', 'video-1']);
   assert.equal(h.state().errors.producers.message, 'offline');
-  h.session.retry('producers'); h.session.retry('producers'); await flush();
+  h.session.retry('producers'); h.session.retry('producers'); await settle(h);
   assert.equal(creatorCalls, 2); assert.equal(videoCalls, 1);
   assert.deepEqual(h.state().errors, {});
   assert.deepEqual(ids(h.state()), ['vocal-101', 'video-1', 'producer-2']);
@@ -139,7 +152,7 @@ test('pagination can run while creators are pending; duplicate loads are blocked
       return { list: [item('video', '2')], hasMore: false };
     },
   });
-  await flush(); const pendingPage = h.session.loadMore(); h.session.loadMore();
+  await settle(h); const pendingPage = h.session.loadMore(); h.session.loadMore();
   assert.deepEqual(calls, [1, 2]);
   page.reject(new Error('offline')); await pendingPage;
   assert.deepEqual(ids(h.state()), ['video-1']); assert.equal(h.state().nextPage, 2);
@@ -147,7 +160,7 @@ test('pagination can run while creators are pending; duplicate loads are blocked
   await h.session.loadMore(); assert.deepEqual(calls, [1, 2, 2]);
   assert.deepEqual(ids(h.state()), ['video-1', 'video-2']); assert.equal(h.state().moreError, null);
   assert.equal(h.state().nextPage, null);
-  creators.resolve({ list: [] }); await flush(); h.session.dispose();
+  creators.resolve({ list: [] }); await settle(h); h.session.dispose();
 });
 
 test('switching keywords aborts requests and late responses cannot update the new search', async () => {
@@ -157,8 +170,108 @@ test('switching keywords aborts requests and late responses cannot update the ne
   old.start(); await flush(); old.dispose();
   assert.equal(oldSignal.aborted, true);
   const before = updates;
-  const current = setup('初音', {}); await flush();
+  const current = setup('初音', {}); await settle(current);
   late.resolve({ list: [item('video', 'stale')], hasMore: false }); await flush();
   assert.equal(updates, before); assert.deepEqual(ids(current.state()), ['vocal-401']);
   current.session.dispose();
+});
+
+test('20 fast creators are buffered; late songs jump ahead without moving visible cards or refetching creators', async () => {
+  const videos = deferred();
+  let creatorCalls = 0;
+  const h = setup('天依', {
+    searchVideos: () => videos.promise,
+    searchProducers: async () => {
+      creatorCalls++;
+      return { list: Array.from({ length: 20 }, (_, i) => item('producer', String(i))) };
+    },
+  });
+  await settle(h);
+  assert.deepEqual(ids(h.state()), ['vocal-101', 'producer-0', 'producer-1']);
+  assert.equal(h.state().bufferedCount, 18);
+  assert.equal(h.timers.size, 0, 'held creators must not cause an idle polling timer');
+  const prefix = ids(h.state());
+  videos.resolve({ list: Array.from({ length: 15 }, (_, i) => item('video', String(i))), hasMore: false });
+  await flush();
+  assert.deepEqual(ids(h.state()), [...prefix, 'video-0']);
+  const beforeTick = h.state().list.length;
+  h.tick();
+  assert.equal(h.state().list.length, beforeTick + 1, 'release one card per tick');
+  h.drain();
+  const rows = ids(h.state());
+  assert.deepEqual(rows.slice(0, prefix.length), prefix);
+  assert.ok(rows.indexOf('producer-2') > rows.indexOf('video-0'));
+  assert.ok(rows.indexOf('producer-2') < rows.indexOf('video-14'), 'creators are not starved by songs');
+  assert.deepEqual(h.state().list.filter(x => x.type === 'video').map(x => x.id), Array.from({ length: 15 }, (_, i) => String(i)));
+  assert.deepEqual(h.state().list.filter(x => x.type === 'producer').map(x => x.id), Array.from({ length: 20 }, (_, i) => String(i)));
+  h.session.retry('producers'); await settle(h);
+  assert.equal(creatorCalls, 1);
+  assert.equal(h.state().bufferedCount, 0);
+  h.session.dispose();
+});
+
+test('songs and creators use weighted interleaving when both are buffered', async () => {
+  const h = setup('天依', {
+    searchVideos: async () => ({ list: Array.from({ length: 6 }, (_, i) => item('video', String(i))), hasMore: false }),
+    searchProducers: async () => ({ list: Array.from({ length: 3 }, (_, i) => item('producer', String(i))) }),
+  });
+  await flush();
+  assert.deepEqual(ids(h.state()), ['vocal-101']);
+  assert.equal(h.state().bufferedCount, 9);
+  h.drain();
+  assert.deepEqual(ids(h.state()), ['vocal-101', 'video-0', 'video-1', 'video-2', 'producer-0',
+    'video-3', 'video-4', 'video-5', 'producer-1', 'producer-2']);
+  h.session.dispose();
+});
+
+test('failed or empty songs release held creators and allow only the failed source to retry', async () => {
+  for (const fails of [false, true]) {
+    const videos = deferred();
+    const h = setup('song', {
+      searchVideos: () => videos.promise,
+      searchProducers: async () => ({ list: Array.from({ length: 5 }, (_, i) => item('producer', String(i))) }),
+    });
+    await settle(h);
+    assert.equal(h.state().list.length, 2);
+    if (fails) videos.reject(new Error('offline')); else videos.resolve({ list: [], hasMore: false });
+    await settle(h);
+    assert.equal(h.state().list.length, 5);
+    assert.equal(h.state().bufferedCount, 0);
+    assert.equal(Boolean(h.state().errors.videos), fails);
+    h.session.dispose();
+  }
+});
+
+test('buffered duplicates merge, exact IDs jump the queue, and pages wait for the buffer to drain', async () => {
+  const exact = deferred();
+  let calls = 0;
+  const h = setup('123456', {
+    searchVideoById: () => exact.promise,
+    searchVideos: async () => { calls++; return { list: [item('video', '1'), item('video', '123456', { play: 99 })], hasMore: true, nextPage: 2 }; },
+    searchProducers: async () => ({ list: [item('producer', '1'), item('producer', '2')] }),
+  });
+  await flush();
+  exact.resolve({ list: [item('video', '123456', { bvid: 'BV123' })] }); await flush();
+  assert.equal(h.state().bufferedCount, 3);
+  await h.session.loadMore(); assert.equal(calls, 1);
+  h.tick();
+  assert.equal(ids(h.state())[1], 'video-123456');
+  assert.deepEqual(h.state().list[1].payload, { play: 99, bvid: 'BV123' });
+  h.drain();
+  assert.equal(ids(h.state()).filter(x => x === 'video-123456').length, 1);
+  await h.session.loadMore(); assert.equal(calls, 2);
+  h.session.dispose();
+});
+
+test('disposing cancels queued releases as well as fetches', async () => {
+  const h = setup('song', {
+    searchVideos: async () => ({ list: [item('video', '1'), item('video', '2')], hasMore: false }),
+  });
+  await flush();
+  assert.equal(h.state().list.length, 1);
+  assert.equal(h.timers.size, 1);
+  h.session.dispose();
+  assert.equal(h.timers.size, 0);
+  assert.equal(h.tick(), false);
+  assert.equal(h.state().list.length, 1);
 });

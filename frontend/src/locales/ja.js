@@ -1,4 +1,5 @@
 export default {
+  "结果入场动画": "検索結果の表示アニメーション",
   "about.activities": "<vocal>バーチャル・シンガー</vocal>の<song>楽曲</song>に関する投稿データを継続的に収集・整理・分析し、Webアプリ、ChatBIによる対話、データ可視化動画などを通じて、<creator>クリエイター</creator>やファンに届けています。技術が変化しても、公開の投稿データを理解しやすく、使いやすくするという目標は変わりません。",
   "about.backToAbout": "icedataについてに戻る",
   "video.listIntroduction": "収録されている<song>楽曲</song>を閲覧できます。",

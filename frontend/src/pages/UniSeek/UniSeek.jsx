@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Button, Empty, Masonry, Spin } from 'antd';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
+import { Button, Empty, Masonry, Spin, Switch } from 'antd';
 import { Trans, useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { useMeshParallax } from '../../hooks/useMeshParallax.js';
@@ -47,7 +47,20 @@ function useFilterGlassOnScroll(targetRef) {
 }
 
 const emptyResults = () => ({ list: [], pending: [], errors: {}, nextPage: null,
-  loadingMore: false, moreError: null, videoLimit: 1000 });
+  loadingMore: false, moreError: null, videoLimit: 1000, bufferedCount: 0 });
+const ANIMATION_STORAGE_KEY = 'uniseek-result-animation';
+function readAnimationPreference() {
+  try { return localStorage.getItem(ANIMATION_STORAGE_KEY) !== 'false'; }
+  catch { return true; }
+}
+const ResultEntry = memo(function ResultEntry({ item, keyword, animate }) {
+  const [entering, setEntering] = useState(animate);
+  useEffect(() => { if (!animate) setEntering(false); }, [animate]);
+  return <div className={animate && entering ? 'uniseek-result-entry uniseek-result-entry--entering' : 'uniseek-result-entry'}
+    onAnimationEnd={event => { if (event.target === event.currentTarget) setEntering(false); }}>
+    <UniSeekItem item={item} keyword={keyword} />
+  </div>;
+});
 const sourceLabels = {
   videos: ['歌曲', 'Songs'], producers: ['UP 主', 'Creators'],
   videoId: ['编号对应的歌曲', 'Video ID'], producerId: ['UID 对应的 UP 主', 'Creator UID'],
@@ -59,8 +72,9 @@ export default function UniSeek() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [keyword, setKeyword] = useState('');
   const [results, setResults] = useState(emptyResults);
-  const { list, pending, errors, nextPage, loadingMore, moreError, videoLimit } = results;
-  const loading = pending.length > 0;
+  const { list, pending, errors, nextPage, loadingMore, moreError, videoLimit, bufferedCount } = results;
+  const loading = pending.length > 0 || bufferedCount > 0;
+  const [animateResults, setAnimateResults] = useState(readAnimationPreference);
   const hasErrors = Object.keys(errors).length > 0 || Boolean(moreError);
   const [retry, setRetry] = useState(0);
   const searchRef = useRef(null);
@@ -75,10 +89,10 @@ export default function UniSeek() {
   const items = useMemo(
     () =>
       list.map((item) => ({
-        key: `${item.type}-${item.id}`,
+        key: `${activeKeyword}-${retry}-${item.type}-${item.id}`,
         data: item,
       })),
-    [list],
+    [list, activeKeyword, retry],
   );
 
   useEffect(() => {
@@ -93,14 +107,19 @@ export default function UniSeek() {
 
   const waitingForVideos = pending.includes('videos');
   useEffect(() => {
-    if (!nextPage || waitingForVideos || loadingMore || moreError || !sentinelRef.current
+    if (!nextPage || bufferedCount || waitingForVideos || loadingMore || moreError || !sentinelRef.current
       || !globalThis.IntersectionObserver) return undefined;
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) searchRef.current?.loadMore();
     }, { rootMargin: '500px' });
     observer.observe(sentinelRef.current);
     return () => observer.disconnect();
-  }, [nextPage, waitingForVideos, loadingMore, moreError]);
+  }, [nextPage, bufferedCount, waitingForVideos, loadingMore, moreError]);
+
+  const changeAnimation = enabled => {
+    setAnimateResults(enabled);
+    try { localStorage.setItem(ANIMATION_STORAGE_KEY, String(enabled)); } catch { /* Storage may be unavailable. */ }
+  };
 
   const handleSearch = (nextKeyword) => {
     const keywordTrimmed = (nextKeyword ?? '').trim();
@@ -134,6 +153,10 @@ export default function UniSeek() {
                 {loading ? t("正在搜索…") : hasErrors ? t("部分结果暂未加载，请重试") : t("未找到匹配结果")}
               </p>
             )}
+            <div className="uniseek-animation-control">
+              <label htmlFor="uniseek-result-animation">{t('结果入场动画')}</label>
+              <Switch id="uniseek-result-animation" size="small" checked={animateResults} onChange={changeAnimation} />
+            </div>
           </div>
         ) : null}
 
@@ -144,7 +167,7 @@ export default function UniSeek() {
               gutter={[14, 14]}
               items={items}
               itemRender={(item) => (
-                <UniSeekItem item={item.data} keyword={activeKeyword} />
+                <ResultEntry item={item.data} keyword={activeKeyword} animate={animateResults} />
               )}
             />
           ) : !loading ? (
@@ -168,7 +191,7 @@ export default function UniSeek() {
         ) : null}
         <div ref={sentinelRef} className="uniseek-load-more" aria-live="polite" aria-busy={loading || loadingMore}>
           {loading || loadingMore ? <><Spin size="small" /><span>{t("正在加载更多结果…")}</span></> : null}
-          {!waitingForVideos && !loadingMore && nextPage ? (
+          {!bufferedCount && !waitingForVideos && !loadingMore && nextPage ? (
             <Button className="ds-button" data-variant="secondary" onClick={() => searchRef.current?.loadMore()}>
               {moreError ? t("重试加载歌曲") : t("加载更多歌曲")}
             </Button>

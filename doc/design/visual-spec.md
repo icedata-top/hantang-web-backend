@@ -181,6 +181,8 @@ Ant Design Button 的状态变量同样由 `.ds-button` 适配，悬停与按下
 
 实体类型 Tag 固定为虚拟歌手紫、创作者橙、歌曲绿，文字与底色引用 `--entity-{vocal|producer|video}-tag-{text|bg}`，由现有 highlight 色在 `theme.css` 派生；不使用品牌蓝区分实体类型。UniSeek 虚拟歌手卡片不展示内部 ID，创作者展示 UID，歌曲展示 av 号。
 
+UniSeek 结果以优先缓冲队列每 90ms 逐项呈现，新卡片采用 270ms 的 4px 高斯模糊与淡入；不为既有卡片重复入场，不常驻 will-change。结果数量旁使用 Ant Design Switch 控制「结果入场动画」，偏好保存在本地；关闭动画不改变交错释放规则。系统减少动态效果时禁用动画。
+
 播放荣誉复用 Ant Design `Tag variant="filled"`，统一使用 `TrophyOutlined` 奖杯图标，无边框。殿堂（≥10万）、传说（≥100万）、神话（≥1000万）分别从 `--highlight-blue`、`--highlight-orange`、`--highlight-violet` 派生颜色；背景和文字使用 `--honor-{hall|legend|myth}-bg/text`，不硬编码颜色。视频详情标题下只显示最高荣誉；本页三个日夜样本各自对应独立播放量。完整数据口径见[视频播放荣誉](video-view-honors.md)。
 
 歌曲列表的表格、卡片模式及 UniSeek 歌曲结果统一复用 `VideoHonor`，使用 `.ds-chip.video-honor-tag` 保持同款形状、颜色和奖杯图标；图标跟随标签文字色。表格中的荣誉位于播放量旁，卡片中与绿色「歌曲」标签并排成组，av 号独立展示。每首作品仅显示达到的最高一级，未达 10 万或播放量缺失时不展示；UniSeek 直接使用搜索结果的累计播放量，不追加逐首快照请求。门槛说明支持悬停、键盘聚焦和触屏点击。

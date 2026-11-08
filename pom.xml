@@ -105,6 +105,17 @@
         </dependency>
     </dependencies>
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <!-- Search ranking and the frontend share the same singer names and aliases. -->
+            <resource>
+                <directory>frontend/src/constants/vocal</directory>
+                <targetPath>config</targetPath>
+                <includes><include>vocal-search-info.json</include></includes>
+            </resource>
+        </resources>
         <!-- 配置项目的编码和 JDK 版本 -->
         <plugins>
             <plugin>

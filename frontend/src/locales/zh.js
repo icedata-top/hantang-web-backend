@@ -1,4 +1,5 @@
 export default {
+  "结果入场动画": "结果入场动画",
   "about.activities": "组织持续汇聚、清洗与分析<vocal>虚拟歌手</vocal><song>歌曲</song>的投稿数据，并通过 Web 应用、ChatBI 智能对话与数据可视化视频等形式，把数据洞察交付给<creator>创作者</creator>与爱好者。技术路线在演进，目标不变：让公开可得的投稿数据更容易被理解与使用。",
   "about.backToAbout": "返回关于冰数据",
   "video.listIntroduction": "浏览已收录的<song>歌曲</song>。",

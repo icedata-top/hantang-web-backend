@@ -23,7 +23,14 @@
 }
 .uniseek-search-input .ant-input-group-addon .ant-btn:hover { color: var(--button-primary-text); background: var(--button-primary-hover); }
 .uniseek-result-wrap { margin-top: 2px; }
-.uniseek-result-meta { margin: 4px 4px 16px; }
+.uniseek-result-meta { margin: 4px 4px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px; }
+.uniseek-animation-control { display: inline-flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: var(--font-size-caption); }
+.uniseek-animation-control label { cursor: pointer; }
+.uniseek-result-entry--entering { animation: uniseek-result-reveal 270ms ease-out; }
+@keyframes uniseek-result-reveal {
+  from { opacity: 0; filter: blur(4px); }
+  to { opacity: 1; filter: blur(0); }
+}
 .uniseek-result-count { margin: 0; font-size: var(--font-size-body); line-height: var(--line-height-body); color: var(--text-secondary); }
 .uniseek-result-count em { margin: 0 0.15em; font-style: normal; font-weight: var(--font-weight-semibold); font-variant-numeric: tabular-nums; color: var(--text-link); }
 .uniseek-empty { padding: 48px 12px 64px; display: flex; justify-content: center; }
@@ -54,6 +61,7 @@
 .uniseek-item-stat { display: inline-flex; align-items: center; gap: 4px; min-width: 0; cursor: help; }
 .uniseek-load-more { display: flex; justify-content: center; align-items: center; gap: 12px; min-height: 72px; color: var(--text-secondary); font-size: var(--font-size-caption); }
 @media (prefers-reduced-motion: reduce) {
+  .uniseek-result-entry--entering { animation: none; }
   .uniseek-item-card, .uniseek-filter::before, .uniseek-item-media-overlay { transition: none; }
 }
 

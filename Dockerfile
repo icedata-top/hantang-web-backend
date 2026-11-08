@@ -3,6 +3,7 @@ FROM maven:3.9.16-eclipse-temurin-21 AS build
 WORKDIR /workspace
 COPY pom.xml ./
 COPY src ./src
+COPY frontend/src/constants/vocal/vocal-search-info.json ./frontend/src/constants/vocal/vocal-search-info.json
 RUN mvn -B -DskipTests package
 
 FROM eclipse-temurin:21.0.13_9-jre

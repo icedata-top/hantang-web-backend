@@ -10,8 +10,10 @@ const bind = (sql) => { let i = 0; return sql.replaceAll('?', () => `$${++i}`); 
 const batchA = '00000000-0000-0000-0000-000000000001';
 const batchB = '00000000-0000-0000-0000-000000000002';
 const pattern = (value) => `%${value.replaceAll('\\', '\\\\').replaceAll('%', '\\%').replaceAll('_', '\\_')}%`;
+const vocals = JSON.parse(await readFile(new URL('../../frontend/src/constants/vocal/vocal-search-info.json', import.meta.url), 'utf8'));
+const vocalNames = new Set(vocals.flatMap(vocal => [vocal.name, ...vocal.aliases]).map(name => name.toLowerCase()));
 async function ranked(keyword) {
-  const parameters = [keyword, pattern(keyword)];
+  const parameters = [keyword, pattern(keyword), vocalNames.has(keyword.trim().toLowerCase()) ? 10 : 1];
   const predicates = keyword.split(/\s+/).map((token) => {
     parameters.push(pattern(token), token, token, token);
     return "(p.title ILIKE ? ESCAPE '\\' OR p.tag_new @> ARRAY[?]::varchar[] OR p.participle @> ARRAY[?]::varchar[] OR p.label_singers @> ARRAY[?]::text[])";
@@ -53,16 +55,16 @@ try {
     assert.deepEqual(await exactVideo(404), []);
     assert.ok((await ranked('世末歌者')).length > 0);
   });
-  await test('exact titles outrank huge view counts, with stable pages and preserved NULL/zero metrics', async () => {
+  await test('three-component scores combine relevance and popularity, with stable pages and preserved NULL/zero metrics', async () => {
     const first = await search('世末歌者');
     assert.equal(first.hasMore, true);
-    assert.deepEqual(ids(first), [1, 2]);
+    assert.deepEqual(ids(first), [2, 1]);
     assert.deepEqual(ids(await search('世末歌者', { page: 2 })), [3, 5]);
     assert.equal((await search('世末歌者', { page: 2 })).hasMore, false);
     assert.deepEqual(ids(await search('世末歌者', { page: 3 })), []);
-    assert.equal(first.rows[0].view, 0);
-    assert.equal(first.rows[0].favorite, 101);
-    assert.equal(first.rows[0].like, 0);
+    assert.equal(first.rows[1].view, 0);
+    assert.equal(first.rows[1].favorite, 101);
+    assert.equal(first.rows[1].like, 0);
     assert.equal(first.rows[0].record_date, '2026-10-20');
     assert.equal(first.rows[0].batch_id, batchA);
     assert.equal((await search('言和')).rows[0].view, null);
@@ -84,6 +86,41 @@ try {
     assert.deepEqual(ids(await search('BV1Ts411S7SM')), []);
     assert.deepEqual(ids(await search('%_')), [7]);
     assert.deepEqual(ids(await search("' OR true --")), []);
+  });
+  await test('source, title ratio and normalized views each obey the provisional 100-point contract', async () => {
+    await db.exec(`INSERT INTO hantang_dynamic.adm_uniseek_videos
+      (aid,bvid,title,tag_new,view,favorite,record_date,batch_id,refreshed_at) VALUES
+      (1200,'BV1200','言和',NULL,0,101,'2026-10-20','${batchA}',now()),
+      (1201,'BV1201','【言和】高播放投稿',NULL,10000000,101,'2026-10-20','${batchA}',now()),
+      (1202,'BV1202','演唱',ARRAY['言和'],0,101,'2026-10-20','${batchA}',now()),
+      (1203,'BV1203','归一化',NULL,0,101,'2026-10-20','${batchA}',now()),
+      (1204,'BV1204','归一化与其他',NULL,100,101,'2026-10-20','${batchA}',now()),
+      (1205,'BV1205','归一化',NULL,10000000,101,'2026-10-20','${batchA}',now()),
+      (1206,'BV1206','归一化',NULL,1000000000,101,'2026-10-20','${batchA}',now()),
+      (1207,'BV1207','甲',ARRAY['归一化'],NULL,101,'2026-10-20','${batchA}',now()),
+      (1208,'BV1208',NULL,ARRAY['归一化'],0,101,'2026-10-20','${batchA}',now()),
+      (1209,'BV1209','',ARRAY['归一化'],0,101,'2026-10-20','${batchA}',now()),
+      (1210,'BV1210','归一化',NULL,1000000,101,'2026-10-20','${batchA}',now());`);
+    const rows = await ranked('归一化');
+    const byAid = new Map(rows.map(row => [Number(row.aid), row]));
+    const near = (actual, expected) => assert.ok(Math.abs(actual - expected) < 1e-8, `${actual} != ${expected}`);
+    near(byAid.get(1203).score, 200);
+    near(byAid.get(1204).score, 70 + 50 + 100 * Math.log(2) / Math.log(10000001 / 100));
+    near(byAid.get(1205).score, 300);
+    near(byAid.get(1206).score, 300);
+    near(byAid.get(1207).score, 140);
+    near(byAid.get(1208).score, 40);
+    near(byAid.get(1209).score, 40);
+    near(byAid.get(1210).score, 200 + 100 * Math.log(10001) / Math.log(10000001 / 100));
+    assert.ok(byAid.get(1210).score < 300);
+    assert.deepEqual(rows.slice(0, 2).map(row => Number(row.aid)), [1206, 1205]);
+    const vocalRows = await ranked('言和');
+    const vocalByAid = new Map(vocalRows.map(row => [Number(row.aid), row]));
+    near(vocalByAid.get(1200).score, 110);
+    near(vocalByAid.get(1202).score, 104);
+    near(vocalByAid.get(1201).score, 7 + 100 * 2 / 9 + 100);
+    assert.ok(vocalRows.findIndex(row => Number(row.aid) === 1201) < vocalRows.findIndex(row => Number(row.aid) === 1200),
+      'a high-view title containing 言和 should outrank an exact low-view 言和 title');
   });
   await test('ties use aid descending and admission requires more than 100 favorites', async () => {
     assert.deepEqual(ids(await search('同分', { pageSize: 1 })), [21]);

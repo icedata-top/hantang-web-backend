@@ -32,11 +32,30 @@ class UniSeekDaoTest {
             assertFalse(sql.contains("aid::text"));
             assertTrue(sql.contains("p.title ILIKE ?"));
             assertTrue(sql.contains("ORDER BY score DESC, aid DESC LIMIT ?"));
-            assertEquals("%123%", params.get(2));
+            assertEquals(1.0, params.get(2));
+            assertEquals("%123%", params.get(3));
             assertEquals(1000, params.getLast());
             return List.of();
         });
         dao.videos(request("123"));
+    }
+    @Test void onlyExactVocalNamesAndAliasesReduceSourceScores() {
+        for (String keyword : List.of("言和", "洛天依", "hAtSuNe MiKu", "初音ミク", "Minus")) {
+            var dao = new UniSeekDao((sql, params) -> {
+                if (batchQuery(sql)) return batch("a");
+                assertEquals(10.0, params.get(2), keyword);
+                return List.of();
+            });
+            dao.videos(request(keyword));
+        }
+        for (String keyword : List.of("天依", "初音", "言和 原创", "世末歌者")) {
+            var dao = new UniSeekDao((sql, params) -> {
+                if (batchQuery(sql)) return batch("a");
+                assertEquals(1.0, params.get(2), keyword);
+                return List.of();
+            });
+            dao.videos(request(keyword));
+        }
     }
     @Test void shortTokensSearchTitlesAndExactArraysWithLiteralWildcards() {
         var dao = new UniSeekDao((sql, params) -> {

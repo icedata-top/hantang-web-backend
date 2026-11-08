@@ -1,4 +1,5 @@
 export default {
+  "结果入场动画": "Animate new results",
   "about.activities": "We continuously collect, clean, and analyze uploads of <song>songs</song> performed by <vocal>virtual singers</vocal>, delivering insights to <creator>creators</creator> and fans through web apps, ChatBI conversations, and data-visualization videos. Our technology evolves, but the goal stays the same: make publicly available upload data easier to understand and use.",
   "about.backToAbout": "Back to About icedata",
   "video.listIntroduction": "Browse collected <song>songs</song>.",

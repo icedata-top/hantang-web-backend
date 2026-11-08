@@ -1,6 +1,7 @@
 package com.hantang.web.dao;
 
 import com.hantang.web.dao.foundation.PostgreDao;
+import com.hantang.web.config.UniSeekVocalCatalog;
 import com.hantang.web.dos.uniseek.UniSeekRequest;
 
 import java.time.Clock;
@@ -48,6 +49,7 @@ public class UniSeekDao {
         var params = new ArrayList<Object>();
         params.add(request.keyword());
         params.add(UniSeekRequest.containsPattern(request.keyword()));
+        params.add(UniSeekVocalCatalog.isExactName(request.keyword()) ? 10.0 : 1.0);
         var predicates = new ArrayList<String>();
         for (String token : request.tokens()) {
             // All words must occur in the title or as an exact tag/token/singer.
@@ -57,17 +59,25 @@ public class UniSeekDao {
             params.add(token); params.add(token); params.add(token);
         }
         params.add(UniSeekRequest.VIDEO_LIMIT);
+        // Provisional song ranking: source + title length ratio + logarithmic views,
+        // each capped at 100. Exact singer names/aliases divide only source by 10.
+        // c=100, legend reference=10,000,000 views. A unified model for all three
+        // entity types will replace this heuristic later; scores are not comparable
+        // with creator or vocal priorities in the frontend presentation queue.
         String sql = """
-                WITH input AS (SELECT ?::text AS keyword, ?::text AS pattern),
+                WITH input AS (SELECT ?::text AS keyword, ?::text AS pattern, ?::double precision AS source_divisor),
                 ranked AS (
                     SELECT p.aid, p.bvid, p.title, p.pic, p.pubdate, p.user_id,
                            p.view, p.favorite, p."like", p.coin, p.record_date::text, p.batch_id::text,
-                           CASE WHEN lower(p.title) = lower(i.keyword) THEN 900
-                                WHEN p.title ILIKE i.pattern ESCAPE '\\' THEN 600
-                                ELSE 400 END
-                           + CASE WHEN p.title ILIKE i.pattern ESCAPE '\\'
-                                  THEN 60.0::double precision * length(i.keyword) / greatest(length(p.title), 1) ELSE 0 END
-                           + least(40.0, 4.0 * ln(1.0::double precision + greatest(coalesce(p.view, 0), 0))) AS score
+                           (CASE WHEN lower(p.title) = lower(i.keyword) THEN 100
+                                 WHEN p.title ILIKE i.pattern ESCAPE '\\' THEN 70
+                                 ELSE 40 END) / i.source_divisor
+                           + CASE WHEN length(p.title) > 0
+                                  THEN least(100.0, 100.0::double precision * length(i.keyword) / length(p.title))
+                                  ELSE 0 END
+                           + 100.0 * least(1.0, ln(1.0::double precision
+                               + greatest(coalesce(p.view, 0), 0)::double precision / 100.0)
+                               / ln(10000001.0::double precision / 100.0)) AS score
                     FROM hantang_dynamic.adm_uniseek_videos p CROSS JOIN input i
                     WHERE (%s)
                 )
