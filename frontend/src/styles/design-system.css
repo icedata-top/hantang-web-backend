@@ -81,6 +81,41 @@ html .icedata-antd:is(.ant-select-css-var, .ant-input-css-var, .ant-input-number
   --ant-date-picker-cell-bg-disabled: var(--button-disabled-bg);
 }
 
+/* 无边框筛选控件：配合 Ant Design variant="borderless"，以填充反馈交互。 */
+html .ds-filter-control:is(.ant-input, .ant-input-affix-wrapper, .ant-input-number, .ant-select, .ant-picker) {
+  min-height: var(--control-height);
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--filter-control-bg);
+  outline: none;
+  box-shadow: none;
+  transition: background-color 160ms ease;
+}
+
+html .ds-filter-control:is(.ant-input, .ant-input-affix-wrapper, .ant-input-number, .ant-select, .ant-picker):not(:disabled, .ant-input-disabled, .ant-input-affix-wrapper-disabled, .ant-input-number-disabled, .ant-select-disabled, .ant-picker-disabled):hover {
+  background: var(--filter-control-hover-bg);
+}
+
+html .ds-filter-control:is(.ant-input, .ant-input-affix-wrapper, .ant-input-number, .ant-select, .ant-picker):not(:disabled, .ant-input-disabled, .ant-input-affix-wrapper-disabled, .ant-input-number-disabled, .ant-select-disabled, .ant-picker-disabled):is(:focus-within, .ant-select-open, [data-open='true']) {
+  background: var(--filter-control-active-bg);
+  outline: none;
+  box-shadow: none;
+}
+
+html .ds-filter-control:is(:disabled, .ant-input-disabled, .ant-input-affix-wrapper-disabled, .ant-input-number-disabled, .ant-select-disabled, .ant-picker-disabled) {
+  background: var(--button-disabled-bg);
+  color: var(--text-disabled);
+}
+
+html .ds-filter-control.ant-select {
+  --ant-select-height: var(--control-height);
+  --ant-select-border-size: 0px;
+}
+
+html .ds-filter-control.ant-picker .ant-picker-active-bar {
+  display: none;
+}
+
 .ds-button {
   --button-bg: var(--button-normal-bg);
   --button-hover-bg: var(--button-normal-hover);
@@ -434,6 +469,7 @@ html .ant-btn.ds-button[data-variant] {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html .ds-filter-control,
   .ds-button,
   .ds-surface,
   .ds-tab,

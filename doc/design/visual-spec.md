@@ -18,6 +18,8 @@
 
 输入框直接使用 Ant Design 输入框本体，不再额外包一层相同外观的圆角矩形。图标优先复用 `@ant-design/icons`；装饰图标跟随文字色，纯图标操作提供可访问的名称。
 
+筛选用的 `Input`、`Input.TextArea`、`InputNumber`、`Select`、`DatePicker` / `DatePicker.RangePicker` 等统一使用 `variant="borderless"`，配合公共类 `.ds-filter-control`，不添加描边或额外外框。普通、悬停、聚焦 / 展开和禁用状态遵循下文的筛选控件规范。
+
 项目已有的 `ProducerInfo`、`VideoInfo`、`VideoCard`、`RelativeTime`、`VideoHonor` 和 `DsTabs` / `DsTable` / `DsPagination` 按适用场景直接复用，业务页面不复制其请求、弹层或分页交互。`ds-*` 是已有的共享样式与兼容层，新增基础控件仍优先使用 Ant Design；语义化 HTML 可用于组织页面内容。
 
 这条约定同时展示在 `/admin/design/spec`。保持控件原有的键盘、焦点、禁用和可访问性行为，样式通过项目主题变量适配，不重复实现基础交互。
@@ -124,7 +126,16 @@ Primary 用于核心操作，Secondary 用于取消、重置等次要操作，No
 
 实现：`.ds-button` 配合 `data-variant="primary|secondary|normal|danger"`，固定悬停样本使用 `data-preview-state="hover"`。颜色使用 `--button-{类型}-bg/hover/text`，字号和字重使用独立的按钮变量。
 
-Ant Design Button 的状态变量同样由 `.ds-button` 适配，悬停与按下时保持对应用途的文字、底色及无描边状态。规范页按钮样本使用真实 Ant Design Button；`/admin/design/spec#spec-controls` 提供日期范围、选择、数字输入和筛选按钮的日夜对照，并可切换禁用状态，直接检查浮层和键盘聚焦。
+Ant Design Button 的状态变量同样由 `.ds-button` 适配，悬停与按下时保持对应用途的文字、底色及无描边状态。规范页按钮样本使用真实 Ant Design Button。
+
+## 筛选控件
+
+`/admin/design/spec#spec-controls` 提供文本输入、日期范围、Select、数字输入和筛选按钮的日夜对照，并可切换禁用状态。筛选输入控件统一采用无边框设计，参考总览页的日期范围选择器：
+
+- 使用 Ant Design `variant="borderless"` 和公共类 `.ds-filter-control`，高度与圆角复用 `--control-height`、`--radius-control`。
+- 普通状态使用 Surface；悬停使用 Canvas；获得焦点或展开下拉 / 日历时使用 Secondary 填充。键盘聚焦同样以底色明确反馈，不显示蓝色边框、外环或日期范围底部指示线；失焦且浮层关闭后恢复普通背景。
+- 禁用时使用公共禁用底色与文字色，不响应悬停和聚焦，保留组件原有禁用及键盘行为。浮层继续使用标准 Surface 与现有主题配色。
+- 三态背景统一由 `theme.css` 中的 `--filter-control-{bg|hover-bg|active-bg}` 维护，总览已有的 `--overview-filter-control-*` 变量引用同一组值；业务页面直接复用，不重复实现配色。尊重系统减少动态效果设置。
 
 ## 字体与文字颜色
 
@@ -275,6 +286,15 @@ RelativeTime 的四项悬停详情使用 Ant Design `Descriptions`，单列、�
 虚拟歌手详情采用紧凑的海报式布局：立绘直接位于 Canvas，文案靠近立绘，资料复用 Ant Design。优先在常规首屏呈现基本信息，官方及来源入口排在权利说明下方。背景使用半透明应援色的斜线几何图形，面积达到约屏幕三分之一的量级，可位于部分文字后方，不用弥散渐变；白天可提高线条不透明度和粗细，叠字优先保证对比度。控件仍使用项目主题色，来源按钮直接标注所属平台。内部编号不作为用户文案或背景水印。图片完整展示，窄屏按名称、立绘、资料的顺序纵向排列，只上下滚动。赤羽示例 `/vocals/304`，详见[虚拟歌手详情](vocal-detail.md)。
 
 页面、卡片及子容器允许伸缩，长文本省略或换行，图表随容器调整尺寸；避免固定总宽度造成整页横向滚动。宽表可保留局部滚动，筛选和分页控件在窄屏换行。
+
+### 筛选布局
+
+总览 `/overview`、歌曲列表 `/videos` 和创作者列表 `/producers` 统一遵循以下布局约定，规范页顶部同步展示：
+
+- **PC 端左侧固定**：筛选项在页面左侧单列排列，结果或数据内容位于右侧。浏览右侧内容时，筛选区保持固定可见，并避开顶部导航；筛选卡片复用标准 Surface 与现有 Ant Design 控件。
+- **移动端默认折叠**：仅保留「筛选条件」入口，点击后通过左侧 Ant Design Drawer 展开筛选项。页面使用整页纵向滚动，关闭抽屉不清空已应用的条件。
+
+以上为统一布局规范；歌曲与创作者列表的布局改造另行实施。
 
 总览 `/overview` 在不超过 767px 时使用整页纵向滚动，筛选入口和所有内容卡片一起向上移动，仅顶部 NavBar 保持吸顶。移除 PC 主列的固定高度、内部纵向滚动、额外左右内边距及滚动条预留空间；卡片与 NavBar 共同使用 `--page-gutter-inline`（20px）对齐外沿。移动端表格保留局部横向滚动，表头不设置纵向吸顶；PC 的左右分栏与主列内部滚动继续保留。
 

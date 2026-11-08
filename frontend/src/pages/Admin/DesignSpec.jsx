@@ -1,6 +1,6 @@
 import { useId, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Card, DatePicker, Form, InputNumber, Segmented, Select, Switch } from 'antd';
+import { Button, Card, DatePicker, Form, Input, InputNumber, Segmented, Select, Switch } from 'antd';
 import {
   InfoCircleOutlined,
   MoonOutlined,
@@ -21,6 +21,7 @@ const TOKEN_NAMES = [
   'canvas', 'surface', 'surface-hover', 'surface-border', 'theme-primary', 'theme-accent',
   'navbar-home-bg', 'navbar-home-scrolled-bg',
   'overview-filter-control-bg', 'overview-filter-control-hover-bg', 'overview-filter-control-active-bg',
+  'filter-control-bg', 'filter-control-hover-bg', 'filter-control-active-bg',
   'text-primary', 'text-secondary', 'text-disabled', 'text-link', 'text-link-hover',
   'button-primary-bg', 'button-primary-hover', 'button-primary-text',
   'button-secondary-bg', 'button-secondary-hover', 'button-secondary-text',
@@ -229,32 +230,44 @@ function Buttons({ t }) {
 
 function FilterControls({ t }) {
   const disabledId = useId();
+  const inputId = useId();
   const [disabled, setDisabled] = useState(false);
+  const [text, setText] = useState('');
   const [dates, setDates] = useState(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [honor, setHonor] = useState('all');
   const [minView, setMinView] = useState(null);
   return <>
     <div className="spec-control-disabled"><Switch id={disabledId} checked={disabled} onChange={setDisabled} /><label htmlFor={disabledId}>{t('禁用')}</label></div>
     <Form layout="vertical" disabled={disabled} onFinish={() => {}}>
       <div className="spec-control-grid">
+        <Form.Item label={t('文本输入')} htmlFor={inputId}>
+          <Input className="ds-filter-control" variant="borderless" id={inputId} value={text} onChange={event => setText(event.target.value)} allowClear placeholder={t('请输入文本')} />
+        </Form.Item>
         <Form.Item label={t('投稿日期（北京时间）')}>
-          <DatePicker.RangePicker aria-label={t('投稿日期（北京时间）')} value={dates} onChange={setDates} placeholder={[t('开始日期'), t('结束日期')]} />
+          <DatePicker.RangePicker className="ds-filter-control" variant="borderless" data-open={pickerOpen} onOpenChange={setPickerOpen} aria-label={t('投稿日期（北京时间）')} value={dates} onChange={setDates} placeholder={[t('开始日期'), t('结束日期')]} />
         </Form.Item>
         <Form.Item label={t('播放荣誉')}>
-          <Select aria-label={t('播放荣誉')} value={honor} onChange={setHonor} options={[
+          <Select className="ds-filter-control" variant="borderless" aria-label={t('播放荣誉')} value={honor} onChange={setHonor} options={[
             { value: 'all', label: t('不限荣誉') }, { value: 'none', label: t('未达殿堂（<10万）') },
             { value: 'hall', label: t('殿堂（10万–100万）') }, { value: 'legend', label: t('传说（100万–1000万）') }, { value: 'myth', label: t('神话（≥1000万）') },
           ]} />
         </Form.Item>
         <Form.Item label={t('最低播放量')}>
-          <InputNumber aria-label={t('最低播放量')} value={minView} onChange={setMinView} min={0} precision={0} placeholder={t('不限')} />
+          <InputNumber className="ds-filter-control" variant="borderless" aria-label={t('最低播放量')} value={minView} onChange={setMinView} min={0} precision={0} placeholder={t('不限')} />
         </Form.Item>
       </div>
       <div className="spec-control-actions">
-        <Button className="ds-button" data-variant="secondary" onClick={() => { setDates(null); setHonor('all'); setMinView(null); }}>{t('重置')}</Button>
+        <Button className="ds-button" data-variant="secondary" onClick={() => { setText(''); setDates(null); setHonor('all'); setMinView(null); }}>{t('重置')}</Button>
         <Button className="ds-button" data-variant="primary" htmlType="submit">{t('应用筛选')}</Button>
       </div>
     </Form>
+    <p className="spec-footnote">{t('输入框、数字输入、Select 和日期范围选择器统一使用无边框设计。普通状态使用 Surface，悬停使用 Canvas，聚焦或展开时使用 Secondary 填充，不显示蓝色边框、外环或底部指示线；禁用状态沿用公共主题。')}</p>
+    <div className="spec-swatch-grid">
+      <Swatch name="filter-control-bg" label={t('普通')} />
+      <Swatch name="filter-control-hover-bg" label={t('悬停')} />
+      <Swatch name="filter-control-active-bg" label={t('激活')} />
+    </div>
   </>;
 }
 
@@ -397,7 +410,7 @@ function Chips({ t }) {
 const SECTIONS = [
   { id: 'surfaces', en: 'Canvas & Surface', zh: '背景与卡片', description: ['从页面底色到内容表面，建立清晰的层级。', 'Build a clear hierarchy from the page canvas to content surfaces.'], Component: Surfaces },
   { id: 'buttons', en: 'Buttons', zh: '按钮', description: ['四种用途，三种状态。每一个状态都可以直接对照。', 'Four purposes, three states. Compare every state directly.'], Component: Buttons },
-  { id: 'controls', en: 'Filter controls', zh: '筛选控件', description: ['日期、选择、数字输入及浮层跟随当前主题，保留悬停、聚焦和禁用状态。', 'Dates, selects, number inputs and popups follow the current theme, including hover, focus and disabled states.'], Component: FilterControls },
+  { id: 'controls', en: 'Filter controls', zh: '筛选控件', description: ['输入、选择和日期范围控件统一无边框，以底色区分普通、悬停、聚焦和禁用状态。', 'Borderless inputs, selects, and date ranges use background fills for normal, hover, focus, and disabled states.'], Component: FilterControls },
   { id: 'typography', en: 'Typography', zh: '文字', description: ['用字号、字重和颜色表达内容的重要程度。', 'Express content hierarchy through size, weight, and color.'], Component: Typography },
   { id: 'chips', en: 'Tag / Chip', zh: '标签', description: ['分类、认证与播放荣誉，使用共享主题变量。', 'Categories, verification, and view honors use shared theme tokens.'], Component: Chips },
   { id: 'tooltips', en: 'Tooltip', zh: '悬停提示', description: ['沿用当前主题的 Surface 配色，支持文字和组件内容。', 'Use the current Surface colors for text and embedded components.'], Component: Tooltips },
@@ -429,6 +442,13 @@ export default function DesignSpec() {
         <p>{t("输入框直接使用组件本体，无需额外包一层相同外观的圆角矩形。业务组件复用现有请求、浮层与分页能力。")}</p>
         <strong>{t("配色统一引用主题变量")}</strong>
         <p>{t("业务强调色从现有九种 highlight 派生，在 theme.css 维护语义变量；组件和图表不硬编码颜色，也不使用 Ant Design 预设色替代项目主题。日夜主题分别适配，Tag / Chip 均无边框。")}</p>
+      </aside>
+
+      <aside className="ds-alert spec-component-policy" data-variant="info" aria-label={t("筛选布局")}>
+        <strong>{t("PC 端左侧固定，移动端默认折叠")}</strong>
+        <p>{t("总览、歌曲列表和创作者列表统一遵循以下筛选布局。")}</p>
+        <p>{t("PC 端：筛选项单列排列在页面左侧，浏览右侧内容时筛选区保持固定可见，避开顶部导航。")}</p>
+        <p>{t("移动端：筛选项默认折叠，保留「筛选条件」入口，点击后通过左侧 Ant Design Drawer 展开；页面保持整页纵向滚动，关闭抽屉不清空已应用的条件。")}</p>
       </aside>
 
       <div className="spec-toolbar">
