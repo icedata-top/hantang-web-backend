@@ -27,6 +27,8 @@
   --font-size-xs: 10px;
   --font-size-meta: 11px;
   --font-size-label: 13px;
+  --font-size-indicator: 22px;
+  --font-weight-indicator: 700;
   --font-size-display: 30px;
   --font-size-display-compact: 26px;
   --font-size-vocal-name: clamp(44px, 5.5vw, 78px);
@@ -226,6 +228,9 @@
   --navbar-home-scrolled-bg: color-mix(in srgb, var(--surface) var(--navbar-home-scrolled-fill-strength), transparent);
   --navbar-home-control-hover-bg: color-mix(in srgb, var(--surface-hover) 48%, transparent);
 
+  --overview-filter-control-bg: var(--surface);
+  --overview-filter-control-hover-bg: var(--canvas);
+  --overview-filter-control-active-bg: var(--button-secondary-bg);
 
   --chip-neutral-bg: color-mix(in srgb, var(--text) 8%, var(--surface));
   --chip-neutral-text: var(--text-secondary);

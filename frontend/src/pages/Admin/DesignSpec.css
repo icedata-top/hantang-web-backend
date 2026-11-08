@@ -51,6 +51,11 @@
 .spec-home-navbar-stage { padding: 12px; border-radius: var(--radius-card); background: linear-gradient(135deg, var(--button-secondary-bg), var(--canvas)); }
 .spec-home-navbar-inner { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; }
 .spec-home-navbar-inner img { width: 112px; max-width: 50%; height: auto; }
+.spec-overview-filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 16px; margin-top: 24px; }
+.spec-overview-filter-sample { display: grid; min-width: 0; gap: 8px; align-content: start; }
+.spec-overview-filter-stage { padding: 12px; border-radius: var(--radius-card); background: linear-gradient(135deg, var(--button-secondary-bg), var(--canvas)); }
+.spec-overview-filter-stage .overview-filter-surface { width: 100%; max-width: 320px; margin-inline: auto; }
+.spec-mobile-table-sample { width: 360px; max-width: 100%; min-width: 0; margin-top: 24px; }
 .spec-swatch-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 10px; margin-top: 24px; }
 .spec-swatch { display: flex; min-width: 0; align-items: center; gap: 8px; }
 .spec-swatch-color { flex: 0 0 28px; height: 28px; border: 1px solid var(--surface-border); border-radius: 6px; }

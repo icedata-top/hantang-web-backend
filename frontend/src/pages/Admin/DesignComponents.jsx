@@ -1,16 +1,25 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Input, Segmented, Switch } from 'antd';
+import { Card, Input, Segmented, Switch } from 'antd';
 import RelativeTime from '../../components/custom/RelativeTime/RelativeTime.jsx';
 import ProducerInfo from '../../components/custom/ProducerInfo/ProducerInfo.jsx';
 import VideoInfo from '../../components/custom/VideoInfo/VideoInfo.jsx';
 import VideoCard from '../../components/custom/VideoCard/VideoCard.jsx';
 import { producerInfo, producerVideos } from '../../services/Producer/producer.mock.js';
 import { getRelativeTimeDetails } from '../../components/custom/RelativeTime/relativeTime.js';
+import IndicatorCell from '../Overview/components/IndicatorCell.jsx';
 import './DesignComponents.css';
 
 const HOUR = 3600000;
 const DAY = 24 * HOUR;
+
+// 与总览已有的 MOCK 指标一致，仅用于组件排版预览。
+const INDICATOR_SAMPLES = [
+  { name: 'newVideoCount', value: 1435, dod: 0.11 },
+  { name: 'activeUserCount', value: 107, dod: -0.03 },
+  { name: 'view', value: 1274561, dod: 0.008 },
+  { name: 'favorite', value: 109143, dod: 0.015 },
+];
 
 export default function DesignComponents() {
   const { t } = useTranslation();
@@ -26,6 +35,7 @@ export default function DesignComponents() {
   const [hangingVideoPunctuation, setHangingVideoPunctuation] = useState(true);
   const [videoPreviewWidth, setVideoPreviewWidth] = useState('360px');
   const [browseCard, setBrowseCard] = useState(false);
+  const [indicatorPreviewWidth, setIndicatorPreviewWidth] = useState('800px');
   const today = Math.floor((now + 8 * HOUR) / DAY) * DAY - 8 * HOUR;
   const modes = [['absolute', t("绝对")], ['relative', t("相对")], ['absolute-diff', t("绝对 + 日期差")]];
   const examples = [
@@ -44,6 +54,22 @@ export default function DesignComponents() {
       <h1 id="components-page-title">{t("组件预览")}</h1>
       <p>{t("自定义组件的展示与交互。")}</p>
     </header>
+    <section className="ds-surface components-card" aria-labelledby="indicator-card-preview-title">
+      <div className="components-card-heading"><h2 id="indicator-card-preview-title">IndicatorCell</h2></div>
+      <p className="components-description">{t('总览指标演示数据，可检查不同宽度下的标题、完整数值和环比排版。')}</p>
+      <div className="components-control-field">
+        <span id="indicator-preview-width-label">{t('预览宽度')}</span>
+        <Segmented className="ds-segmented" aria-labelledby="indicator-preview-width-label" value={indicatorPreviewWidth} onChange={setIndicatorPreviewWidth}
+          options={['320px', '640px', '800px']} />
+      </div>
+      <div className="components-indicator-preview" style={{ width: indicatorPreviewWidth }}>
+        <div className="overview-indicator-grid">
+          {INDICATOR_SAMPLES.map((data) => (
+            <Card key={data.name} className="overview-panel ds-surface overview-indicator-card" variant="borderless"><IndicatorCell data={data} /></Card>
+          ))}
+        </div>
+      </div>
+    </section>
     <section className="ds-surface components-card" aria-labelledby="relative-time-card-title">
       <div className="components-card-heading"><h2 id="relative-time-card-title">RelativeTime</h2><span className="ds-chip" data-variant="neutral">{t("时间文本")}</span></div>
       <p className="components-description">{t("普通文本形式展示时间，悬停或聚焦查看完整信息。")}</p>

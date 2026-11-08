@@ -1,7 +1,7 @@
 import { getLanguageSettings } from '../../../locales/languages.js';
 import { useTranslation } from 'react-i18next';
 import { ArrowDownOutlined, ArrowUpOutlined, MinusOutlined } from '@ant-design/icons';
-import { Statistic } from 'antd';
+import { Statistic, Tooltip } from 'antd';
 import ZhongshuLabel from './ZhongshuLabel.jsx';
 import './IndicatorCell.css';
 
@@ -37,17 +37,21 @@ export default function IndicatorCell({ data, precision = 1, title }) {
         {value == null ? (
           <span className="indicator-cell-missing">{t("暂缺")}</span>
         ) : (
-          <Statistic className="indicator-cell-main" value={value} valueStyle={{ color: 'var(--text)' }} />
+          <Statistic className="indicator-cell-main" value={value} styles={{ content: { color: 'var(--text-primary)' } }} />
         )}
       </div>
 
-      <span className="indicator-cell-label" title={t("环比")}>{t("环比")}</span>
-      <div className="indicator-cell-num">
-        {value != null && dod != null ? (
-          <DeltaRate value={dod} precision={precision} />
-        ) : (
-          <span className="indicator-cell-label">{t("暂缺")}</span>
-        )}
+      <div className="indicator-cell-comparison">
+        <Tooltip title={t('overview.periodComparison')} trigger={['hover', 'focus']}>
+          <span className="indicator-cell-label" tabIndex={0} aria-label={t('overview.periodComparison')}>{t("环比")}</span>
+        </Tooltip>
+        <div className="indicator-cell-num">
+          {value != null && dod != null ? (
+            <DeltaRate value={dod} precision={precision} />
+          ) : (
+            <span className="indicator-cell-label">{t("暂缺")}</span>
+          )}
+        </div>
       </div>
     </div>
   );

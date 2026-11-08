@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { DsPagination, DsTable, DsTabs } from '../../components/design-system/DataDisplay.jsx';
 import { Token, Value, TypeMetrics } from './SpecTokens.jsx';
+import OverviewGateCrossingsTable from '../Overview/components/OverviewGateCrossingsTable.jsx';
 
 export function TabsSample({ t }) {
   const [tab, setTab] = useState('overview');
@@ -62,6 +63,9 @@ export function TableSample({ t }) {
         ['data', t("常规")], ['empty', t("空数据")], ['loading', t("加载中")],
       ].map(([key, label]) => ({ key, label, children: key === mode ? content : null }))} />
       <p className="spec-footnote"><TypeMetrics size="body" /> · {t("表头字重")} <Value name="font-weight-medium" /> · {t("最小行高")} <Value name="table-row-height" /> · {t("内边距")} <Value name="table-cell-padding-block" /> × <Value name="table-cell-padding-inline" />。{t("仅横向分隔线；数字右对齐并使用千分位。缺失值显示 —，真实零显示 0；长名称省略，窄屏可横向滚动。")}</p>
+      <div className="spec-mobile-table-sample">
+        <OverviewGateCrossingsTable isMobile rows={[]} total={0} page={1} pageSize={8} loading={false} onPageChange={() => {}} />
+      </div>
     </>
   );
 }

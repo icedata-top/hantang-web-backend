@@ -48,6 +48,7 @@ export default function Overview() {
   useMeshParallax(true);
 
   const [filter, setFilter] = useState(null);
+  const [queryRevision, setQueryRevision] = useState(0);
   const hasUserChangedFilter = useRef(false);
   const [dailyDate, setDailyDate] = useState({ status: 'loading', date: null });
   const [dailyDateAttempt, setDailyDateAttempt] = useState(0);
@@ -60,13 +61,14 @@ export default function Overview() {
     gateCrossingsTotal: 0,
   });
   const [gateCrossingsLoading, setGateCrossingsLoading] = useState(false);
+  const [histogramLoading, setHistogramLoading] = useState(false);
   const [gateCrossingsPage, setGateCrossingsPage] = useState(1);
   const [histogramScope, setHistogramScope] = useState('all');
   const [trendType, setTrendType] = useState(TAB_SUBMISSIONS);
   const [trendResult, setTrendResult] = useState({ key: null, rows: [], loading: false });
   const trendStartDate = filter?.startDate;
   const trendEndDate = filter?.endDate;
-  const trendKey = JSON.stringify([trendStartDate, trendEndDate, trendType]);
+  const trendKey = JSON.stringify([trendStartDate, trendEndDate, trendType, queryRevision]);
   const hasTrendRange = Boolean(trendStartDate && trendEndDate);
   const trendLoading = hasTrendRange && (trendResult.key !== trendKey || trendResult.loading);
   const trendRows = hasTrendRange && trendResult.key === trendKey ? trendResult.rows : [];
@@ -118,6 +120,7 @@ export default function Overview() {
 
   const loadHistogram = useCallback(
     (startDate, endDate, scope) => {
+      setHistogramLoading(true);
       fetchOverviewViewHistogram(startDate, endDate, scope)
         .then((data) => {
           setPayload((prev) => ({ ...prev, viewHistogram: data?.rows ?? [] }));
@@ -125,7 +128,8 @@ export default function Overview() {
         .catch((err) => {
           setPayload((prev) => ({ ...prev, viewHistogram: [] }));
           showApiError(err);
-        });
+        })
+        .finally(() => setHistogramLoading(false));
     },
     [showApiError],
   );
@@ -208,13 +212,15 @@ export default function Overview() {
     }
   }, [isMobile]);
 
-  const handleFilterChange = ({ startDate, endDate }) => {
+  const handleFilterChange = useCallback(({ startDate, endDate }) => {
     hasUserChangedFilter.current = true;
     setFilter({ startDate, endDate });
+    // 常驻查询允许相同日期重新刷新，趋势请求也需要新的查询标识。
+    setQueryRevision((revision) => revision + 1);
     if (isMobile) {
       setFilterDrawerOpen(false);
     }
-  };
+  }, [isMobile]);
 
   const filterBlock = (
     <OverviewFilter
@@ -222,6 +228,7 @@ export default function Overview() {
       endDate={filter?.endDate}
       latestRecordDate={dailyDate.date}
       dateLoading={dateLoading}
+      queryLoading={loading || trendLoading || histogramLoading || gateCrossingsLoading}
       onFilterChange={handleFilterChange}
     />
   );
@@ -232,7 +239,7 @@ export default function Overview() {
         <div className="overview-layout">
           {!isMobile && (
             <aside className="overview-sidebar" aria-label={t("筛选条件")}>
-              <Card className="overview-panel ds-surface overview-panel--filter" variant="borderless" title={t("筛选条件")}>
+              <Card className="overview-panel ds-surface overview-panel--filter overview-filter-surface" variant="borderless" title={t("筛选条件")}>
                 {filterBlock}
               </Card>
             </aside>
@@ -315,6 +322,7 @@ export default function Overview() {
             />
 
             <OverviewGateCrossingsTable
+              isMobile={isMobile}
               rows={payload?.gateCrossings ?? []}
               total={payload?.gateCrossingsTotal ?? 0}
               page={gateCrossingsPage}

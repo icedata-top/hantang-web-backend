@@ -1,3 +1,11 @@
+.overview-panel--gate-crossings {
+  --table-bg: var(--surface);
+}
+
+.overview-panel--gate-crossings:hover {
+  --table-bg: var(--surface-hover);
+}
+
 .overview-gate-crossings {
   display: flex;
   min-width: 0;
@@ -14,6 +22,7 @@
 .overview-gate-crossings-table .overview-gate-crossings-value-cell {
   width: 1%;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Keep long titles out of intrinsic table sizing; they use the space left by numeric columns. */
@@ -30,24 +39,26 @@
 .overview-gate-crossings-table .ant-table-container,
 .overview-gate-crossings-table .ant-table-thead > tr > th,
 .overview-gate-crossings-table .ant-table-tbody > tr > td {
-  border-color: var(--border) !important;
+  border-color: var(--table-divider) !important;
 }
 
 .overview-gate-crossings-table .ant-table-thead > tr > th {
-  background: rgba(15, 23, 42, 0.035) !important;
-  color: var(--text) !important;
-  font-size: 12px;
-  font-weight: 600;
+  background: var(--table-header-bg) !important;
+  color: var(--table-header-text) !important;
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
 }
 
 .overview-gate-crossings-table .ant-table-tbody > tr > td {
-  background: transparent !important;
-  color: var(--text) !important;
-  font-size: 12px;
+  /* 固定列也使用不透明表面，遮住从其下方滑过的单元格。 */
+  background: var(--table-bg) !important;
+  color: var(--text-primary) !important;
+  font-size: var(--font-size-caption);
 }
 
 .overview-gate-crossings-table .ant-table-tbody > tr:hover > td {
-  background: rgba(15, 23, 42, 0.04) !important;
+  background: var(--table-row-hover) !important;
 }
 
 .overview-gate-crossings-gate {
@@ -60,16 +71,29 @@
   justify-content: space-between;
 }
 
-[data-theme='dark'] .overview-gate-crossings-table .ant-table-thead > tr > th {
-  background: rgba(255, 255, 255, 0.055) !important;
+.overview-gate-crossings-scroll-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-body);
 }
 
-[data-theme='dark'] .overview-gate-crossings-table .ant-table-tbody > tr:hover > td {
-  background: rgba(255, 255, 255, 0.055) !important;
+.overview-gate-crossings-table .ant-table-content {
+  overscroll-behavior-x: contain;
 }
 
-@media (max-width: 767px) {
-  .overview-gate-crossings {
-    min-height: 260px;
-  }
+.overview-gate-crossings--mobile {
+  min-height: 260px;
+}
+
+.overview-gate-crossings--mobile .overview-gate-crossings-value-cell {
+  width: auto;
+}
+
+.overview-gate-crossings--mobile .overview-gate-crossings-video {
+  width: 100%;
+  min-width: 0;
 }

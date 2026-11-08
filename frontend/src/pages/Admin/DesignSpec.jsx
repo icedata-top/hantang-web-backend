@@ -15,10 +15,12 @@ import VideoHonor from '../../components/custom/VideoHonor/VideoHonor.jsx';
 import { VIDEO_VIEW_HONORS } from '../../constants/video/viewHonors.js';
 import { getTranslator } from '../../i18n.js';
 import { LANGUAGE_OPTIONS } from '../../locales/languages.js';
+import OverviewFilter from '../Overview/components/OverviewFilter.jsx';
 
 const TOKEN_NAMES = [
   'canvas', 'surface', 'surface-hover', 'surface-border', 'theme-primary', 'theme-accent',
   'navbar-home-bg', 'navbar-home-scrolled-bg',
+  'overview-filter-control-bg', 'overview-filter-control-hover-bg', 'overview-filter-control-active-bg',
   'text-primary', 'text-secondary', 'text-disabled', 'text-link', 'text-link-hover',
   'button-primary-bg', 'button-primary-hover', 'button-primary-text',
   'button-secondary-bg', 'button-secondary-hover', 'button-secondary-text',
@@ -104,6 +106,30 @@ function ThemePreview({ theme, t, children }) {
   );
 }
 
+function OverviewFilterSample({ t }) {
+  const [filter, setFilter] = useState({});
+  return (
+    <div className="spec-overview-filter-sample">
+      <span className="spec-layer-label">{t('筛选条件')}</span>
+      <div className="spec-overview-filter-stage">
+        <Card
+          className="ds-surface overview-filter-surface"
+          variant="borderless"
+          title={t('筛选条件')}
+        >
+          <OverviewFilter {...filter} onFilterChange={setFilter} />
+        </Card>
+      </div>
+      <Token name="surface" />
+      <div className="spec-swatch-grid">
+        <Swatch name="overview-filter-control-bg" label={t('普通')} />
+        <Swatch name="overview-filter-control-hover-bg" label={t('悬停')} />
+        <Swatch name="overview-filter-control-active-bg" label={t('激活')} />
+      </div>
+    </div>
+  );
+}
+
 function Surfaces({ t }) {
   return (
     <>
@@ -152,6 +178,10 @@ function Surfaces({ t }) {
         ))}
       </div>
       <p className="spec-footnote">{t("首页导航融入背景，滚动后以轻薄的模糊底层保持可读性。")}</p>
+      <div className="spec-overview-filter-grid">
+        <OverviewFilterSample t={t} />
+      </div>
+      <p className="spec-footnote">{t('总览筛选与数据卡片共用标准表面、圆角和阴影。')}</p>
     </>
   );
 }

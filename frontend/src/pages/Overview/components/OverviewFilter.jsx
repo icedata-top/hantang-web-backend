@@ -1,9 +1,9 @@
 import { getLanguageSettings } from '../../../locales/languages.js';
 import { getTranslator } from '../../../i18n.js';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { QuestionCircleOutlined } from '@ant-design/icons';
-import { DatePicker, Tooltip } from 'antd';
+import { QuestionCircleOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
+import { Button, DatePicker, Tooltip } from 'antd';
 import dayjs from 'dayjs';
 import 'dayjs/locale/zh-cn';
 import {
@@ -11,6 +11,8 @@ import {
   isDateRangeDisabled as isOverviewDateDisabled,
 } from '../../../utils/metricsDateRange.js';
 import { getDefaultOverviewFilter, getOverviewRangePresets } from '../overviewDateRange.js';
+import { createDebouncedAction } from '../../../utils/debounce.js';
+import './OverviewFilter.css';
 export { getOverviewMaxSelectableDate, getDefaultOverviewFilter, getOverviewRangePresets };
 
 const { RangePicker } = DatePicker;
@@ -46,9 +48,10 @@ function getDefaultRangePanelMonths(locale) {
  * @param {string} [props.endDate] YYYY-MM-DD
  * @param {string|null} props.latestRecordDate 最新快照日，默认与快捷范围结束于其前一天
  * @param {boolean} [props.dateLoading]
+ * @param {boolean} [props.queryLoading]
  * @param {(next: { startDate?: string, endDate?: string }) => void} [props.onFilterChange]
  */
-export default function OverviewFilter({ startDate, endDate, latestRecordDate = null, dateLoading = false, onFilterChange }) {
+export default function OverviewFilter({ startDate, endDate, latestRecordDate = null, dateLoading = false, queryLoading = false, onFilterChange }) {
   const { i18n, t } = useTranslation();
   const language = i18n.resolvedLanguage || i18n.language;
 
@@ -60,6 +63,18 @@ export default function OverviewFilter({ startDate, endDate, latestRecordDate = 
 
   const [draftRange, setDraftRange] = useState(initialRange);
   const [dirty, setDirty] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const dateLabelId = useId();
+  const debouncedQuery = useMemo(() => createDebouncedAction((nextFilter) => {
+    onFilterChange?.(nextFilter);
+    setDirty(false);
+  }), [onFilterChange]);
+
+  useEffect(() => () => debouncedQuery.cancel(), [debouncedQuery]);
+
+  useEffect(() => {
+    if (dateLoading || queryLoading) debouncedQuery.cancel();
+  }, [dateLoading, queryLoading, debouncedQuery]);
 
   useEffect(() => {
     if (dirty) return;
@@ -67,6 +82,7 @@ export default function OverviewFilter({ startDate, endDate, latestRecordDate = 
   }, [initialRange, dirty]);
 
   const handleRangeChange = (dates) => {
+    debouncedQuery.cancel();
     setDraftRange(dates);
     const nextStart = dates?.[0]?.format('YYYY-MM-DD');
     const nextEnd = dates?.[1]?.format('YYYY-MM-DD');
@@ -74,6 +90,7 @@ export default function OverviewFilter({ startDate, endDate, latestRecordDate = 
   };
 
   const handleReset = () => {
+    debouncedQuery.cancel();
     setDraftRange(initialRange);
     setDirty(false);
   };
@@ -86,8 +103,10 @@ export default function OverviewFilter({ startDate, endDate, latestRecordDate = 
   const calendarYearMonth = dayjs().format('YYYY-MM');
   const defaultPickerValue = useMemo(() => getDefaultRangePanelMonths(dateLocale), [calendarYearMonth, dateLocale]);
   const pickerRange = useMemo(() => draftRange?.map((date) => date?.locale(dateLocale)) ?? null, [draftRange, dateLocale]);
+  const canQuery = Boolean(draftRange?.[0]?.isValid() && draftRange?.[1]?.isValid());
 
-  const handleConfirm = () => {
+  const handleQuery = () => {
+    if (dateLoading || queryLoading || !canQuery) return;
     const maxEnd = getOverviewMaxSelectableDate();
     let start = draftRange?.[0]?.startOf('day');
     let end = draftRange?.[1]?.startOf('day');
@@ -106,11 +125,8 @@ export default function OverviewFilter({ startDate, endDate, latestRecordDate = 
     }
     const nextStart = start?.format('YYYY-MM-DD');
     const nextEnd = end?.format('YYYY-MM-DD');
-    onFilterChange?.({ startDate: nextStart, endDate: nextEnd });
-    setDirty(false);
+    debouncedQuery({ startDate: nextStart, endDate: nextEnd });
   };
-
-  const dateLabelId = 'overview-filter-date-range-label';
 
   return (
     <div className="overview-filter">
@@ -140,25 +156,38 @@ export default function OverviewFilter({ startDate, endDate, latestRecordDate = 
         ) : null}
       </div>
       <RangePicker
+        variant="borderless"
+        data-open={pickerOpen}
         value={pickerRange}
         presets={getOverviewRangePresets(language, latestRecordDate)}
         disabled={dateLoading}
         disabledDate={isOverviewDateDisabled}
         defaultPickerValue={defaultPickerValue}
         onChange={handleRangeChange}
+        onOpenChange={setPickerOpen}
         allowClear
         format="YYYY-MM-DD"
         placeholder={[t("开始日期"), t("结束日期")]}
         aria-labelledby={dateLabelId}
       />
-      {dirty ? (
-        <div className="overview-filter-actions">
-          <button type="button" className="ds-button" data-variant="secondary" onClick={handleReset}>{t("重置")}</button>
-          <button type="button" className="ds-button" data-variant="primary" onClick={handleConfirm}>
-            {t("确定")}
-          </button>
-        </div>
-      ) : null}
+      <div className="overview-filter-actions">
+        <Button
+          className="ds-button"
+          data-variant="secondary"
+          icon={<ReloadOutlined aria-hidden="true" />}
+          disabled={dateLoading}
+          onClick={handleReset}
+        >{t("重置")}</Button>
+        <Button
+          className="ds-button"
+          data-variant="primary"
+          icon={<SearchOutlined aria-hidden="true" />}
+          loading={queryLoading}
+          disabled={dateLoading || queryLoading || !canQuery}
+          aria-busy={queryLoading}
+          onClick={handleQuery}
+        >{t("查询")}</Button>
+      </div>
     </div>
   );
 }
