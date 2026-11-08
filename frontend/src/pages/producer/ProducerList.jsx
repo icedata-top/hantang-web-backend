@@ -1,13 +1,14 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
-import { Button, Empty, Form, InputNumber, Segmented, Select, Spin, Tooltip } from 'antd';
-import { AppstoreOutlined, ReloadOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import { Button, Drawer, Empty, Form, Grid, InputNumber, Segmented, Select, Spin, Tooltip } from 'antd';
+import { AppstoreOutlined, FilterOutlined, QuestionCircleOutlined, ReloadOutlined, SearchOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import ProducerInfo from '../../components/custom/ProducerInfo/ProducerInfo.jsx';
 import { DsPagination, DsTable } from '../../components/design-system/DataDisplay.jsx';
 import { fetchProducerList } from '../../services/Producer/producerList.api.js';
 import { formatNumber } from '../../utils/formatNumber.js';
-import { PRODUCER_LIST_DEFAULTS, parseProducerListQuery, producerListParams } from './producerListQuery.js';
+import { createDebouncedAction } from '../../utils/debounce.js';
+import { parseProducerListQuery, producerListParams } from './producerListQuery.js';
 import './ProducerList.css';
 
 function useProducers(queryKey) {
@@ -23,7 +24,8 @@ function useProducers(queryKey) {
     );
     return () => controller.abort();
   }, [queryKey, key]);
-  return { ...(state.key === key ? state : { status: 'loading', data: null }), retry: () => setAttempt(value => value + 1) };
+  const retry = useCallback(() => setAttempt(value => value + 1), []);
+  return { ...(state.key === key ? state : { status: 'loading', data: null }), retry };
 }
 
 const counter = value => value == null ? '—' : formatNumber(value, 'comma');
@@ -45,22 +47,52 @@ export default function ProducerList() {
   const [params, setParams] = useSearchParams();
   const query = useMemo(() => parseProducerListQuery(params), [params]);
   const queryKey = JSON.stringify(query);
-  const [draft, setDraft] = useState(query);
-  useEffect(() => setDraft(JSON.parse(queryKey)), [queryKey]);
+  const filterKey = JSON.stringify({ minFans: query.minFans, minVideos: query.minVideos });
+  const [draft, setDraft] = useState(() => JSON.parse(filterKey));
+  useEffect(() => setDraft(JSON.parse(filterKey)), [filterKey]);
+  const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
+  const { md = true } = Grid.useBreakpoint();
+  const isMobile = !md;
   const producers = useProducers(queryKey);
   const rows = producers.data?.rows ?? [];
   const total = producers.data?.total ?? 0;
   const viewMode = params.get('layout') === 'cards' ? 'cards' : 'table';
-  function updateQuery(next, resetPage = true) {
+  const updateQuery = useCallback((next, resetPage = true) => {
     const updated = producerListParams({ ...query, ...next, ...(resetPage ? { page: 1 } : {}) });
     if (viewMode === 'cards') updated.set('layout', 'cards');
     setParams(updated);
-  }
+  }, [query, viewMode, setParams]);
   useEffect(() => {
     if (producers.status !== 'ready') return;
     const last = Math.max(1, Math.ceil(total / query.pageSize));
     if (query.page > last) updateQuery({ page: last }, false);
-  }, [producers.status, total, query.page, query.pageSize]);
+  }, [producers.status, total, query.page, query.pageSize, updateQuery]);
+
+  useEffect(() => {
+    if (!isMobile) setFilterDrawerOpen(false);
+  }, [isMobile]);
+
+  const debouncedQuery = useMemo(() => createDebouncedAction((nextFilter) => {
+    const nextQuery = { ...query, ...nextFilter, page: 1 };
+    if (JSON.stringify(nextQuery) === queryKey) producers.retry();
+    else updateQuery(nextFilter);
+    setFilterDrawerOpen(false);
+  }), [query, queryKey, updateQuery, producers.retry]);
+
+  useEffect(() => () => debouncedQuery.cancel(), [debouncedQuery]);
+  useEffect(() => {
+    if (producers.status === 'loading') debouncedQuery.cancel();
+  }, [producers.status, debouncedQuery]);
+
+  const setFilter = (next) => {
+    debouncedQuery.cancel();
+    setDraft(current => ({ ...current, ...next }));
+  };
+  const resetFilter = () => {
+    debouncedQuery.cancel();
+    setDraft(JSON.parse(filterKey));
+  };
+  const queryLoading = producers.status === 'loading';
   const columns = [
     { key: 'name', title: t('创作者'), render: (_value, row) => <ProducerIdentity producer={row} /> },
     { key: 'userId', title: 'UID', width: 160, sortable: true, render: value => <span className="producer-list-uid">{value}</span> },
@@ -69,35 +101,48 @@ export default function ProducerList() {
     { key: 'officialTitle', title: t('认证头衔'), width: '23%', render: value => value?.trim()
       ? <span className="ds-chip" data-variant="orange">{value}</span> : '—' },
   ];
-  const filtered = query.minFans != null || query.minVideos != null;
+
+  const filterBlock = <Form layout="vertical" onFinish={() => { if (!queryLoading) debouncedQuery(draft); }}>
+    <div className="producer-list-filter-grid">
+      <Form.Item label={t('最低粉丝数')} htmlFor="producer-list-min-fans">
+        <InputNumber className="ds-filter-control" variant="borderless" id="producer-list-min-fans"
+          aria-label={t('最低粉丝数')} min={0} max={Number.MAX_SAFE_INTEGER} precision={0} step={1000}
+          placeholder={t('不限')} value={draft.minFans} onChange={value => setFilter({ minFans: value })} />
+      </Form.Item>
+      <Form.Item label={t('最低收录投稿数')} htmlFor="producer-list-min-videos">
+        <InputNumber className="ds-filter-control" variant="borderless" id="producer-list-min-videos"
+          aria-label={t('最低收录投稿数')} min={0} max={2147483647} precision={0}
+          placeholder={t('不限')} value={draft.minVideos} onChange={value => setFilter({ minVideos: value })} />
+      </Form.Item>
+    </div>
+    <div className="producer-list-actions">
+      <Button className="ds-button" data-variant="secondary" icon={<ReloadOutlined aria-hidden="true" />} onClick={resetFilter}>{t('重置')}</Button>
+      <Button className="ds-button" data-variant="primary" icon={<SearchOutlined aria-hidden="true" />} htmlType="submit"
+        loading={queryLoading} disabled={queryLoading} aria-busy={queryLoading}>{t('查询')}</Button>
+    </div>
+  </Form>;
+
   return <main className="producer-list-page">
     <header className="producer-list-heading">
-      <div><h1>{t('创作者')}</h1><p><Trans i18nKey="producer.listIntroduction" components={{ creator: <Link className="ds-link" to="/about/creators" /> }} /></p></div>
-      <Link className="ds-link" to="/uniseek">{t('查找创作者？前往 Uni Seek →')}</Link>
-    </header>
-    <section className="ds-surface producer-list-filters" aria-label={t('创作者筛选')}>
-      <Form layout="vertical" onFinish={() => updateQuery({ minFans: draft.minFans, minVideos: draft.minVideos })}>
-        <div className="producer-list-filter-grid">
-          <Form.Item label={t('最低粉丝数')}>
-            <InputNumber aria-label={t('最低粉丝数')} min={0} max={Number.MAX_SAFE_INTEGER} precision={0} step={1000}
-              placeholder={t('不限')} value={draft.minFans} onChange={value => setDraft(current => ({ ...current, minFans: value }))} />
-          </Form.Item>
-          <Form.Item label={t('最低收录投稿数')}>
-            <InputNumber aria-label={t('最低收录投稿数')} min={0} max={2147483647} precision={0}
-              placeholder={t('不限')} value={draft.minVideos} onChange={value => setDraft(current => ({ ...current, minVideos: value }))} />
-          </Form.Item>
-        </div>
-        <div className="producer-list-actions">
-          <Button className="ds-button" data-variant="secondary" onClick={() => { setDraft({ ...PRODUCER_LIST_DEFAULTS }); updateQuery(PRODUCER_LIST_DEFAULTS); }}>{t('重置')}</Button>
-          <Button className="ds-button" data-variant="primary" htmlType="submit">{t('应用筛选')}</Button>
-        </div>
-      </Form>
-    </section>
-    <section aria-label={t('创作者列表')} aria-busy={producers.status === 'loading'}>
-      <div className="producer-list-toolbar">
-        <h2>{filtered ? t('筛选结果') : t('全部创作者')}{producers.status === 'ready' && <span>{t('共 {{value0}} 条', { value0: counter(total) })}</span>}</h2>
+      <div className="producer-list-heading-copy">
+        <h1>{t('创作者')}</h1>
+        <p className="producer-list-summary">
+          <Trans i18nKey="producer.listIntroduction" components={{ creator: <Link className="ds-link" to="/about/creators" /> }} />
+          {' '}<span className="producer-list-count" aria-live="polite">{producers.status === 'ready' && t('共 {{value0}} 条', { value0: counter(total) })}</span>
+          <Tooltip classNames={{ root: 'producer-list-info-tooltip' }} trigger={['hover', 'focus', 'click']} title={<div className="producer-list-info-copy">
+            <p>{t('展示有收录投稿和头像的创作者；收录投稿数并非账号的全部投稿数，缺失资料显示 —。')}</p>
+            <p>{t('粉丝数、头像和认证信息来自各自当前账号资料，并非同一天的历史快照。')}</p>
+          </div>}>
+            <Button className="ds-text-button producer-list-info-trigger" type="text" icon={<QuestionCircleOutlined aria-hidden="true" />} aria-label={t('收录与统计说明')} />
+          </Tooltip>
+        </p>
+      </div>
+      <div className="producer-list-heading-actions">
+        <Link className="ds-link producer-list-search-link" to="/uniseek" aria-label={t('查找创作者？前往 Uni Seek →')}>Uni Seek →</Link>
         <div className="producer-list-controls">
-          <Select aria-label={t('排序依据')} value={query.sortBy} onChange={sortBy => updateQuery({ sortBy })} options={[
+          {isMobile && <Button className="ds-button" data-variant="secondary" icon={<FilterOutlined aria-hidden="true" />}
+            aria-expanded={filterDrawerOpen} aria-controls="producer-list-filter-drawer" onClick={() => setFilterDrawerOpen(true)}>{t('筛选条件')}</Button>}
+          <Select className="ds-filter-control" variant="borderless" aria-label={t('排序依据')} value={query.sortBy} onChange={sortBy => updateQuery({ sortBy })} options={[
             { value: 'fans', label: t('粉丝') }, { value: 'videoCount', label: t('收录投稿') }, { value: 'userId', label: 'UID' },
           ]} />
           <Segmented className="ds-segmented" aria-label={t('排序方向')} value={query.order} onChange={order => updateQuery({ order })}
@@ -110,7 +155,16 @@ export default function ProducerList() {
             ]} />
         </div>
       </div>
-      <p className="producer-list-scope">{t('展示有收录投稿和头像的创作者；收录投稿数并非账号的全部投稿数，缺失资料显示 —。')}</p>
+    </header>
+    <div className="producer-list-layout">
+      {isMobile ? <Drawer id="producer-list-filter-drawer" title={t('筛选条件')} placement="left" width={320}
+        open={filterDrawerOpen} onClose={() => setFilterDrawerOpen(false)} className="producer-list-filter-drawer">
+        {filterBlock}
+      </Drawer> : <aside className="ds-surface producer-list-filters" aria-label={t('创作者筛选')}>
+        <h2>{t('筛选条件')}</h2>
+        {filterBlock}
+      </aside>}
+      <section className="producer-list-results" aria-label={t('创作者列表')} aria-busy={queryLoading}>
       {producers.status === 'error' ? <div className="ds-alert producer-list-error" data-variant="error" role="alert">
         <span>{t('创作者列表加载失败，请稍后重试。')}</span><Button className="ds-button" data-variant="secondary" icon={<ReloadOutlined />} onClick={producers.retry}>{t('重试')}</Button>
       </div> : viewMode === 'table' ? <div className="ds-surface producer-list-table">
@@ -132,5 +186,6 @@ export default function ProducerList() {
         disabled={producers.status !== 'ready'} pageSizeOptions={[20, 50, 100]} label={t('创作者分页')}
         onChange={page => updateQuery({ page }, false)} onPageSizeChange={pageSize => updateQuery({ pageSize })} /></div>
     </section>
+    </div>
   </main>;
 }
