@@ -13,6 +13,7 @@ import { CURRENT_APP_ENV, getApiBaseUrl } from '../../config/runtimeEnv.js';
 import DesignSpec from './DesignSpec.jsx';
 import DesignComponents from './DesignComponents.jsx';
 import DataCollection from './DataCollection.jsx';
+import DataProcessing from './DataProcessing.jsx';
 import {
   ADMIN_NAV,
   adminRootGroupKeys,
@@ -151,7 +152,8 @@ export default function Admin() {
         {leaf?.key === 'spec' ? <DesignSpec /> : null}
         {leaf?.key === 'components' ? <DesignComponents /> : null}
         {leaf?.key === 'collection' ? <DataCollection /> : null}
-        {leaf && !['runtime', 'spec', 'components', 'collection'].includes(leaf.key) ? <AdminPlaceholder leaf={leaf} /> : null}
+        {leaf?.key === 'processing' ? <DataProcessing /> : null}
+        {leaf && !['runtime', 'spec', 'components', 'collection', 'processing'].includes(leaf.key) ? <AdminPlaceholder leaf={leaf} /> : null}
         {!leaf ? <AdminMissing /> : null}
       </div>
     </div>

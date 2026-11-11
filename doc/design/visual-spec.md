@@ -86,6 +86,8 @@ import { Button } from 'antd';
 
 数据中心的采集看板 `/admin/data/collection` 使用标准 Surface 卡片，Daily 的七日检查占整行，其他来源按容器宽度排列为三列、两列或单列。窄屏七日条带可横向滚动；状态 Tag 使用 `.ds-status-tag` 与 `--status-{healthy|warning|error}-{bg|text|indicator}`：健康为既有 highlight 绿，缺失／空数据及部分统计暂缺为橙，查询失败为红，检查中保持中性灰。日历状态条与图标同色，文字和浅底色在 `theme.css` 从同一 highlight 色派生；日夜文字对比度均至少 4.5:1，同时保留图标与文字。`/admin/design/spec#spec-chips` 提供同款日夜样本。估算规模明确标注，未知数量显示 —，已有时间字段使用 RelativeTime。
 
+数据处理看板 `/admin/data/processing` 沿用相同卡片与状态色：已有结果卡片两列排列，CRON 清单占整行，窄屏单列。处理来源与处理方式分别用中性标签展示；视频打标与创作者识别为灰色 TODO，只说明原理，不显示虚构数量和进度。发布结果、最近业务任务、线上可见调度和仓库配置明确分开；长任务名和表名可换行，日期复用 RelativeTime。
+
 ## Canvas 与 Surface
 
 | 角色 | 语义变量 | 白天 | 夜间 |

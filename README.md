@@ -208,7 +208,7 @@ VITE_APP_ENV=MOCK npm run dev
 - `/uniseek`：统一搜索。
 - `/about`：项目介绍与术语说明。
 
-数据采集看板 `/admin/data/collection`、开发规范页 `/admin/design/spec` 和组件预览 `/admin/design/components` 需要显式开启管理入口。本地在 `frontend/.env.local` 设置 `VITE_ADMIN_ENABLED=true` 后重启；容器设置 `ICEDATA_ADMIN_ENABLED=true` 后重新创建。开关只控制页面入口，不提供权限认证。
+数据采集看板 `/admin/data/collection`、数据处理看板 `/admin/data/processing`、开发规范页 `/admin/design/spec` 和组件预览 `/admin/design/components` 需要显式开启管理入口。本地在 `frontend/.env.local` 设置 `VITE_ADMIN_ENABLED=true` 后重启；容器设置 `ICEDATA_ADMIN_ENABLED=true` 后重新创建。开关只控制页面入口，不提供权限认证。
 
 ## 开发规范
 
