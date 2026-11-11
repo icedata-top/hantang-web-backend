@@ -2,6 +2,7 @@ package com.hantang.web.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.hantang.web.task.VideoTypeAndLanguageAnalysisTask;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.AfterEach;
@@ -17,7 +18,9 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -35,6 +38,7 @@ class LlmClientTest {
     private final AtomicReference<JsonNode> request = new AtomicReference<>();
     private final AtomicReference<String> authorization = new AtomicReference<>();
     private final AtomicReference<String> redirect = new AtomicReference<>();
+    private final AtomicReference<Map<Long, JsonNode>> replayLabels = new AtomicReference<>();
 
     @BeforeEach
     void startServer() throws Exception {
@@ -45,7 +49,20 @@ class LlmClientTest {
             request.set(JSON.readTree(exchange.getRequestBody()));
             authorization.set(exchange.getRequestHeaders().getFirst("Authorization"));
             if (redirect.get() != null) exchange.getResponseHeaders().set("Location", redirect.get());
-            byte[] body = response.get().getBytes(StandardCharsets.UTF_8);
+            String responseBody = response.get();
+            var replay = replayLabels.get();
+            if (replay != null) {
+                var selected = JSON.readTree(request.get().path("messages").get(1).path("content").asText());
+                var labels = JSON.createArrayNode();
+                for (JsonNode video : selected) {
+                    long aid = video.path("aid").longValue();
+                    ObjectNode label = replay.get(aid).deepCopy();
+                    label.put("aid", aid);
+                    labels.add(label);
+                }
+                responseBody = envelope(labels.toString(), "stop");
+            }
+            byte[] body = responseBody.getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().set("Content-Type", "application/json");
             exchange.sendResponseHeaders(status.get(), body.length);
             try (var stream = exchange.getResponseBody()) {
@@ -88,11 +105,64 @@ class LlmClientTest {
         assertFalse(selected.get(0).has("label_singers"));
         assertEquals("第一行\n第二行", selected.get(0).path("description").asText());
         var report = JSON.readTree(Files.readString(output));
+        assertEquals(1, report.path("schema_version").intValue());
+        assertEquals("llm", report.path("source").asText());
         assertEquals("completed", report.path("status").asText());
         assertEquals(1, report.path("processed_count").intValue());
         assertEquals(AID, report.path("results").get(0).path("aid").longValue());
-        assertEquals("不确定", report.path("results").get(0).path("is_virtual_singer").asText());
+        var entry = report.path("results").get(0);
+        assertEquals("不确定", entry.path("output").path("is_virtual_singer").asText());
+        assertEquals("第一行\n第二行", entry.path("input").path("description").asText());
+        assertFalse(entry.path("input").has("aid"));
+        assertFalse(entry.path("output").has("aid"));
+        assertEquals("待复核", entry.path("review").path("status").asText());
+        assertEquals("", entry.path("review").path("note").asText());
         assertEquals(135, report.path("batches").get(0).path("usage").path("total_tokens").intValue());
+        assertFalse(Files.readString(output).contains(FAKE_KEY));
+    }
+
+    @Test
+    void allReferenceAnswersRoundTripThroughTheTaskWithoutChangingIdsInputsOrOutputContract() throws Exception {
+        Path input = Path.of("script/uniseek/uniseek_videos.json");
+        var videos = JSON.readTree(input.toFile());
+        var reference = JSON.readTree(Path.of("script/uniseek/reference_answers.json").toFile());
+        var expected = reference.path("results");
+        assertEquals(1000, videos.size());
+        assertEquals(videos.size(), expected.size());
+        assertEquals(expected.size(), reference.path("selected_count").asInt());
+        assertEquals(expected.size(), reference.path("processed_count").asInt());
+        assertEquals("completed", reference.path("status").asText());
+        var replay = new HashMap<Long, JsonNode>();
+        for (int i = 0; i < videos.size(); i++) {
+            ObjectNode original = videos.get(i).deepCopy();
+            long aid = original.remove("aid").longValue();
+            assertEquals(aid, expected.get(i).path("aid").longValue());
+            assertEquals(original, expected.get(i).path("input"), "输入元数据必须原样保留");
+            assertNull(replay.put(aid, expected.get(i).path("output")), "aid不能重复");
+        }
+        replayLabels.set(replay);
+        Path output = temporary.resolve("all-results.json");
+        try (var client = client(false)) {
+            new VideoTypeAndLanguageAnalysisTask(client, input, output, 1000, 50).run();
+        }
+        var actual = JSON.readTree(output.toFile());
+        assertEquals(20, calls.get());
+        assertEquals(reference.path("schema_version"), actual.path("schema_version"));
+        assertEquals("llm", actual.path("source").asText());
+        assertEquals("completed", actual.path("status").asText());
+        assertEquals(1000, actual.path("processed_count").asInt());
+        assertEquals(20, actual.path("batches").size());
+        assertEquals(reference.size(), actual.size());
+        reference.fieldNames().forEachRemaining(field -> assertTrue(actual.has(field)));
+        for (int i = 0; i < expected.size(); i++) {
+            var entry = actual.path("results").get(i);
+            assertEquals(expected.get(i).path("aid"), entry.path("aid"));
+            assertEquals(expected.get(i).path("input"), entry.path("input"));
+            assertEquals(expected.get(i).path("output"), entry.path("output"));
+            assertEquals(4, entry.size());
+            assertEquals("待复核", entry.path("review").path("status").asText());
+            assertEquals("", entry.path("review").path("note").asText());
+        }
         assertFalse(Files.readString(output).contains(FAKE_KEY));
     }
 

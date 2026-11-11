@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "UniSeek视频三维标注与人工复核文件 v1",
+  "type": "object",
+  "required": ["schema_version", "source", "selected_count", "processed_count", "status", "results", "batches"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": 1},
+    "source": {"enum": ["assistant_draft", "llm"]},
+    "selected_count": {"type": "integer", "minimum": 1},
+    "processed_count": {"type": "integer", "minimum": 0},
+    "status": {"enum": ["running", "partial", "completed", "failed"]},
+    "results": {"type": "array", "items": {"$ref": "#/$defs/entry"}},
+    "batches": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["count", "elapsed_ms", "usage"],
+        "additionalProperties": false,
+        "properties": {
+          "count": {"type": "integer", "minimum": 1},
+          "elapsed_ms": {"type": "integer", "minimum": 0},
+          "usage": {
+            "type": "object",
+            "required": ["prompt_tokens", "completion_tokens", "total_tokens"],
+            "additionalProperties": false,
+            "properties": {
+              "prompt_tokens": {"type": ["integer", "null"], "minimum": 0},
+              "completion_tokens": {"type": ["integer", "null"], "minimum": 0},
+              "total_tokens": {"type": ["integer", "null"], "minimum": 0}
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "entry": {
+      "type": "object",
+      "required": ["aid", "input", "output", "review"],
+      "additionalProperties": false,
+      "properties": {
+        "aid": {"type": "integer", "minimum": 1},
+        "input": {
+          "type": "object",
+          "required": ["title", "tag_new", "description"],
+          "additionalProperties": false,
+          "properties": {
+            "title": {"type": ["string", "null"]},
+            "tag_new": {"type": ["array", "null"], "items": {"type": "string"}},
+            "description": {"type": ["string", "null"]}
+          }
+        },
+        "output": {
+          "type": "object",
+          "required": ["is_song", "is_virtual_singer", "languages"],
+          "additionalProperties": false,
+          "properties": {
+            "is_song": {"enum": ["是", "否", "不确定"]},
+            "is_virtual_singer": {"enum": ["是", "否", "混合", "不确定"]},
+            "languages": {
+              "type": "array", "minItems": 1, "uniqueItems": true,
+              "items": {
+                "type": "string", "pattern": "^[一-鿿]{1,20}$",
+                "not": {"enum": ["中文", "华语", "国语", "普通话", "粤语", "闽南语", "韩语", "韩国语", "简体中文", "繁体中文"]}
+              },
+              "if": {"contains": {"const": "无语言"}},
+              "then": {"maxItems": 1}
+            }
+          }
+        },
+        "review": {
+          "type": "object",
+          "required": ["status", "note"],
+          "additionalProperties": false,
+          "properties": {
+            "status": {"enum": ["待复核", "已确认"]},
+            "note": {"type": "string"}
+          }
+        }
+      }
+    }
+  }
+}

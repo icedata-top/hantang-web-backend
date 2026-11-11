@@ -3,6 +3,7 @@ package com.hantang.web.task;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.hantang.web.api.LlmClient;
 import com.hantang.web.api.LlmClient.VideoInput;
 import com.hantang.web.api.LlmClient.VideoLabel;
@@ -82,9 +83,11 @@ public final class VideoTypeAndLanguageAnalysisTask implements Runnable {
         }
         Path parent = output.toAbsolutePath().getParent();
         Files.createDirectories(parent);
-        var results = new ArrayList<VideoLabel>();
+        var results = JSON.createArrayNode();
         var batches = JSON.createArrayNode();
         var report = JSON.createObjectNode();
+        report.put("schema_version", 1);
+        report.put("source", "llm");
         report.put("selected_count", videos.size());
         report.put("processed_count", 0);
         report.put("status", "running");
@@ -97,14 +100,16 @@ public final class VideoTypeAndLanguageAnalysisTask implements Runnable {
             for (int offset = 0; offset < videos.size(); offset += batchSize) {
                 var batch = videos.subList(offset, Math.min(offset + batchSize, videos.size()));
                 var response = client.analyze(batch, prompt);
-                results.addAll(response.results());
+                for (int i = 0; i < response.results().size(); i++) {
+                    results.add(reviewEntry(batch.get(i), response.results().get(i)));
+                }
                 var summary = batches.addObject();
                 summary.put("count", response.results().size());
                 summary.put("elapsed_ms", response.elapsedMs());
                 summary.set("usage", JSON.valueToTree(response.usage()));
                 report.put("processed_count", results.size());
                 report.put("status", results.size() == videos.size() ? "completed" : "partial");
-                report.set("results", JSON.valueToTree(results));
+                report.set("results", results);
                 report.set("batches", batches);
                 // Persist each completed batch. A later failure leaves a valid partial report, not false labels.
                 Files.writeString(output, JSON.writerWithDefaultPrettyPrinter().writeValueAsString(report),
@@ -122,6 +127,19 @@ public final class VideoTypeAndLanguageAnalysisTask implements Runnable {
             }
             throw e;
         }
+    }
+
+    private static ObjectNode reviewEntry(VideoInput video, VideoLabel label) {
+        var entry = JSON.createObjectNode();
+        entry.put("aid", label.aid());
+        ObjectNode input = JSON.valueToTree(video);
+        input.remove("aid");
+        entry.set("input", input);
+        ObjectNode output = JSON.valueToTree(label);
+        output.remove("aid");
+        entry.set("output", output);
+        entry.putObject("review").put("status", "待复核").put("note", "");
+        return entry;
     }
 
     private List<VideoInput> readVideos() throws IOException {
