@@ -12,6 +12,7 @@ import {
 import { CURRENT_APP_ENV, getApiBaseUrl } from '../../config/runtimeEnv.js';
 import DesignSpec from './DesignSpec.jsx';
 import DesignComponents from './DesignComponents.jsx';
+import DataCollection from './DataCollection.jsx';
 import {
   ADMIN_NAV,
   adminRootGroupKeys,
@@ -45,7 +46,7 @@ function AdminRuntime() {
     <main className="admin-page">
       <h1>{t("运行环境")}</h1>
       <p className="admin-lead">
-        {t("查看当前系统的运行配置。设计分组可查看视觉规范，其余栏目仍在规划中。")}
+        {t("查看当前系统的运行配置。数据中心可查看采集状态，设计分组可查看视觉规范。")}
       </p>
       <section className="admin-panel ds-surface" aria-labelledby="admin-environment-title">
         <h2 id="admin-environment-title">{t("当前配置")}</h2>
@@ -149,7 +150,8 @@ export default function Admin() {
         {leaf?.key === 'runtime' ? <AdminRuntime /> : null}
         {leaf?.key === 'spec' ? <DesignSpec /> : null}
         {leaf?.key === 'components' ? <DesignComponents /> : null}
-        {leaf && !['runtime', 'spec', 'components'].includes(leaf.key) ? <AdminPlaceholder leaf={leaf} /> : null}
+        {leaf?.key === 'collection' ? <DataCollection /> : null}
+        {leaf && !['runtime', 'spec', 'components', 'collection'].includes(leaf.key) ? <AdminPlaceholder leaf={leaf} /> : null}
         {!leaf ? <AdminMissing /> : null}
       </div>
     </div>

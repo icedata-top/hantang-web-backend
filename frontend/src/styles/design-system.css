@@ -310,6 +310,29 @@ html .ant-btn.ds-button[data-variant] {
 
 .ds-alert p { margin: 4px 0 0; }
 
+/* 标签与图标共同表达健康状态；检查中保留中性色。 */
+.ds-status-tag.ant-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  border: 0;
+  color: var(--text-secondary);
+  background: var(--surface-hover);
+}
+.ds-status-tag[data-health='healthy'] {
+  color: var(--status-healthy-text);
+  background: var(--status-healthy-bg);
+}
+.ds-status-tag[data-health='gaps'], .ds-status-tag[data-health='empty'] {
+  color: var(--status-warning-text);
+  background: var(--status-warning-bg);
+}
+.ds-status-tag[data-health='unavailable'] {
+  color: var(--status-error-text);
+  background: var(--status-error-bg);
+}
+
 .ds-sr-only {
   position: absolute;
   width: 1px;

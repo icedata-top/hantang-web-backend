@@ -56,6 +56,7 @@
   --alert-border-width: 0px;
   --honor-fill-strength: 16%;
   --entity-tag-fill-strength: 16%;
+  --status-fill-strength: 16%;
 
   /* 导航与数据展示的尺寸 */
   --page-gutter-inline: 20px;
@@ -136,6 +137,7 @@
   --disabled-fill-strength: 6%;
   --chip-orange-text-strength: 55%;
   --entity-tag-text-strength: 45%;
+  --status-text-strength: 40%;
   --honor-text-strength: 45%;
   --vocal-accent-text-strength: 45%;
   --vocal-hatch-square-opacity: 0.15;
@@ -189,6 +191,7 @@
   --disabled-fill-strength: 8%;
   --chip-orange-text-strength: 85%;
   --entity-tag-text-strength: 85%;
+  --status-text-strength: 85%;
   --honor-text-strength: 85%;
   --vocal-accent-text-strength: 85%;
   --vocal-hatch-square-opacity: 0.2;
@@ -239,6 +242,16 @@
   --chip-neutral-text: var(--text-secondary);
   --chip-orange-bg: color-mix(in srgb, var(--highlight-orange) 16%, var(--surface));
   --chip-orange-text: color-mix(in srgb, var(--highlight-orange) var(--chip-orange-text-strength), var(--text));
+  /* 健康状态：健康绿、缺失/警告橙、失败红，直接沿用既有 highlight 色板。 */
+  --status-healthy-bg: color-mix(in srgb, var(--highlight-green) var(--status-fill-strength), var(--surface));
+  --status-healthy-text: color-mix(in srgb, var(--highlight-green) var(--status-text-strength), var(--text));
+  --status-healthy-indicator: var(--highlight-green);
+  --status-warning-bg: color-mix(in srgb, var(--highlight-orange) var(--status-fill-strength), var(--surface));
+  --status-warning-text: color-mix(in srgb, var(--highlight-orange) var(--status-text-strength), var(--text));
+  --status-warning-indicator: var(--highlight-orange);
+  --status-error-bg: color-mix(in srgb, var(--highlight-red) var(--status-fill-strength), var(--surface));
+  --status-error-text: color-mix(in srgb, var(--highlight-red) var(--status-text-strength), var(--text));
+  --status-error-indicator: var(--highlight-red);
   /* 实体类型：歌手紫、创作者橙、歌曲绿，避免与品牌蓝及文字链接混淆。 */
   --entity-vocal-tag-bg: color-mix(in srgb, var(--highlight-violet) var(--entity-tag-fill-strength), var(--surface));
   --entity-vocal-tag-text: color-mix(in srgb, var(--highlight-violet) var(--entity-tag-text-strength), var(--text));

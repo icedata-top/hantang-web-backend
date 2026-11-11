@@ -1,12 +1,14 @@
 import { useId, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Card, DatePicker, Form, Input, InputNumber, Radio, Segmented, Select, Switch } from 'antd';
+import { Button, Card, DatePicker, Form, Input, InputNumber, Radio, Segmented, Select, Switch, Tag } from 'antd';
 import {
   InfoCircleOutlined,
   MoonOutlined,
   SunOutlined,
   WarningOutlined,
   CloseCircleOutlined,
+  CheckCircleOutlined,
+  ClockCircleOutlined,
 } from '@ant-design/icons';
 import './DesignSpec.css';
 import { PaginationSample, TableSample, TabsSample } from './DataDisplaySamples.jsx';
@@ -30,6 +32,7 @@ const TOKEN_NAMES = [
   'button-disabled-bg', 'button-disabled-text',
   'tooltip-bg', 'tooltip-text',
   'chip-neutral-bg', 'chip-neutral-text', 'chip-orange-bg', 'chip-orange-text',
+  ...['healthy', 'warning', 'error'].flatMap((state) => ['bg', 'text', 'indicator'].map((part) => `status-${state}-${part}`)),
   ...['hall', 'legend', 'myth'].flatMap((level) => ['bg', 'text'].map((part) => `honor-${level}-${part}`)),
   'font-size-title', 'font-size-heading', 'font-size-body', 'font-size-caption', 'font-size-button',
   'font-family-zh', 'font-family-en', 'font-family-ja',
@@ -395,6 +398,18 @@ function Alerts({ t }) {
 
 function Chips({ t }) {
   return <>
+    <p className="spec-footnote">{t('采集健康状态')}</p>
+    <div className="spec-chip-list">
+      {[
+        ['healthy', 'healthy', CheckCircleOutlined],
+        ['gaps', 'warning', WarningOutlined],
+        ['unavailable', 'error', CloseCircleOutlined],
+        ['loading', null, ClockCircleOutlined],
+      ].map(([health, tone, Icon]) => <div key={health}>
+        <Tag className="ds-chip ds-status-tag" data-health={health}><Icon />{t(`collection.health.${health}`)}</Tag>
+        {tone ? <p className="spec-type-meta"><Token name={`status-${tone}-bg`} /><Token name={`status-${tone}-text`} /><Token name={`status-${tone}-indicator`} /></p> : null}
+      </div>)}
+    </div>
     <div className="spec-chip-list">
       <div><span className="ds-chip" data-variant="neutral">VOCALOID·UTAU</span>
         <p className="spec-type-meta"><Token name="chip-neutral-bg" /><Token name="chip-neutral-text" /></p></div>

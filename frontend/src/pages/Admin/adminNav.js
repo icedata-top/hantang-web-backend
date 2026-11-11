@@ -1,7 +1,7 @@
 /**
  * 管理配置目录。
  * 顶栏「管理配置」是一级；这里的分组是二级，分组下的页面是三级。
- * 分组没有 path；页面有 path。「运行环境」「视觉规范」「组件预览」已实现，其余为施工占位。
+ * 分组没有 path；页面有 path。「数据采集」「运行环境」「视觉规范」「组件预览」已实现。
  */
 
 export const ADMIN_NAV = [
@@ -13,38 +13,22 @@ export const ADMIN_NAV = [
   },
   {
     key: 'data',
-    zh: '数据',
-    en: 'Data',
+    zh: '数据中心',
+    en: 'Data center',
     children: [
       {
-        key: 'checkpoints',
-        path: '/admin/data/checkpoints',
-        zh: '时间点',
-        en: 'Checkpoints',
-        summaryZh: '对照各任务的计划周期，查看最近一次成功、失败和当前延迟。',
-        summaryEn: 'Compare each job with its schedule, including the latest success, failure, and delay.',
-        pointsZh: ['各来源最近成功与失败时间', '相对计划周期的延迟', '最近一次错误摘要'],
-        pointsEn: ['Latest success and failure per source', 'Delay against the planned interval', 'Latest error summary'],
+        key: 'collection',
+        path: '/admin/data/collection',
+        zh: '数据采集',
+        en: 'Data collection',
       },
       {
-        key: 'timeline',
-        path: '/admin/data/timeline',
-        zh: '时间链',
-        en: 'Timeline',
-        summaryZh: '按时间查看一条数据经过的抓取、入库和聚合节点。',
-        summaryEn: 'Follow one record through fetch, storage, and aggregation in time order.',
-        pointsZh: ['同一条数据上的处理节点', '断点与重复处理', '从节点回到对应任务'],
-        pointsEn: ['Processing steps on one record', 'Gaps and repeated handling', 'Jump from a step back to its job'],
-      },
-      {
-        key: 'ingest-videos',
-        path: '/admin/data/videos',
-        zh: '收录视频',
-        en: 'Ingest videos',
-        summaryZh: '补录自动任务尚未收录的投稿。',
-        summaryEn: 'Add videos that the automatic jobs have not collected.',
-        pointsZh: ['提交 BV 号或视频链接', '提示是否已在库中', '记录本次收录结果'],
-        pointsEn: ['Submit a BV id or video URL', 'Show whether it is already stored', 'Record the result of this ingest'],
+        key: 'processing',
+        path: '/admin/data/processing',
+        zh: '数据处理',
+        en: 'Data processing',
+        summaryZh: '查看明细数据进入加工与应用层的处理情况。',
+        pointsZh: ['数据加工与聚合', '应用数据发布状态'],
       },
     ],
   },
