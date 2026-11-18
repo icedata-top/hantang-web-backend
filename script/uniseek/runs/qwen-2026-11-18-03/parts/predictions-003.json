@@ -1,0 +1,177 @@
+{
+  "schema_version" : 1,
+  "source" : "llm",
+  "selected_count" : 980,
+  "processed_count" : 10,
+  "status" : "failed",
+  "results" : [ {
+    "aid" : 115330407997217,
+    "input" : {
+      "title" : "【轰】这个杀手很“好心”",
+      "tag_new" : [ "动画短片群星计划", "动漫", "手书", "绘画", "杀手", "原创动画", "伪善", "控制欲", "原生家庭" ],
+      "description" : "灵感来源于大概十年前看的日本漫画，叫啥已经忘了…有知道的可以在评论区告诉我"
+    },
+    "output" : {
+      "is_song" : "否",
+      "is_virtual_singer" : "不确定",
+      "languages" : [ "未知语言" ]
+    },
+    "review" : {
+      "status" : "待复核",
+      "note" : ""
+    }
+  }, {
+    "aid" : 8506694,
+    "input" : {
+      "title" : "【2017拜年祭单品】万神纪【星尘原创曲】",
+      "tag_new" : [ "发现《万神纪（VOCALOID）》", "星尘", "2017拜年祭单品", "万神纪", "VOCALOID中文曲", "纳兰寻风", "墨兰花语", "邪叫教主", "VOCALOID", "大司乐坊", "黑茶别馆", "康师傅の海鲜面", "VOCALOID传说曲" ],
+      "description" : "《万神纪》是以中国古代神话为主题的原创中文歌曲，主要涵盖的内容跨度大概是从创世时期（部落）到神话朝代（商周）。由虚拟歌手星尘演绎；人声本家【肥皂菌】av8542373 ；伴奏和歌曲将于14号公布，微博@海鲜快来\nSTAFF&amp;amp;amp;歌词：http://weibo.com/ttarticle/p/show?id=2309404068608677415624\n授权合作声明：http://weibo.com/ttarticle/p/show?id=2309404068582102294311"
+    },
+    "output" : {
+      "is_song" : "是",
+      "is_virtual_singer" : "是",
+      "languages" : [ "汉语" ]
+    },
+    "review" : {
+      "status" : "待复核",
+      "note" : ""
+    }
+  }, {
+    "aid" : 116017938307726,
+    "input" : {
+      "title" : "传统口技表演《西游记》",
+      "tag_new" : [ "演奏挑战赛", "西游记", "模仿", "口技", "孙悟空", "传统文化", "配音", "西昊 C300", "表演", "非遗" ],
+      "description" : "-"
+    },
+    "output" : {
+      "is_song" : "否",
+      "is_virtual_singer" : "否",
+      "languages" : [ "无语言" ]
+    },
+    "review" : {
+      "status" : "待复核",
+      "note" : ""
+    }
+  }, {
+    "aid" : 294016471,
+    "input" : {
+      "title" : "【空耳】lemon竟然是一首中文歌？",
+      "tag_new" : [ "发现《Lemon》", "动漫杂谈大会", "日语", "空耳", "lemon", "治愈向", "非自然死亡" ],
+      "description" : "补档\n修改开头及中间部分句子\n感谢喜欢\n歌曲：lemon-米津玄师"
+    },
+    "output" : {
+      "is_song" : "否",
+      "is_virtual_singer" : "否",
+      "languages" : [ "日语" ]
+    },
+    "review" : {
+      "status" : "待复核",
+      "note" : ""
+    }
+  }, {
+    "aid" : 115666657022455,
+    "input" : {
+      "title" : "“世界上最好的人，分明在我面前啊”",
+      "tag_new" : [ "发现《有我呢》", "动画种草激励计划", "动画", "校园", "原创动画", "短片", "双女主", "闺狗", "超甜中学", "救赎" ],
+      "description" : ""
+    },
+    "output" : {
+      "is_song" : "否",
+      "is_virtual_singer" : "不确定",
+      "languages" : [ "未知语言" ]
+    },
+    "review" : {
+      "status" : "待复核",
+      "note" : ""
+    }
+  }, {
+    "aid" : 113918135501604,
+    "input" : {
+      "title" : "哪吒2角色曲《就是哪吒》完整版MV！我要将那混沌的世界翻个天",
+      "tag_new" : [ "发现《就是哪吒》", "哪吒之魔童闹海", "华语MV", "电影", "国漫", "哪吒", "唐汉霄", "电影《哪吒之魔童闹海》二创征稿" ],
+      "description" : "演唱：唐汉霄\n作曲：唐汉霄\n作词：王竞、唐汉霄、朱婧汐编曲：唐汉霄/江存潇Jax@字在声/栾卓忻@字在声/孙叡AMAJ@字在声\n制作人：唐汉霄\n监制：王竞\n统筹：陈欣\n吉他：江存潇Jax@字在声/栾卓忻@字在声\n贝斯：江存潇Jax@字在声\n唢呐：王雪梅、姜峰\n人声录音：唐汉霄\n人声编辑：唐汉霄\n人声录音室：神泉\n和声：唐汉霄、唐子超、朱元佳、冯钱、王钤\n和声音编：唐汉霄、王飞\n混音及母带：栾卓忻@字在声\n版权运营：单振家@字在声\n音乐统筹：陈炯@字在声\nOP：字在声音乐ZigZag Music\n版权运营："
+    },
+    "output" : {
+      "is_song" : "是",
+      "is_virtual_singer" : "否",
+      "languages" : [ "汉语" ]
+    },
+    "review" : {
+      "status" : "待复核",
+      "note" : ""
+    }
+  }, {
+    "aid" : 114245878418973,
+    "input" : {
+      "title" : "今天遇到高手了......",
+      "tag_new" : [ "钢琴", "尼卡钢琴", "钢琴调音师的日常", "钢琴调律" ],
+      "description" : ""
+    },
+    "output" : {
+      "is_song" : "否",
+      "is_virtual_singer" : "否",
+      "languages" : [ "无语言" ]
+    },
+    "review" : {
+      "status" : "待复核",
+      "note" : ""
+    }
+  }, {
+    "aid" : 39718511,
+    "input" : {
+      "title" : "【洛天依|薛之谦】江苏卫视2019跨年演唱会《达拉崩吧》",
+      "tag_new" : [ "发现《达拉崩吧》", "薛之谦", "Vsinger", "江苏卫视跨年", "洛天依" ],
+      "description" : "2018年12月31日，天依与薛之谦老师在江苏卫视跨年晚会上一起同台演出了《达拉崩吧》！\n大家有被可爱的薛之谦老师、可爱的天依和两只可爱的“巨龙”萌到吗？\n看我们的演出收获四倍的可爱和快乐！笔芯～\n\n《达拉崩吧》\n原词｜作曲｜调校：ilem\n本家：av9372087\n原唱：洛天依 言和\n歌词改编：薛之谦\n演唱：薛之谦 洛天依\n人设：TID"
+    },
+    "output" : {
+      "is_song" : "是",
+      "is_virtual_singer" : "混合",
+      "languages" : [ "汉语" ]
+    },
+    "review" : {
+      "status" : "待复核",
+      "note" : ""
+    }
+  }, {
+    "aid" : 116244850215683,
+    "input" : {
+      "title" : "第一次见家长需要注意什么",
+      "tag_new" : [ "梦境护卫队up主激励计划", "搞笑", "动画", "情侣", "星有野", "梦境护卫队", "梦境护卫队公测" ],
+      "description" : "纯爱战士最喜欢的一集"
+    },
+    "output" : {
+      "is_song" : "否",
+      "is_virtual_singer" : "不确定",
+      "languages" : [ "未知语言" ]
+    },
+    "review" : {
+      "status" : "待复核",
+      "note" : ""
+    }
+  }, {
+    "aid" : 2251501,
+    "input" : {
+      "title" : "【首發】《東京不太熱》 - 洛天依",
+      "tag_new" : [ "发现《东京不太热》", "新人都是怪物", "VOCALOID中文曲", "洛天依", "原创PV" ],
+      "description" : "自制 一如既往的宅男风格"
+    },
+    "output" : {
+      "is_song" : "是",
+      "is_virtual_singer" : "是",
+      "languages" : [ "汉语" ]
+    },
+    "review" : {
+      "status" : "待复核",
+      "note" : ""
+    }
+  } ],
+  "batches" : [ {
+    "count" : 10,
+    "elapsed_ms" : 7573,
+    "usage" : {
+      "prompt_tokens" : 5574,
+      "completion_tokens" : 599,
+      "total_tokens" : 6173
+    }
+  } ]
+}

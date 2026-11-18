@@ -1,0 +1,115 @@
+{
+  "run_id": "qwen-2026-11-18-03",
+  "status": "failed",
+  "model": "qwen3.8-flash",
+  "input": "script/uniseek/uniseek_videos.json",
+  "input_sha256": "5107c732883f5c6cf18be3fe70241794783dd5f4b9f7f6321147162ad3ee650a",
+  "prompt": "prompt.md",
+  "prompt_sha256": "e00e12676500ab3f8352e4b47a59280e92c998e7a678c6bb3ba04247a2f2cff0",
+  "reference": "script/uniseek/reference_answers.reviewed-final.json",
+  "reference_sha256": "2a825bafffd5fe11de49fcb0f1213012dc6b8cbbf01feb16c2d59834191ec374",
+  "selected_count": 1000,
+  "batch_size": 20,
+  "enable_thinking": false,
+  "stream": false,
+  "prediction_file": "predictions.json",
+  "scoring_performed": false,
+  "created_at": "2026-11-18T13:20:17.971Z",
+  "note": "仅发送原始视频元数据和提示词，不发送人工参考答案、复核备注或本地配置。",
+  "previous_attempt": "script/uniseek/runs/qwen-2026-11-18-02",
+  "retry_reason": "首批网络连接错误，无已保存结果；连通性检查现已返回正常HTTP响应。",
+  "seed_request": {
+    "count": 20,
+    "usage": {
+      "prompt_tokens": 7015,
+      "completion_tokens": 811,
+      "total_tokens": 7826
+    },
+    "elapsed_ms": null,
+    "note": "诊断请求取得的有效首批结果，未采集精确耗时；用量单独保留，未在batches中虚构耗时。"
+  },
+  "usage_scope": "仅统计成功请求返回的用量；失败请求未返回的用量未知。",
+  "attempts": [
+    {
+      "attempt": 1,
+      "offset": 20,
+      "batch_size": 20,
+      "processed_count": 0,
+      "status": "failed",
+      "exit_code": 1,
+      "input": "parts/input-001.json",
+      "output": "parts/predictions-001.json"
+    },
+    {
+      "attempt": 2,
+      "offset": 20,
+      "batch_size": 20,
+      "processed_count": 0,
+      "status": "failed",
+      "exit_code": 1,
+      "input": "parts/input-002.json",
+      "output": "parts/predictions-002.json"
+    },
+    {
+      "attempt": 3,
+      "offset": 20,
+      "batch_size": 10,
+      "processed_count": 10,
+      "status": "failed",
+      "exit_code": 1,
+      "input": "parts/input-003.json",
+      "output": "parts/predictions-003.json"
+    },
+    {
+      "attempt": 4,
+      "offset": 30,
+      "batch_size": 20,
+      "processed_count": 0,
+      "status": "failed",
+      "exit_code": 1,
+      "input": "parts/input-004.json",
+      "output": "parts/predictions-004.json"
+    },
+    {
+      "attempt": 5,
+      "offset": 30,
+      "batch_size": 20,
+      "processed_count": 0,
+      "status": "failed",
+      "exit_code": 1,
+      "input": "parts/input-005.json",
+      "output": "parts/predictions-005.json"
+    },
+    {
+      "attempt": 6,
+      "offset": 30,
+      "batch_size": 10,
+      "processed_count": 0,
+      "status": "failed",
+      "exit_code": 1,
+      "input": "parts/input-006.json",
+      "output": "parts/predictions-006.json"
+    },
+    {
+      "attempt": 7,
+      "offset": 30,
+      "batch_size": 10,
+      "processed_count": 0,
+      "status": "failed",
+      "exit_code": 1,
+      "input": "parts/input-007.json",
+      "output": "parts/predictions-007.json"
+    }
+  ],
+  "started_at": "2026-11-18T13:20:24.414362+00:00",
+  "processed_count": 30,
+  "completed_batches": 2,
+  "metric_batches": 1,
+  "usage": {
+    "prompt_tokens": 12589,
+    "completion_tokens": 1410,
+    "total_tokens": 13999
+  },
+  "finished_at": "2026-11-18T13:21:57.094338+00:00",
+  "elapsed_seconds_excluding_seed": 92.681
+}

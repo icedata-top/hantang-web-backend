@@ -1,0 +1,32 @@
+{
+  "run_id": "qwen-2026-11-18-02",
+  "status": "failed",
+  "model": "qwen3.8-flash",
+  "input": "script/uniseek/uniseek_videos.json",
+  "input_sha256": "5107c732883f5c6cf18be3fe70241794783dd5f4b9f7f6321147162ad3ee650a",
+  "prompt": "prompt.md",
+  "prompt_sha256": "e00e12676500ab3f8352e4b47a59280e92c998e7a678c6bb3ba04247a2f2cff0",
+  "reference": "script/uniseek/reference_answers.reviewed-final.json",
+  "reference_sha256": "2a825bafffd5fe11de49fcb0f1213012dc6b8cbbf01feb16c2d59834191ec374",
+  "selected_count": 1000,
+  "batch_size": 20,
+  "enable_thinking": false,
+  "stream": false,
+  "prediction_file": "predictions.json",
+  "scoring_performed": false,
+  "created_at": "2026-11-18T13:13:41.709672+00:00",
+  "note": "仅发送原始视频元数据和提示词，不发送人工参考答案、复核备注或本地配置。",
+  "previous_attempt": "script/uniseek/runs/qwen-2026-11-18-01",
+  "retry_reason": "首批网络连接错误，无已保存结果；连通性检查现已返回正常HTTP响应。",
+  "started_at": "2026-11-18T13:13:48.344537+00:00",
+  "exit_code": 1,
+  "finished_at": "2026-11-18T13:14:06.205484+00:00",
+  "elapsed_seconds": 17.861,
+  "processed_count": 0,
+  "completed_batches": 0,
+  "usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0
+  }
+}
