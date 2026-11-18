@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /** OpenAI-compatible text client. Never log configuration, headers, or raw provider errors. */
 public final class LlmClient implements AutoCloseable {
@@ -30,6 +31,8 @@ public final class LlmClient implements AutoCloseable {
     private static final Set<String> VOCAL_VALUES = Set.of("是", "否", "混合", "不确定");
     private static final Set<String> LANGUAGE_ALIASES = Set.of("中文", "华语", "国语", "普通话", "粤语", "闽南语", "韩语", "韩国语", "简体中文", "繁体中文");
     private static final Set<String> RESULT_FIELDS = Set.of("aid", "is_song", "is_virtual_singer", "languages");
+    private static final Pattern JSON_CODE_FENCE = Pattern.compile("\\A```(?:json)?[ \\t]*\\R(.*)\\R[ \\t]*```\\z",
+            Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
     private final URI endpoint;
     private final String model;
@@ -76,6 +79,8 @@ public final class LlmClient implements AutoCloseable {
         return value;
     }
 
+    public String modelName() { return model; }
+
     public AnalysisResponse analyze(List<VideoInput> videos, String prompt) throws IOException, InterruptedException {
         if (videos.isEmpty() || videos.size() > 50 || prompt == null || prompt.isBlank()) {
             throw new IllegalArgumentException("每次请求须包含1至50条视频及非空提示词");
@@ -102,7 +107,7 @@ public final class LlmClient implements AutoCloseable {
                     .header("Content-Type", "application/json; charset=utf-8")
                     .POST(HttpRequest.BodyPublishers.ofString(JSON.writeValueAsString(body), StandardCharsets.UTF_8)).build();
         } catch (IllegalArgumentException e) {
-            throw new IOException("LLM请求配置无效");
+            throw failure("request", "REQUEST_CONFIGURATION", null, System.nanoTime(), null, null);
         }
         long start = System.nanoTime();
         HttpResponse<String> response;
@@ -110,25 +115,82 @@ public final class LlmClient implements AutoCloseable {
             response = http.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
         } catch (IOException e) {
             // Exception causes can include the endpoint; provider error bodies can echo credentials.
-            throw new IOException("LLM网络请求失败（" + e.getClass().getSimpleName() + "）");
+            throw failure("network", "NETWORK_ERROR", null, start, null, null);
         }
         if (response.statusCode() != 200) {
-            throw new IOException("LLM请求失败，HTTP " + response.statusCode() + "（未记录响应正文）");
+            TokenUsage usage = null;
+            try { usage = readUsage(parseJson(response.body())); } catch (IOException ignored) { }
+            throw failure("http", "HTTP_ERROR", response.statusCode(), start, usage, null);
         }
-        JsonNode envelope = parseJson(response.body());
+        JsonNode envelope;
+        try { envelope = parseJson(response.body()); }
+        catch (IOException e) { throw failure("response_json", "RESPONSE_JSON_INVALID", 200, start, null, response.body()); }
+        TokenUsage usage = readUsage(envelope);
         JsonNode choice = envelope.path("choices").path(0);
-        if (!"stop".equals(choice.path("finish_reason").asText())) {
-            throw new IOException("LLM未完整完成输出：可能截断、拒答或响应格式不符");
-        }
         JsonNode content = choice.path("message").path("content");
-        if (!content.isTextual() || content.textValue().isBlank()) {
-            throw new IOException("LLM没有返回文本结果");
+        String modelOutput = content.isTextual() ? content.textValue() : null;
+        if (!"stop".equals(choice.path("finish_reason").asText())) {
+            throw failure("model_output", "OUTPUT_INCOMPLETE", 200, start, usage, modelOutput);
         }
-        List<VideoLabel> results = parseLabels(content.textValue(), videos);
+        if (modelOutput == null || modelOutput.isBlank()) {
+            throw failure("model_output", "OUTPUT_MISSING", 200, start, usage, modelOutput);
+        }
+        JsonNode rows;
+        try {
+            var fenced = JSON_CODE_FENCE.matcher(modelOutput.strip());
+            rows = parseJson(fenced.matches() ? fenced.group(1) : modelOutput);
+        } catch (IOException e) { throw failure("label_json", "LABEL_JSON_INVALID", 200, start, usage, modelOutput); }
+        List<VideoLabel> results;
+        try { results = parseLabels(rows, videos); }
+        catch (IOException e) { throw failure("label_validation", "LABEL_VALIDATION_FAILED", 200, start, usage, modelOutput); }
+        return new AnalysisResponse(results, usage, Duration.ofNanos(System.nanoTime() - start).toMillis());
+    }
+
+    private static TokenUsage readUsage(JsonNode envelope) {
         JsonNode usage = envelope.path("usage");
-        return new AnalysisResponse(results, new TokenUsage(tokenCount(usage, "prompt_tokens"),
-                tokenCount(usage, "completion_tokens"), tokenCount(usage, "total_tokens")),
-                Duration.ofNanos(System.nanoTime() - start).toMillis());
+        return new TokenUsage(tokenCount(usage, "prompt_tokens"), tokenCount(usage, "completion_tokens"), tokenCount(usage, "total_tokens"));
+    }
+
+    private AnalysisException failure(String stage, String code, Integer status, long start, TokenUsage usage, String body) {
+        String shape = null;
+        if (body != null) {
+            String trimmed = body.stripLeading();
+            shape = trimmed.isEmpty() ? "empty" : trimmed.startsWith("```") ? "markdown"
+                    : trimmed.startsWith("data:") ? "sse" : trimmed.startsWith("<") ? "html"
+                    : trimmed.startsWith("[") ? "array" : trimmed.startsWith("{") ? "object"
+                    : trimmed.startsWith("\uFEFF") ? "bom" : "other";
+        }
+        // Retain decoded model content only, never HTTP error bodies, envelopes or headers.
+        String rawModelOutput = body != null && Set.of("model_output", "label_json", "label_validation").contains(stage)
+                ? body.replace(apiKey, "[REDACTED]") : null;
+        return new AnalysisException(stage, code, status, Duration.ofNanos(System.nanoTime() - start).toMillis(),
+                usage == null ? new TokenUsage(null, null, null) : usage, shape, rawModelOutput);
+    }
+
+    /** Messages and stack traces contain fixed metadata only; model diagnostics require an explicit accessor. */
+    public static final class AnalysisException extends IOException {
+        private final String stage;
+        private final String code;
+        private final Integer httpStatus;
+        private final long elapsedMs;
+        private final TokenUsage usage;
+        private final String responseShape;
+        private final String rawModelOutput;
+
+        private AnalysisException(String stage, String code, Integer httpStatus, long elapsedMs, TokenUsage usage, String responseShape,
+                                  String rawModelOutput) {
+            super("LLM请求未成功：" + code + (httpStatus == null ? "" : "，HTTP " + httpStatus));
+            this.stage = stage; this.code = code; this.httpStatus = httpStatus;
+            this.elapsedMs = elapsedMs; this.usage = usage; this.responseShape = responseShape;
+            this.rawModelOutput = rawModelOutput;
+        }
+        public String stage() { return stage; }
+        public String code() { return code; }
+        public Integer httpStatus() { return httpStatus; }
+        public long elapsedMs() { return elapsedMs; }
+        public TokenUsage usage() { return usage; }
+        public String responseShape() { return responseShape; }
+        public String rawModelOutput() { return rawModelOutput; }
     }
 
     private static JsonNode parseJson(String text) throws IOException {
@@ -141,8 +203,7 @@ public final class LlmClient implements AutoCloseable {
         }
     }
 
-    private static List<VideoLabel> parseLabels(String content, List<VideoInput> videos) throws IOException {
-        JsonNode rows = parseJson(content);
+    private static List<VideoLabel> parseLabels(JsonNode rows, List<VideoInput> videos) throws IOException {
         if (!rows.isArray() || rows.size() != videos.size()) {
             throw new IOException("LLM结果条数或数组格式与输入不一致");
         }
