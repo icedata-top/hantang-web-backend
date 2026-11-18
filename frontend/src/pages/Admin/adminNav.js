@@ -1,7 +1,7 @@
 /**
  * 管理配置目录。
  * 顶栏「管理配置」是一级；这里的分组是二级，分组下的页面是三级。
- * 分组没有 path；页面有 path。「数据采集」「数据处理」「运行环境」「视觉规范」「组件预览」已实现。
+ * 分组没有 path；页面有 path。「视频标注复核」等已实现页面在 index.jsx 注册。
  */
 
 export const ADMIN_NAV = [
@@ -37,6 +37,12 @@ export const ADMIN_NAV = [
     zh: '内容',
     en: 'Content',
     children: [
+      {
+        key: 'video-review',
+        path: '/admin/content/video-review',
+        zh: '视频标注复核',
+        en: 'Video label review',
+      },
       {
         key: 'vocals',
         path: '/admin/content/vocals',

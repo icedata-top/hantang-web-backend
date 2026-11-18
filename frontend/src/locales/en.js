@@ -1,4 +1,7 @@
+import { reviewEn } from './videoReview.js';
+
 export default {
+  ...reviewEn,
   "processing.lead": "Track detail-to-ADM publication, processing, and scheduling separately.",
   "processing.scope": "Updated results do not prove CRON is enabled; a successful tick may have had no work.",
   "processing.title.search": "UniSeek search publication",

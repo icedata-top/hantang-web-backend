@@ -14,6 +14,7 @@ import DesignSpec from './DesignSpec.jsx';
 import DesignComponents from './DesignComponents.jsx';
 import DataCollection from './DataCollection.jsx';
 import DataProcessing from './DataProcessing.jsx';
+import VideoLabelReview from './VideoLabelReview.jsx';
 import {
   ADMIN_NAV,
   adminRootGroupKeys,
@@ -129,7 +130,7 @@ export default function Admin() {
   );
 
   return (
-    <div className="admin-shell">
+    <div className={`admin-shell${leaf?.key === 'video-review' ? ' admin-shell--review' : ''}`}>
       <aside className="admin-sidebar ds-surface" aria-label={t("管理目录")}>
         <div className="admin-sidebar-heading">
           <p className="admin-sidebar-title">{t("管理配置")}</p>
@@ -153,7 +154,8 @@ export default function Admin() {
         {leaf?.key === 'components' ? <DesignComponents /> : null}
         {leaf?.key === 'collection' ? <DataCollection /> : null}
         {leaf?.key === 'processing' ? <DataProcessing /> : null}
-        {leaf && !['runtime', 'spec', 'components', 'collection', 'processing'].includes(leaf.key) ? <AdminPlaceholder leaf={leaf} /> : null}
+        {leaf?.key === 'video-review' ? <VideoLabelReview /> : null}
+        {leaf && !['runtime', 'spec', 'components', 'collection', 'processing', 'video-review'].includes(leaf.key) ? <AdminPlaceholder leaf={leaf} /> : null}
         {!leaf ? <AdminMissing /> : null}
       </div>
     </div>

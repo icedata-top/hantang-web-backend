@@ -1,4 +1,7 @@
+import { reviewJa } from './videoReview.js';
+
 export default {
+  ...reviewJa,
   "processing.lead": "明細層からADMへの公開、処理タスク、スケジュールをそれぞれ確認します。",
   "processing.scope": "結果の更新はCRONの有効化を証明しません。正常終了した起動も、処理対象がない場合があります。",
   "processing.title.search": "UniSeek検索データの公開",

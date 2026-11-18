@@ -1,4 +1,7 @@
+import { reviewZh } from './videoReview.js';
+
 export default {
+  ...reviewZh,
   "processing.lead": "从明细层到 ADM，分别查看结果发布、任务执行与调度情况。",
   "processing.scope": "结果已更新不代表 CRON 已启用；调度成功也可能是无需更新的空跑。",
   "processing.title.search": "UniSeek 搜索集发布",
