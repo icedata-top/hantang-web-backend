@@ -13,12 +13,13 @@ export function analysisProgress(state, now = Date.now()) {
   const total = state?.selected_count ?? 1000;
   const succeeded = summary?.succeeded_count ?? 0;
   const failed = summary?.failed_count ?? 0;
-  const done = succeeded + failed;
+  const skipped = summary?.skipped_count ?? 0;
+  const done = succeeded + failed + skipped;
   const terminal = Boolean(state && !state.active && state.status !== 'idle');
   const timestamp = Date.parse(state?.snapshot_at);
   const stale = Boolean(state?.active && (!Number.isFinite(timestamp) || now - timestamp > 5000));
   return {
-    total, succeeded, failed, done, terminal, stale,
+    total, succeeded, failed, skipped, done, terminal, stale,
     percent: total > 0 ? Math.min(100, Math.floor(done / total * 1000) / 10) : 0,
     remaining: Math.max(0, total - done),
     speed: stale ? null : state?.live?.videos_per_minute ?? null,

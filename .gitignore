@@ -19,3 +19,6 @@ frontend/.env.*
 # 本地管理入口开关（VITE_ADMIN_ENABLED），不提交到仓库
 frontend/.env.local
 !frontend/.env.example
+
+# PostgreSQL labeling job inputs, checkpoints and attempts
+script/uniseek/labeling-runs/

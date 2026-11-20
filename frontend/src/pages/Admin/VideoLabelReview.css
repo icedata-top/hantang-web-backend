@@ -75,3 +75,18 @@
 .review-score .ds-table-cell { overflow-wrap: anywhere; }
 .review-score .review-concurrency .ant-select { min-width: 220px; }
 .review-score .review-notice { margin-top: 12px; }
+.labeling-overview { display: flex; flex-wrap: wrap; align-items: center; gap: 20px 32px; margin-bottom: 16px; }
+.labeling-overview-copy { flex: 1 1 280px; min-width: 0; }
+.labeling-overview-copy h2 { margin: 0; font-size: var(--font-size-heading); font-weight: var(--font-weight-medium); }
+.labeling-controls { display: flex; flex-wrap: wrap; gap: 16px 24px; align-items: flex-end; margin-top: 20px; }
+.labeling-control { display: flex; flex-direction: column; gap: 8px; font-size: var(--font-size-body); }
+.labeling-control > span { color: var(--text-secondary); font-size: var(--font-size-caption); }
+.labeling-control .ant-input-number { width: 176px; }
+.labeling-control .ant-select { min-width: 112px; }
+.labeling-start { margin-left: auto; }
+.labeling-page .review-notice { margin-top: 16px; }
+@container review (max-width: 760px) {
+  .labeling-start { margin-left: 0; }
+  .labeling-controls { gap: 16px; }
+  .labeling-control .ant-input-number { width: 150px; }
+}

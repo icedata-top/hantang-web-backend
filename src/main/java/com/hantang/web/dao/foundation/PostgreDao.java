@@ -52,6 +52,11 @@ public class PostgreDao {
         return INSTANCE;
     }
 
+    /** Callers own transaction boundaries and must close the pooled connection. */
+    public Connection openConnection() throws SQLException {
+        return dataSource.getConnection();
+    }
+
     // ===================== 你想要的：对外极简接口 =====================
 
     // 查询一个数字（COUNT、SUM、MAX 等）

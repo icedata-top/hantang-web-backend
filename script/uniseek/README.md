@@ -4,17 +4,17 @@
 
 从仓库根目录运行。在 `config.secret.properties` 配置 `llm.model`、`llm.base_url`、`llm.api_key`；配置文件已被Git忽略。程序使用HTTPS（本机测试允许HTTP），不输出配置、Authorization、原始供应商错误或思考内容。
 
-## 网页执行
+## 网页存量打标（PostgreSQL）
 
-重启本机后端后，打开冰数据「管理配置 → 内容 → 视频标注复核」(`/admin/content/video-review`)，点击「Qwen批量标记 → 开始执行」。复用已有Java客户端及任务，对固定的1000条原始样本每批20条标记；启动前可选择1/4/8/16/32/64并发，默认8，启动后固定。网页每秒显示进度、成功/失败数、活跃HTTP请求、单次API平均耗时、近期每分钟处理数、剩余数量、已用时间及预计完成时间；样本不足或数据过期时显示未知。结束后常显实际耗时、完成时间、请求与重试、已知token和模型标签汇总，结果保存后自动按人工参考答案评分，展示总分、三类成绩及核对明细。页面加载和进度刷新只读，点击按钮才会发起推理；同一时间只运行一个任务。
+当前`/admin/content/video-review`已改为UniSeek内容打标控制台。先手动执行[标签表DDL](../../sql/video_content_labels.sql)，重启后端，进入「管理配置 → 内容 → UniSeek内容打标」。页面展示当前候选集的整体覆盖率，可选择本次数量、增量/全量重打模式及并发数；默认仅打未标记的10000条、8并发，每批20条成功校验后在一个事务里写入`hantang_dynamic.video_content_labels`。具体流程、接口与验证见[控制台说明](../../doc/design/video-label-review.md)。
 
-每次点击「开始执行」都会从头处理完整1000条，不会只补跑之前失败的视频；每次创建新的运行目录，保留前次结果。目前尚未实现按失败条目补跑及结果合并。
+增量跳过已落库aid，分多天每次选择1万、2万即可继续剩余存量；全量重打覆盖本次选中数量内的自动标签，人工标签保留，模型失败保留原结果。可停止任务，已提交结果不丢；后端重启只恢复展示，继续处理需要显式启动增量。整体统计和页面刷新不调用模型。当前没有定时自动增量任务。
 
-2026-11-20已实现1000条范围的并发、分批结果落盘、小状态快照、直接下载和结束总结，详见[设计](../../doc/design/uniseek/qwen-batch-execution.md)及[需求TODO](../../doc/todo/uniseek-concurrent-labeling.md)。本机模拟验证不会产生推理费用；未发起真实Qwen运行，未处理20万条。可选配置`llm.execution_tpm`、`llm.execution_rpm`控制所有工作线程共享的本次执行预算，默认100万TPM/600RPM是本地保守上限，非平台额度。请求至少间隔100ms，失败最多重试2次，等待退避时释放HTTP名额。
+批次输入、追加式请求记录及小型状态快照保存到已忽略的`script/uniseek/labeling-runs/bulk-<UUID>/`。真实标签以PostgreSQL为准。权限/输入准备失败不会开始推理；数据库提交失败会停止任务，不触发模型重试。每批只有COMMIT后才记为入库成功，不生成20万条累计内存JSON。
 
-结果自动保存至`script/uniseek/runs/web-<UUID>/predictions.json`，统计保存至同目录`predictions.run.json`，网页可以直接下载两份JSON；分批结果及尝试保存在`predictions.json.batches/`，轮询读取`predictions.status.json`小快照。刷新网页或切换菜单不会中止已启动任务，回到页面可继续看进度。重启后端会恢复最近任务的配置与总结；未完成运行显示中断，不自动重发请求。执行接口只接受直接的本机连接及本机Origin，密钥由Java读取；浏览器不接触API密钥。生产反向代理不开放此付费执行入口。
+原固定1000条文件任务和评分器仍可用于离线基准验证，固定人工参考答案不在主页面编辑。旧`/admin/content/video-analysis`接口保留为基准工具，其输出仍为文件，不能与新的生产入库接口混用。
 
-2026-11-18 完整运行已归档：[1000条Qwen结果](runs/web-419ec03b-65e9-4a64-a01d-46bab4ae2642/predictions.json)、[运行统计](runs/web-419ec03b-65e9-4a64-a01d-46bab4ae2642/predictions.run.json)、[耗时、token、费用及失败原因报告](runs/web-419ec03b-65e9-4a64-a01d-46bab4ae2642/README.md)。本次全部1000条成功，耗时564.347秒，接口返回422,448 token；后续验证使用这一轮结果，准确率尚未评测。
+2026-11-18基准结果独立归档：[1000条Qwen结果](runs/web-419ec03b-65e9-4a64-a01d-46bab4ae2642/predictions.json)、[运行统计](runs/web-419ec03b-65e9-4a64-a01d-46bab4ae2642/predictions.run.json)、[开销报告](runs/web-419ec03b-65e9-4a64-a01d-46bab4ae2642/README.md)。
 
 ## 只验证一条视频
 
@@ -70,7 +70,7 @@ java -cp target/hantang-web-backend-1.0-SNAPSHOT.jar \
 
 ## 本地核对与评分
 
-网页每次打标结果保存后自动核对；已有任务可点击“对已有结果评分”或“重新评分（不调用Qwen）”。评分只使用人工最终参考答案与保存的预测，不产生推理费用。参考答案摘要、规则版本、三类成绩、无法判分及错误明细独立保存为`predictions.score.json`，原文件不改写。
+旧1000条基准任务在文件结果保存后可以评分；当前UniSeek生产控制台不把任意选取的候选集与固定1000条参考答案强行评分。离线重评分仍使用同一个评分器，不调用Qwen。评分只使用人工最终参考答案与保存的预测，不产生推理费用。参考答案摘要、规则版本、三类成绩、无法判分及错误明细独立保存为`predictions.score.json`，原文件不改写。
 
 离线使用同一个评分器：
 

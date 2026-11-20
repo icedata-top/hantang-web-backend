@@ -4,6 +4,7 @@ import com.hantang.web.controller.BaseController;
 import com.hantang.web.controller.DataCollectionController;
 import com.hantang.web.controller.DataProcessingController;
 import com.hantang.web.controller.VideoAnalysisController;
+import com.hantang.web.controller.VideoLabelingController;
 import com.hantang.web.controller.DailyController;
 import com.hantang.web.controller.UniSeekController;
 import com.hantang.web.config.Zhongshu50Config;
@@ -46,7 +47,8 @@ public class App {
                 new UniSeekController(),
                 new DataCollectionController(),
                 new DataProcessingController(),
-                new VideoAnalysisController()
+                new VideoAnalysisController(),
+                new VideoLabelingController()
         };
 
         for (BaseController controller : controllers) {

@@ -40,8 +40,8 @@ export const ADMIN_NAV = [
       {
         key: 'video-review',
         path: '/admin/content/video-review',
-        zh: '视频标注复核',
-        en: 'Video label review',
+        zh: 'bulk.title',
+        en: 'UniSeek content labeling',
       },
       {
         key: 'vocals',
