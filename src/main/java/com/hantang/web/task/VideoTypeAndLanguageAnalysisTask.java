@@ -24,6 +24,17 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.ArrayDeque;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.PriorityQueue;
+import java.util.Set;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.HashSet;
 import java.util.HexFormat;
 import java.util.List;
@@ -38,22 +49,30 @@ public final class VideoTypeAndLanguageAnalysisTask implements Runnable {
     private final Path input;
     private final Path output;
     private final int limit;
+    public static final Set<Integer> CONCURRENCY_OPTIONS = Set.of(1, 4, 8, 16, 32, 64);
+    public static final int DEFAULT_CONCURRENCY = 8;
     private final int batchSize;
+    private final int concurrency;
     private boolean hasFailures;
 
     /** A null client loads the private configuration only after output files are reserved. */
     public VideoTypeAndLanguageAnalysisTask(LlmClient client, Path input, Path output, int limit, int batchSize) {
+        this(client, input, output, limit, batchSize, 1);
+    }
+
+    public VideoTypeAndLanguageAnalysisTask(LlmClient client, Path input, Path output, int limit, int batchSize, int concurrency) {
+        if (!CONCURRENCY_OPTIONS.contains(concurrency)) throw new IllegalArgumentException("并发数必须为1、4、8、16、32或64");
         if (limit < 1 || batchSize < 1 || batchSize > 50) {
             throw new IllegalArgumentException("处理上限必须大于0，单批大小必须为1至50");
         }
         this.client = client; this.input = input; this.output = output;
-        this.limit = limit; this.batchSize = batchSize;
+        this.limit = limit; this.batchSize = batchSize; this.concurrency = concurrency;
     }
 
-    /** Optional arguments: input.json output.json limit batchSize. The default limit is ONE video. */
+    /** Optional arguments: input.json output.json limit batchSize concurrency. The default limit is ONE video. */
     public static void main(String[] args) {
-        if (args.length > 4 || (args.length > 0 && "--help".equals(args[0]))) {
-            System.out.println("参数：[输入JSON] [输出JSON] [处理上限，默认1] [每批条数，默认20，上限50]；每批最多重试2次");
+        if (args.length > 5 || (args.length > 0 && "--help".equals(args[0]))) {
+            System.out.println("参数：[输入JSON] [输出JSON] [处理上限，默认1] [每批条数，默认20，上限50] [并发数，默认1]；每批最多重试2次");
             return;
         }
         try {
@@ -61,7 +80,7 @@ public final class VideoTypeAndLanguageAnalysisTask implements Runnable {
             Path output = Path.of(args.length > 1 ? args[1] : "target/uniseek/analysis-" + UUID.randomUUID() + ".json");
             int limit = args.length > 2 ? Integer.parseInt(args[2]) : 1;
             int batchSize = args.length > 3 ? Integer.parseInt(args[3]) : 20;
-            var task = new VideoTypeAndLanguageAnalysisTask(null, input, output, limit, batchSize);
+            var task = new VideoTypeAndLanguageAnalysisTask(null, input, output, limit, batchSize, args.length > 4 ? Integer.parseInt(args[4]) : 1);
             task.run();
             if (task.hasFailures()) System.exit(2);
         } catch (Exception e) {
@@ -76,6 +95,10 @@ public final class VideoTypeAndLanguageAnalysisTask implements Runnable {
     public static Path statisticsPath(Path output) {
         String name = output.getFileName().toString().replaceFirst("(?i)\\.json$", "");
         return output.resolveSibling(name + ".run.json");
+    }
+
+    public static Path snapshotPath(Path output) {
+        return output.resolveSibling(output.getFileName().toString().replaceFirst("(?i)\\.json$", "") + ".status.json");
     }
 
     @Override
@@ -97,6 +120,7 @@ public final class VideoTypeAndLanguageAnalysisTask implements Runnable {
         try {
             List<VideoInput> videos = readVideos();
             state.initialize(videos, batchSize);
+            state.metrics.put("concurrency", concurrency).put("run_mode", "new");
             stage = "checkpoint";
             state.reserveResults();
             state.persist();
@@ -111,67 +135,13 @@ public final class VideoTypeAndLanguageAnalysisTask implements Runnable {
             stage = "configuration";
             if (activeClient == null) activeClient = LlmClient.fromConfig(Path.of("config.secret.properties"));
             state.metrics.put("model", activeClient.modelName());
-            for (int offset = 0, batchIndex = 0; offset < videos.size(); offset += batchSize, batchIndex++) {
-                var batch = videos.subList(offset, Math.min(offset + batchSize, videos.size()));
-                var batchLog = (ObjectNode) state.batchLogs.get(batchIndex);
-                for (int number = 1; number <= MAX_RETRIES + 1; number++) {
-                    if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-                    batchLog.put("status", "running");
-                    var attempt = batchLog.withArray("attempts").addObject();
-                    attempt.put("attempt", number).put("status", "running").put("started_at", Instant.now().toString());
-                    attempt.set("usage", JSON.valueToTree(new TokenUsage(null, null, null)));
-                    stage = "checkpoint";
-                    state.persist();
-                    long started = System.nanoTime();
-                    boolean success = false;
-                    try {
-                        var response = activeClient.analyze(batch, prompt);
-                        for (int i = 0; i < response.results().size(); i++) {
-                            state.results.add(reviewEntry(batch.get(i), response.results().get(i)));
-                        }
-                        var summary = state.successfulBatches.addObject();
-                        summary.put("count", response.results().size()).put("elapsed_ms", response.elapsedMs());
-                        summary.set("usage", JSON.valueToTree(response.usage()));
-                        attempt.put("status", "succeeded").put("http_status", 200);
-                        attempt.set("usage", JSON.valueToTree(response.usage()));
-                        batchLog.put("status", "succeeded");
-                        success = true;
-                    } catch (IOException e) {
-                        attempt.put("status", "failed");
-                        if (e instanceof AnalysisException failure) {
-                            attempt.set("error", error(failure.stage(), failure.code(), failure.httpStatus(), failure.responseShape()));
-                            attempt.set("usage", JSON.valueToTree(failure.usage()));
-                            if (failure.httpStatus() != null) attempt.put("http_status", failure.httpStatus());
-                            if (failure.rawModelOutput() != null) attempt.put("raw_model_output", failure.rawModelOutput());
-                        } else attempt.set("error", error("request", "CLIENT_IO_ERROR", null, null));
-                    } catch (InterruptedException e) {
-                        finishAttempt(attempt, started);
-                        attempt.put("status", "interrupted");
-                        attempt.set("error", error("interrupted", "INTERRUPTED", null, null));
-                        state.failBatch(batchLog, batch, attempt.path("error"));
-                        throw e;
-                    }
-                    finishAttempt(attempt, started);
-                    if (!success && number == MAX_RETRIES + 1) state.failBatch(batchLog, batch, attempt.path("error"));
-                    else if (!success) batchLog.put("status", "retrying");
-                    // Persistence failures are fatal, not API errors to retry and pay for again.
-                    stage = "checkpoint";
-                    state.persist();
-                    System.out.printf("批次 %d/%d，尝试 %d/%d：%s；成功 %d 条，失败 %d 条%n",
-                            batchIndex + 1, state.batchLogs.size(), number, MAX_RETRIES + 1,
-                            success ? "成功" : batchLog.path("status").asText(), state.results.size(), state.failedVideos.size());
-                    if (success) break;
-                    if (number <= MAX_RETRIES) {
-                        try { Thread.sleep(number * 1000L); }
-                        catch (InterruptedException e) {
-                            state.failBatch(batchLog, batch, error("interrupted", "INTERRUPTED", null, null));
-                            throw e;
-                        }
-                    }
-                }
-            }
+            stage = "execution";
+            executeBatches(state, videos, activeClient, prompt);
+            state.metrics.put("status", "saving");
+            state.persist();
             hasFailures = !state.failedVideos.isEmpty();
             state.report.put("status", !hasFailures ? "completed" : state.results.isEmpty() ? "failed" : "partial");
+            state.persistResults();
             state.metrics.put("status", hasFailures ? "completed_with_failures" : "completed");
             state.metrics.put("finished_at", Instant.now().toString());
             state.persist();
@@ -186,7 +156,7 @@ public final class VideoTypeAndLanguageAnalysisTask implements Runnable {
                     e instanceof InterruptedException ? "INTERRUPTED" : "TASK_ABORTED", null, null));
             // Clear an interrupt only for the final file write, then restore it in run().
             boolean interrupted = Thread.interrupted();
-            try { state.persist(); }
+            try { state.persistResults(); state.persist(); }
             catch (IOException writeFailure) { e.addSuppressed(writeFailure); }
             finally { if (interrupted && !(e instanceof InterruptedException)) Thread.currentThread().interrupt(); }
             throw e;
@@ -195,9 +165,149 @@ public final class VideoTypeAndLanguageAnalysisTask implements Runnable {
         }
     }
 
-    private static void finishAttempt(ObjectNode attempt, long started) {
-        attempt.put("finished_at", Instant.now().toString());
-        attempt.put("elapsed_ms", elapsed(started));
+    private record PendingBatch(int index, long readyAt) { }
+    private record RunningBatch(int index, ObjectNode attempt, long started, LlmRequestBudget.Reservation reservation) { }
+    private record AttemptResult(LlmClient.AnalysisResponse response, Exception failure, long elapsedMs) { }
+
+    /** Only this coordinator touches JSON or disk. Workers only make HTTP calls. */
+    private void executeBatches(RunState state, List<VideoInput> videos, LlmClient activeClient, String prompt)
+            throws IOException, InterruptedException {
+        var workers = Executors.newFixedThreadPool(concurrency, runnable -> {
+            var thread = new Thread(runnable, "qwen-http"); thread.setDaemon(true); return thread;
+        });
+        var completed = new ExecutorCompletionService<AttemptResult>(workers);
+        var running = new HashMap<Future<AttemptResult>, RunningBatch>();
+        var pending = new PriorityQueue<PendingBatch>(Comparator.comparingLong(PendingBatch::readyAt).thenComparingInt(PendingBatch::index));
+        for (int i = 0; i < state.batchLogs.size(); i++) pending.add(new PendingBatch(i, 0));
+        var budget = new LlmRequestBudget(activeClient.executionTpm(), activeClient.executionRpm());
+        state.metrics.putObject("dispatch_budget").put("tpm", activeClient.executionTpm()).put("rpm", activeClient.executionRpm());
+        var estimates = new long[state.batchLogs.size()];
+        for (int i = 0; i < estimates.length; i++) {
+            var batch = videos.subList(i * batchSize, Math.min((i + 1) * batchSize, videos.size()));
+            estimates[i] = prompt.length() + JSON.writeValueAsString(batch).length() + batch.size() * 192L + 512;
+        }
+        long nextDispatch = 0;
+        long nextSnapshot = 0;
+        try {
+            while (!pending.isEmpty() || !running.isEmpty()) {
+                if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+                long now = System.nanoTime();
+                if (!pending.isEmpty() && running.size() < concurrency && now >= pending.peek().readyAt() && now >= nextDispatch) {
+                    long budgetWait = budget.waitMs(elapsed(state.started), estimates[pending.peek().index()]);
+                    if (budgetWait > 0) {
+                        nextDispatch = now + TimeUnit.MILLISECONDS.toNanos(budgetWait);
+                        state.waitUntil = nextDispatch;
+                    } else {
+                        var work = pending.remove();
+                        var log = (ObjectNode) state.batchLogs.get(work.index());
+                        var batch = videos.subList(work.index() * batchSize, Math.min((work.index() + 1) * batchSize, videos.size()));
+                        log.put("status", "running");
+                        var attempt = log.withArray("attempts").addObject();
+                        attempt.put("attempt", log.path("attempts").size()).put("status", "running").put("started_at", Instant.now().toString());
+                        attempt.set("usage", JSON.valueToTree(new TokenUsage(null, null, null)));
+                        state.persistBatch(work.index());
+                        state.persist(); // A durable attempt record precedes every paid request.
+                        long started = System.nanoTime();
+                        var reservation = budget.reserve(elapsed(state.started), estimates[work.index()]);
+                        state.requestStarts.add(new WindowEvent(elapsed(state.started), 1));
+                        Future<AttemptResult> future = completed.submit(() -> {
+                            state.activeRequests.incrementAndGet();
+                            try {
+                                var response = activeClient.analyze(batch, prompt);
+                                return new AttemptResult(response, null, response.elapsedMs());
+                            } catch (IOException | InterruptedException | RuntimeException e) {
+                                return new AttemptResult(null, e, e instanceof AnalysisException failure ? failure.elapsedMs() : elapsed(started));
+                            } finally { state.activeRequests.decrementAndGet(); }
+                        });
+                        running.put(future, new RunningBatch(work.index(), attempt, started, reservation));
+                        nextDispatch = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(100);
+                        state.waitUntil = 0;
+                    }
+                }
+                var future = completed.poll(100, TimeUnit.MILLISECONDS);
+                if (future != null) {
+                    var work = running.remove(future);
+                    AttemptResult result;
+                    try { result = future.get(); }
+                    catch (java.util.concurrent.ExecutionException e) { throw new IOException("批次工作线程异常"); }
+                    var log = (ObjectNode) state.batchLogs.get(work.index());
+                    var batch = videos.subList(work.index() * batchSize, Math.min((work.index() + 1) * batchSize, videos.size()));
+                    var attempt = work.attempt();
+                    attempt.put("finished_at", Instant.now().toString()).put("elapsed_ms", result.elapsedMs());
+                    if (result.failure() == null) {
+                        var response = result.response();
+                        var entries = log.putArray("results");
+                        for (int i = 0; i < batch.size(); i++) entries.add(reviewEntry(batch.get(i), response.results().get(i)));
+                        attempt.put("status", "succeeded").put("http_status", 200);
+                        attempt.set("usage", JSON.valueToTree(response.usage()));
+                        log.put("status", "succeeded");
+                        // Commit this batch before exposing its count in the progress snapshot.
+                        state.persistBatch(work.index());
+                        entries.forEach(state.results::add);
+                        var summary = state.successfulBatches.addObject().put("count", batch.size()).put("elapsed_ms", response.elapsedMs());
+                        summary.set("usage", JSON.valueToTree(response.usage()));
+                        log.remove("results"); // The batch file retains entries; statistics do not duplicate them.
+                        state.finishes.add(new WindowEvent(elapsed(state.started), batch.size()));
+                    } else {
+                        attempt.put("status", "failed");
+                        if (result.failure() instanceof AnalysisException failure) {
+                            attempt.set("error", error(failure.stage(), failure.code(), failure.httpStatus(), failure.responseShape()));
+                            attempt.set("usage", JSON.valueToTree(failure.usage()));
+                            if (failure.httpStatus() != null) attempt.put("http_status", failure.httpStatus());
+                            if (failure.rawModelOutput() != null) attempt.put("raw_model_output", failure.rawModelOutput());
+                        } else attempt.set("error", error("request", "CLIENT_IO_ERROR", null, null));
+                        if (log.path("attempts").size() > MAX_RETRIES) {
+                            log.put("status", "failed");
+                            state.persistBatch(work.index());
+                            state.failBatch(log, batch, attempt.path("error"));
+                            state.finishes.add(new WindowEvent(elapsed(state.started), batch.size()));
+                        } else {
+                            log.put("status", "retrying");
+                            long delay = TimeUnit.MILLISECONDS.toNanos(1000L * log.path("attempts").size()
+                                    + ThreadLocalRandom.current().nextLong(250));
+                            if (result.failure() instanceof AnalysisException failure && failure.retryAfterMs() != null)
+                                delay = Math.max(delay, TimeUnit.MILLISECONDS.toNanos(failure.retryAfterMs()));
+                            pending.add(new PendingBatch(work.index(), System.nanoTime() + delay));
+                            state.persistBatch(work.index());
+                        }
+                        state.metrics.set("last_error", attempt.path("error").deepCopy());
+                    }
+                    var usage = attempt.path("usage").path("total_tokens");
+                    if (usage.isIntegralNumber()) state.tokens.add(new WindowEvent(elapsed(state.started), usage.longValue()));
+                    budget.reconcile(work.reservation(), usage.isIntegralNumber() ? usage.longValue() : null);
+                    // Actual usage can release reservations sooner than their estimates.
+                    if (state.waitUntil > 0) { nextDispatch = 0; state.waitUntil = 0; }
+                    state.persist();
+                }
+                if (System.nanoTime() >= nextSnapshot) {
+                    state.persistSnapshot();
+                    nextSnapshot = System.nanoTime() + TimeUnit.SECONDS.toNanos(1);
+                }
+            }
+        } catch (IOException | RuntimeException | InterruptedException e) {
+            for (var entry : running.entrySet()) {
+                entry.getKey().cancel(true);
+                var work = entry.getValue();
+                work.attempt().put("status", "interrupted").put("finished_at", Instant.now().toString()).put("elapsed_ms", elapsed(work.started()));
+                var reason = error("interrupted", "OUTCOME_UNCERTAIN", null, null);
+                work.attempt().set("error", reason);
+                var batch = videos.subList(work.index() * batchSize, Math.min((work.index() + 1) * batchSize, videos.size()));
+                state.failBatch((ObjectNode) state.batchLogs.get(work.index()), batch, reason);
+                try { state.persistBatch(work.index()); } catch (IOException writeFailure) { e.addSuppressed(writeFailure); }
+            }
+            throw e;
+        } finally {
+            workers.shutdownNow();
+        }
+    }
+
+    private record WindowEvent(long atMs, long value) { }
+
+    static Long estimateRemainingMs(long elapsedMs, int completedBatches, int remaining, long windowFinished,
+                                    long budgetWaitMs, boolean executing) {
+        if (!executing || elapsedMs < 30_000 || completedBatches < 2 || remaining <= 0
+                || windowFinished <= 0 || budgetWaitMs > 10_000) return null;
+        return Math.round((double) remaining * Math.min(60_000, elapsedMs) / windowFinished);
     }
 
     private static ObjectNode error(String stage, String code, Integer httpStatus, String shape) {
@@ -223,6 +333,13 @@ public final class VideoTypeAndLanguageAnalysisTask implements Runnable {
     }
 
     private static final class RunState {
+        private final AtomicInteger activeRequests = new AtomicInteger();
+        private long waitUntil;
+        private final HashMap<Long, Integer> inputOrder = new HashMap<>();
+        private long frozenElapsed = -1;
+        private final ArrayDeque<WindowEvent> finishes = new ArrayDeque<>();
+        private final ArrayDeque<WindowEvent> requestStarts = new ArrayDeque<>();
+        private final ArrayDeque<WindowEvent> tokens = new ArrayDeque<>();
         private final Path output;
         private final Path statistics;
         private final long started = System.nanoTime();
@@ -251,6 +368,7 @@ public final class VideoTypeAndLanguageAnalysisTask implements Runnable {
 
         void initialize(List<VideoInput> videos, int size) {
             metrics.put("status", "running").put("selected_count", videos.size()).put("batch_size", size);
+            for (int i = 0; i < videos.size(); i++) inputOrder.put(videos.get(i).aid(), i);
             for (int offset = 0; offset < videos.size(); offset += size) {
                 var batch = batchLogs.addObject();
                 batch.put("batch_index", batchLogs.size()).put("status", "pending");
@@ -280,15 +398,83 @@ public final class VideoTypeAndLanguageAnalysisTask implements Runnable {
             }
         }
 
-        void persist() throws IOException {
+        void sortResults() {
+            var sorted = new ArrayList<JsonNode>();
+            results.forEach(sorted::add);
+            sorted.sort(Comparator.comparingInt(row -> inputOrder.get(row.path("aid").asLong())));
+            results.removeAll(); sorted.forEach(results::add);
+        }
+
+        void persistBatch(int index) throws IOException {
+            Path directory = output.resolveSibling(output.getFileName() + ".batches");
+            Files.createDirectories(directory);
+            atomicWrite(directory.resolve(String.format("%05d.json", index + 1)), batchLogs.get(index));
+        }
+
+        void persistResults() throws IOException {
             if (report != null && resultReserved) {
+                sortResults();
                 report.put("processed_count", results.size());
                 if ("running".equals(report.path("status").asText()) && !results.isEmpty()) report.put("status", "partial");
                 atomicWrite(output, report);
             }
-            metrics.put("elapsed_ms", elapsed(started));
+        }
+
+        void persist() throws IOException {
             metrics.set("summary", summarize());
+            updateLiveMetrics();
             atomicWrite(statistics, metrics);
+            atomicWrite(snapshotPath(output), snapshot());
+        }
+
+        void persistSnapshot() throws IOException {
+            updateLiveMetrics();
+            atomicWrite(snapshotPath(output), snapshot());
+        }
+
+        private ObjectNode snapshot() {
+            var snapshot = metrics.deepCopy();
+            snapshot.remove(List.of("batches", "failed_videos"));
+            return snapshot;
+        }
+
+        private long windowSum(ArrayDeque<WindowEvent> events, long now) {
+            while (!events.isEmpty() && events.peek().atMs() <= now - 60_000) events.remove();
+            return events.stream().mapToLong(WindowEvent::value).sum();
+        }
+
+        private void updateLiveMetrics() {
+            boolean terminal = metrics.has("finished_at");
+            if (terminal && frozenElapsed < 0) frozenElapsed = elapsed(started);
+            long now = frozenElapsed >= 0 ? frozenElapsed : elapsed(started);
+            metrics.put("elapsed_ms", now).put("snapshot_at", Instant.now().toString()).put("active_requests", terminal ? 0 : activeRequests.get());
+            long finished = windowSum(finishes, now);
+            double windowMinutes = Math.max(1, Math.min(60_000, now)) / 60_000.0;
+            var live = metrics.putObject("live");
+            live.put("videos_per_minute", finished / windowMinutes);
+            long knownTokens = windowSum(tokens, now);
+            if (metrics.path("summary").path("reported_usage").path("total_tokens").isIntegralNumber())
+                live.put("tpm", knownTokens / windowMinutes);
+            else live.putNull("tpm");
+            live.put("rpm", windowSum(requestStarts, now) / windowMinutes);
+            int retries = 0;
+            for (JsonNode batch : batchLogs) if ("retrying".equals(batch.path("status").asText())) retries++;
+            live.put("waiting_retries", retries);
+            int remaining = Math.max(0, metrics.path("selected_count").asInt() - results.size() - failedVideos.size());
+            live.put("remaining_count", remaining);
+            long budgetWait = Math.max(0, TimeUnit.NANOSECONDS.toMillis(waitUntil - System.nanoTime()));
+            live.put("budget_wait_ms", budgetWait);
+            live.putNull("eta_ms"); live.putNull("estimated_completion_at");
+            int completedBatches = successfulBatches.size() + metrics.path("summary").path("failed_batches").asInt();
+            boolean executing = !terminal && !"saving".equals(metrics.path("status").asText());
+            String etaState = !executing || remaining == 0 || budgetWait > 10_000 ? "unavailable"
+                    : now < 30_000 || completedBatches < 2
+                    ? "warming_up" : finished == 0 ? "unavailable" : "available";
+            live.put("eta_state", etaState);
+            Long eta = estimateRemainingMs(now, completedBatches, remaining, finished, budgetWait, executing);
+            if (eta != null) {
+                live.put("eta_ms", eta).put("estimated_completion_at", Instant.now().plusMillis(eta).toString());
+            }
         }
 
         ObjectNode summarize() {
@@ -336,6 +522,26 @@ public final class VideoTypeAndLanguageAnalysisTask implements Runnable {
                 if (known == 0) totals.putNull(key); else totals.put(key, sum);
                 missing.put(key, usages.size() - known);
             }
+            var labels = summary.putObject("labels");
+            var songs = labels.putObject("is_song");
+            var voices = labels.putObject("is_virtual_singer");
+            var languages = labels.putObject("languages");
+            int virtualSongs = 0, chineseVirtualSongs = 0, uncertain = 0;
+            for (JsonNode entry : results) {
+                var label = entry.path("output");
+                String song = label.path("is_song").asText(), voice = label.path("is_virtual_singer").asText();
+                songs.put(song, songs.path(song).asInt() + 1);
+                voices.put(voice, voices.path(voice).asInt() + 1);
+                boolean chinese = false, unknownLanguage = false;
+                for (JsonNode language : label.path("languages")) {
+                    String value = language.asText();
+                    languages.put(value, languages.path(value).asInt() + 1);
+                    chinese |= "汉语".equals(value); unknownLanguage |= "未知语言".equals(value);
+                }
+                if ("是".equals(song) && "是".equals(voice)) { virtualSongs++; if (chinese) chineseVirtualSongs++; }
+                if ("不确定".equals(song) || "不确定".equals(voice) || unknownLanguage) uncertain++;
+            }
+            labels.put("virtual_singer_songs", virtualSongs).put("chinese_virtual_singer_songs", chineseVirtualSongs).put("uncertain_count", uncertain);
             return summary;
         }
 
@@ -347,7 +553,7 @@ public final class VideoTypeAndLanguageAnalysisTask implements Runnable {
     private static void atomicWrite(Path path, JsonNode value) throws IOException {
         Path temp = Files.createTempFile(path.toAbsolutePath().getParent(), ".uniseek-", ".json.tmp");
         try {
-            Files.writeString(temp, JSON.writerWithDefaultPrettyPrinter().writeValueAsString(value), StandardCharsets.UTF_8);
+            JSON.writerWithDefaultPrettyPrinter().writeValue(temp.toFile(), value);
             try { Files.move(temp, path, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE); }
             catch (AtomicMoveNotSupportedException e) { Files.move(temp, path, StandardCopyOption.REPLACE_EXISTING); }
         } finally { Files.deleteIfExists(temp); }

@@ -38,11 +38,15 @@ public final class LlmClient implements AutoCloseable {
     private final String model;
     private final String apiKey;
     private final HttpClient http;
+    private final long executionTpm;
+    private final int executionRpm;
 
-    private LlmClient(URI endpoint, String model, String apiKey) {
+    private LlmClient(URI endpoint, String model, String apiKey, long executionTpm, int executionRpm) {
         this.endpoint = endpoint;
         this.model = model;
         this.apiKey = apiKey;
+        this.executionTpm = executionTpm;
+        this.executionRpm = executionRpm;
         this.http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(15))
                 .followRedirects(HttpClient.Redirect.NEVER).build();
     }
@@ -70,7 +74,10 @@ public final class LlmClient implements AutoCloseable {
         if (apiKey.contains("\r") || apiKey.contains("\n")) {
             throw new IllegalArgumentException("llm.api_key 格式无效");
         }
-        return new LlmClient(endpoint, model, apiKey);
+        long tpm = Long.parseLong(properties.getProperty("llm.execution_tpm", "1000000").trim());
+        int rpm = Integer.parseInt(properties.getProperty("llm.execution_rpm", "600").trim());
+        if (tpm < 1 || rpm < 1) throw new IllegalArgumentException("执行TPM和RPM预算必须为正整数");
+        return new LlmClient(endpoint, model, apiKey, tpm, rpm);
     }
 
     private static String required(Properties properties, String key) {
@@ -80,6 +87,8 @@ public final class LlmClient implements AutoCloseable {
     }
 
     public String modelName() { return model; }
+    public long executionTpm() { return executionTpm; }
+    public int executionRpm() { return executionRpm; }
 
     public AnalysisResponse analyze(List<VideoInput> videos, String prompt) throws IOException, InterruptedException {
         if (videos.isEmpty() || videos.size() > 50 || prompt == null || prompt.isBlank()) {
@@ -120,7 +129,19 @@ public final class LlmClient implements AutoCloseable {
         if (response.statusCode() != 200) {
             TokenUsage usage = null;
             try { usage = readUsage(parseJson(response.body())); } catch (IOException ignored) { }
-            throw failure("http", "HTTP_ERROR", response.statusCode(), start, usage, null);
+            var failure = failure("http", "HTTP_ERROR", response.statusCode(), start, usage, null);
+            response.headers().firstValue("Retry-After").ifPresent(value -> {
+                try {
+                    long millis;
+                    try { millis = Math.multiplyExact(Long.parseLong(value.trim()), 1000L); }
+                    catch (NumberFormatException ignored) {
+                        millis = java.time.Duration.between(java.time.Instant.now(),
+                                java.time.ZonedDateTime.parse(value, java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME).toInstant()).toMillis();
+                    }
+                    if (millis >= 0) failure.retryAfterMs = Math.min(millis, 86_400_000L);
+                } catch (IllegalArgumentException | java.time.DateTimeException | ArithmeticException ignored) { }
+            });
+            throw failure;
         }
         JsonNode envelope;
         try { envelope = parseJson(response.body()); }
@@ -176,6 +197,7 @@ public final class LlmClient implements AutoCloseable {
         private final TokenUsage usage;
         private final String responseShape;
         private final String rawModelOutput;
+        private Long retryAfterMs;
 
         private AnalysisException(String stage, String code, Integer httpStatus, long elapsedMs, TokenUsage usage, String responseShape,
                                   String rawModelOutput) {
@@ -191,6 +213,7 @@ public final class LlmClient implements AutoCloseable {
         public TokenUsage usage() { return usage; }
         public String responseShape() { return responseShape; }
         public String rawModelOutput() { return rawModelOutput; }
+        public Long retryAfterMs() { return retryAfterMs; }
     }
 
     private static JsonNode parseJson(String text) throws IOException {

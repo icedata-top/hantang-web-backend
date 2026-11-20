@@ -4,6 +4,10 @@ config.secret.properties
 # Maven build outputs
 target/
 
+# Local pointer to the latest explicitly started labeling run
+script/uniseek/runs/latest-run.json
+script/uniseek/runs/.latest-run-*.tmp
+
 # macOS metadata
 .DS_Store
 
