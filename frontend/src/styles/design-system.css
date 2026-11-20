@@ -310,6 +310,20 @@ html .ant-btn.ds-button[data-variant] {
 
 .ds-alert p { margin: 4px 0 0; }
 
+/* Ant Design 单段提示居中；带正文的提示仍对齐标题首行。 */
+.ds-alert.ant-alert:not(.ant-alert-with-description) {
+  align-items: center;
+}
+
+.ds-alert.ant-alert > .ant-alert-icon {
+  margin-inline-end: 0;
+}
+
+.ds-alert.ant-alert:not(.ant-alert-with-description) > .ant-alert-icon {
+  margin-block: 0;
+  line-height: 1;
+}
+
 /* 标签与图标共同表达健康状态；检查中保留中性色。 */
 .ds-status-tag.ant-tag {
   display: inline-flex;
