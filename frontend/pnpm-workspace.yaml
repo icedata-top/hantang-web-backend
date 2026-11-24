@@ -4,3 +4,4 @@ minimumReleaseAgeExclude:
   - antd@6.7.0
 overrides:
   '@rc-component/util': ^1.14.0
+  minimist: ^1.2.8

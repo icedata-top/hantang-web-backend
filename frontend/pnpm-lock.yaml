@@ -6,6 +6,7 @@ settings:
 
 overrides:
   '@rc-component/util': ^1.14.0
+  minimist: ^1.2.8
 
 importers:
 
@@ -916,11 +917,8 @@ packages:
   lottie-web@5.13.0:
     resolution: {integrity: sha512-+gfBXl6sxXMPe8tKQm7qzLnUy5DUPJPKIyRHwtpCpyUEYjHYRJC/5gjUvdkuO2c3JllrPtHXH5UJJK8LRYl5yQ==}
 
-  minimist@1.2.0:
-    resolution: {integrity: sha512-7Wl+Jz+IGWuSdgsQEJ4JunV0si/iMhg42MnQQG6h1R6TNeVenp4U9x5CC5v/gYqz/fENLQITAWXidNtVL0NNbw==}
-
-  minimist@1.2.6:
-    resolution: {integrity: sha512-Jsjnk4bw3YJqYzbdyBiNsPWHPfO++UGG749Cxs6peCu5Xg4nrena6OVxOYxrQTqww0Jmwt+Ref8rggumkTLz9Q==}
+  minimist@1.2.8:
+    resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
 
   nanoid@3.3.20:
     resolution: {integrity: sha512-uKdg2G3GNCKQn9byYOpxbGqrT2fGO5KRt5J/8b3pok8rT6qxGWF6hxMyJiEYtAf+FVyYuD9hRaDqX5uPFYJ4ZQ==}
@@ -1981,7 +1979,7 @@ snapshots:
   geojson-flatten@0.2.4:
     dependencies:
       get-stdin: 6.0.0
-      minimist: 1.2.0
+      minimist: 1.2.8
 
   geojson-linestring-dissolve@0.0.1: {}
 
@@ -2072,9 +2070,7 @@ snapshots:
 
   lottie-web@5.13.0: {}
 
-  minimist@1.2.0: {}
-
-  minimist@1.2.6: {}
+  minimist@1.2.8: {}
 
   nanoid@3.3.20: {}
 
@@ -2225,7 +2221,7 @@ snapshots:
   simplify-geojson@1.0.5:
     dependencies:
       concat-stream: 1.4.11
-      minimist: 1.2.6
+      minimist: 1.2.8
       simplify-geometry: 0.0.2
 
   simplify-geometry@0.0.2: {}
