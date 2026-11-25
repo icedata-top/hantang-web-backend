@@ -12,11 +12,16 @@ const batchB = '00000000-0000-0000-0000-000000000002';
 const pattern = (value) => `%${value.replaceAll('\\', '\\\\').replaceAll('%', '\\%').replaceAll('_', '\\_')}%`;
 const vocals = JSON.parse(await readFile(new URL('../../frontend/src/constants/vocal/vocal-search-info.json', import.meta.url), 'utf8'));
 const vocalNames = new Set(vocals.flatMap(vocal => [vocal.name, ...vocal.aliases]).map(name => name.toLowerCase()));
+const ranking = JSON.parse(await readFile(new URL('../../src/main/resources/config/uniseek-ranking.json', import.meta.url), 'utf8'));
+const popularityKeywords = new Set(ranking.popularityKeywords.map(keyword => keyword.trim().toLowerCase()));
 const scopeFilters = Object.fromEntries(['VIRTUAL_SONG_FILTER', 'CHINESE_VIRTUAL_SONG_FILTER'].map(name =>
   [name, source.match(new RegExp(`String ${name} = "([^"]+)";`))[1]]));
 const scopeFilter = scope => scope === 'all' ? 'true' : scopeFilters[scope === 'virtual_song' ? 'VIRTUAL_SONG_FILTER' : 'CHINESE_VIRTUAL_SONG_FILTER'];
 async function ranked(keyword, scope = 'all') {
-  const parameters = [keyword, pattern(keyword), vocalNames.has(keyword.trim().toLowerCase()) ? 10 : 1];
+  const normalized = keyword.trim().toLowerCase();
+  const singer = vocalNames.has(normalized);
+  const weight = singer || popularityKeywords.has(normalized) ? ranking.popularityViewWeight : ranking.defaultViewWeight;
+  const parameters = [keyword, pattern(keyword), singer ? 10 : 1, weight];
   const predicates = keyword.split(/\s+/).map((token) => {
     parameters.push(pattern(token), token, token, token);
     return "(p.title ILIKE ? ESCAPE '\\' OR p.tag_new @> ARRAY[?]::varchar[] OR p.participle @> ARRAY[?]::varchar[] OR p.label_singers @> ARRAY[?]::text[])";
@@ -91,7 +96,7 @@ try {
     assert.deepEqual(ids(await search('%_')), [7]);
     assert.deepEqual(ids(await search("' OR true --")), []);
   });
-  await test('source, title ratio and normalized views each obey the provisional 100-point contract', async () => {
+  await test('normal queries retain 100-point components and singers use the configured popularity weight', async () => {
     await db.exec(`INSERT INTO hantang_dynamic.adm_uniseek_videos
       (aid,bvid,title,tag_new,view,favorite,record_date,batch_id,refreshed_at) VALUES
       (1200,'BV1200','言和',NULL,0,101,'2026-10-20','${batchA}',now()),
@@ -122,9 +127,44 @@ try {
     const vocalByAid = new Map(vocalRows.map(row => [Number(row.aid), row]));
     near(vocalByAid.get(1200).score, 110);
     near(vocalByAid.get(1202).score, 104);
-    near(vocalByAid.get(1201).score, 7 + 100 * 2 / 9 + 100);
+    near(vocalByAid.get(1201).score, 7 + 100 * 2 / 9 + 500);
     assert.ok(vocalRows.findIndex(row => Number(row.aid) === 1201) < vocalRows.findIndex(row => Number(row.aid) === 1200),
       'a high-view title containing 言和 should outrank an exact low-view 言和 title');
+  });
+  await test('singer and CP searches favor hits while song titles and combined queries keep relevance priority', async () => {
+    await db.exec(`INSERT INTO hantang_dynamic.adm_uniseek_videos
+      (aid,bvid,title,view,favorite,record_date,batch_id,refreshed_at) VALUES
+      (1300,'BV1300','南北组',0,101,'2026-10-20','${batchA}',now()),
+      (1301,'BV1301','【南北组】热门歌曲及创作幕后与制作花絮的加长版本',10000000,101,'2026-10-20','${batchA}',now()),
+      (1302,'BV1302','【南北组】热门歌曲及创作幕后与制作花絮的加长版本',1000000000,101,'2026-10-20','${batchA}',now()),
+      (1303,'BV1303','【南北组】热门歌曲及创作幕后与制作花絮的加长版本',1000000,101,'2026-10-20','${batchA}',now()),
+      (1304,'BV1304','南北组',NULL,101,'2026-10-20','${batchA}',now()),
+      (1310,'BV1310','洛天依',0,101,'2026-10-20','${batchA}',now()),
+      (1311,'BV1311','【洛天依】热门歌曲及创作幕后与制作花絮的加长版本',10000000,101,'2026-10-20','${batchA}',now()),
+      (1312,'BV1312','乐正绫',0,101,'2026-10-20','${batchA}',now()),
+      (1313,'BV1313','【乐正绫】热门歌曲及创作幕后与制作花絮的加长版本',10000000,101,'2026-10-20','${batchA}',now()),
+      (1320,'BV1320','霜雪千年',0,101,'2026-10-20','${batchA}',now()),
+      (1321,'BV1321','【洛天依】霜雪千年——包含创作幕后与制作花絮的加长版本',10000000,101,'2026-10-20','${batchA}',now()),
+      (1322,'BV1322','洛天依 霜雪千年',0,101,'2026-10-20','${batchA}',now());`);
+    const cp = await ranked('南北组');
+    assert.deepEqual(cp.map(row => Number(row.aid)), [1302,1301,1303,1304,1300]);
+    assert.equal(cp[0].score, cp[1].score, 'views above ten million must not add score');
+    const titleRatio = 100 * 3 / cp[1].title.length;
+    assert.ok(Math.abs(cp[1].score - (70 + titleRatio + 500)) < 1e-8);
+    assert.ok(70 + titleRatio + 100 < 200, 'the popularity weight should reverse this old relevance-first order');
+    assert.equal(cp.at(-1).score, 200, 'CP queries keep the original source score');
+    assert.equal(cp.at(-2).score, 200, 'NULL views contribute zero');
+    for (const [keyword, hit, exact] of [['洛天依',1311,1310], ['乐正绫',1313,1312]]) {
+      const rows = await ranked(keyword);
+      assert.ok(rows.findIndex(row => Number(row.aid) === hit) < rows.findIndex(row => Number(row.aid) === exact),
+        `${keyword}: the popular song should beat the exact low-view title`);
+    }
+    const songs = await ranked('霜雪千年');
+    assert.equal(Number(songs[0].aid), 1320, 'an exact song title should beat this broader popular video');
+    assert.equal(songs[0].score, 200);
+    assert.equal(Number((await ranked('洛天依 霜雪千年'))[0].aid), 1322,
+      'mentioning a singer alongside a song title must not trigger popularity mode');
+    await db.exec('DELETE FROM hantang_dynamic.adm_uniseek_videos WHERE aid BETWEEN 1300 AND 1322');
   });
   await test('ties use aid descending and admission requires more than 100 favorites', async () => {
     assert.deepEqual(ids(await search('同分', { pageSize: 1 })), [21]);

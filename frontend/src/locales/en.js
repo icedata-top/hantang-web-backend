@@ -682,7 +682,7 @@ export default {
   "透明底": "Transparent",
   "透明底样式只移除普通状态的填充，悬停、聚焦与禁用沿用同一套控件规范。": "The transparent style removes only the idle fill. Hover, focus, and disabled states follow the same shared control styles.",
   "search.order": "Sorted by relevance",
-  "search.orderHint": "Videos combine title matching and view count, with descending AV ID as the tie-breaker. Virtual singers and exact ID matches take priority; creators are interleaved.",
+  "search.orderHint": "Videos combine title matching and view count. Exact singer names and curated pairing or topic terms give popularity more weight; other queries favor relevance. Ties use descending AV ID. Virtual singers and exact ID matches take priority; creators are interleaved.",
   "部分结果暂未加载，请重试": "Some results failed to load. Please retry.",
   "未找到匹配结果": "No matching results",
   "加载失败": " failed to load",

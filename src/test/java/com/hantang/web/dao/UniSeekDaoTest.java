@@ -33,7 +33,8 @@ class UniSeekDaoTest {
             assertTrue(sql.contains("p.title ILIKE ?"));
             assertTrue(sql.contains("ORDER BY score DESC, aid DESC LIMIT ?"));
             assertEquals(1.0, params.get(2));
-            assertEquals("%123%", params.get(3));
+            assertEquals(100.0, params.get(3));
+            assertEquals("%123%", params.get(4));
             assertEquals(1000, params.getLast());
             return List.of();
         });
@@ -55,6 +56,29 @@ class UniSeekDaoTest {
                 return List.of();
             });
             dao.videos(request(keyword));
+        }
+    }
+    @Test void onlyWholeSingerNamesAliasesAndCuratedTopicsRaiseViewsAcrossAllScopes() {
+        for (String scope : List.of("all", "virtual_song", "chinese_virtual_song")) {
+            for (String keyword : List.of("洛天依", "乐正绫", "南北组", "hAtSuNe MiKu", "初音ミク", "Luo Tianyi")) {
+                var dao = new UniSeekDao((sql, params) -> {
+                    if (batchQuery(sql)) return batch("a");
+                    assertEquals(500.0, params.get(3), keyword);
+                    assertTrue(sql.contains("i.view_weight * least(1.0"));
+                    assertEquals(keyword.equals("南北组") ? 1.0 : 10.0, params.get(2));
+                    return List.of();
+                });
+                dao.videos(new UniSeekRequest("  " + keyword + "  ", 1, 30, scope).validated());
+            }
+            for (String keyword : List.of("霜雪千年", "洛天依 霜雪千年", "南北组 原创", "南北组曲", "天依", "未知标签")) {
+                var dao = new UniSeekDao((sql, params) -> {
+                    if (batchQuery(sql)) return batch("a");
+                    assertEquals(100.0, params.get(3), keyword);
+                    assertEquals(1.0, params.get(2), keyword);
+                    return List.of();
+                });
+                dao.videos(new UniSeekRequest(keyword, 1, 30, scope).validated());
+            }
         }
     }
     @Test void shortTokensSearchTitlesAndExactArraysWithLiteralWildcards() {
