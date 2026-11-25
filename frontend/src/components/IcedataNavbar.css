@@ -166,41 +166,41 @@
   color: var(--navbar-item-text, var(--text));
 }
 
-/* 首页让导航融入弥散背景；交互反馈落在具体控件上，不抬升整张卡片。 */
-.icedata-navbar-wrap.icedata-navbar-wrap--home {
+/* 淡化模式融入页面背景；交互反馈落在具体控件上，不抬升整张卡片。 */
+.icedata-navbar-wrap.icedata-navbar-wrap--subtle {
   background: transparent;
 }
 
-.ant-card.icedata-navbar-card.icedata-navbar-card--home {
+.ant-card.icedata-navbar-card.icedata-navbar-card--subtle {
   --navbar-item-text: var(--text-secondary);
   --navbar-item-weight: var(--font-weight-regular);
-  --navbar-indicator-size: var(--navbar-home-indicator-size);
+  --navbar-indicator-size: var(--navbar-subtle-indicator-size);
   border: var(--surface-border-width) solid var(--surface-border);
-  background: var(--navbar-home-bg);
+  background: var(--navbar-subtle-bg);
   box-shadow: none;
   transition: background-color 200ms ease;
 }
 
 /* 不支持背景模糊时，滚动后的实色表面仍保证内容不会透过导航文字。 */
-.ant-card.icedata-navbar-card.icedata-navbar-card--home[data-scrolled='true'] {
+.ant-card.icedata-navbar-card.icedata-navbar-card--subtle[data-scrolled='true'] {
   background: var(--surface);
 }
 
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .ant-card.icedata-navbar-card.icedata-navbar-card--home[data-scrolled='true'] {
-    background: var(--navbar-home-scrolled-bg);
-    -webkit-backdrop-filter: blur(var(--navbar-home-backdrop-blur));
-    backdrop-filter: blur(var(--navbar-home-backdrop-blur));
+  .ant-card.icedata-navbar-card.icedata-navbar-card--subtle[data-scrolled='true'] {
+    background: var(--navbar-subtle-scrolled-bg);
+    -webkit-backdrop-filter: blur(var(--navbar-subtle-backdrop-blur));
+    backdrop-filter: blur(var(--navbar-subtle-backdrop-blur));
   }
 }
 
-.icedata-navbar-card--home .ds-button {
+.icedata-navbar-card--subtle .ds-button {
   --button-bg: transparent;
-  --button-hover-bg: var(--navbar-home-control-hover-bg);
+  --button-hover-bg: var(--navbar-subtle-control-hover-bg);
   --button-text: var(--text-secondary);
 }
 
-.icedata-navbar-card--home .icedata-navbar-logo-link:focus-visible {
+.icedata-navbar-card--subtle .icedata-navbar-logo-link:focus-visible {
   border-radius: var(--radius-control);
   outline: 2px solid var(--focus-ring);
   outline-offset: 4px;
@@ -325,7 +325,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ant-card.icedata-navbar-card.icedata-navbar-card--home,
+  .ant-card.icedata-navbar-card.icedata-navbar-card--subtle,
   .icedata-language-trigger.ant-btn {
     transition: none;
   }

@@ -23,7 +23,7 @@ import OverviewFilter from '../Overview/components/OverviewFilter.jsx';
 
 const TOKEN_NAMES = [
   'canvas', 'surface', 'surface-hover', 'surface-border', 'theme-primary', 'theme-accent',
-  'navbar-home-bg', 'navbar-home-scrolled-bg',
+  'navbar-subtle-bg', 'navbar-subtle-scrolled-bg',
   'overview-filter-control-bg', 'overview-filter-control-hover-bg', 'overview-filter-control-active-bg',
   'filter-control-bg', 'filter-control-hover-bg', 'filter-control-active-bg',
   'segmented-track-bg', 'segmented-border-color', 'segmented-text', 'segmented-hover-text',
@@ -166,27 +166,27 @@ function Surfaces({ t }) {
         <Swatch name="theme-accent" label={t("品牌高亮")} />
       </div>
       <p className="spec-footnote">{t("圆角")} <Value name="radius-card" /> · {t("描边")} <Value name="surface-border-width" /> · {t("过渡 200ms。左侧卡片支持实际悬停与键盘聚焦。")}</p>
-      <div className="spec-home-navbar-grid">
-        {[false, true].map((scrolled) => (
-          <div className="spec-home-navbar-sample" key={String(scrolled)}>
-            <span className="spec-layer-label">{t("首页导航")} · {scrolled ? t("滚动后") : t("首屏")}</span>
-            <div className="spec-home-navbar-stage">
+      <div className="spec-navbar-grid">
+        {[{ mode: 'regular', scrolled: false }, { mode: 'subtle', scrolled: false }, { mode: 'subtle', scrolled: true }].map(({ mode, scrolled }) => (
+          <div className="spec-navbar-sample" key={`${mode}-${scrolled}`}>
+            <span className="spec-layer-label">{t(mode === 'regular' ? '常规导航' : '淡化导航')} · {scrolled ? t("滚动后") : t("首屏")}</span>
+            <div className="spec-navbar-stage">
               <Card
-                className="icedata-navbar-card icedata-navbar-card--home"
-                data-scrolled={scrolled}
+                className={`icedata-navbar-card ${mode === 'subtle' ? 'icedata-navbar-card--subtle' : 'ds-surface'}`}
+                data-scrolled={mode === 'subtle' ? scrolled : undefined}
                 variant="borderless"
               >
-                <div className="spec-home-navbar-inner">
+                <div className="spec-navbar-inner">
                   <img src="/png/icedata_logo_with_name_512x.png" alt={t("冰数据")} />
                   <Button className="ds-button" data-variant="normal" type="text" href="/">{t("首页")}</Button>
                 </div>
               </Card>
             </div>
-            <Token name={scrolled ? 'navbar-home-scrolled-bg' : 'navbar-home-bg'} />
+            <Token name={mode === 'regular' ? 'surface' : scrolled ? 'navbar-subtle-scrolled-bg' : 'navbar-subtle-bg'} />
           </div>
         ))}
       </div>
-      <p className="spec-footnote">{t("首页导航融入背景，滚动后以轻薄的模糊底层保持可读性。")}</p>
+      <p className="spec-footnote">{t('首页与 UniSeek 使用淡化导航；其他页面使用常规导航。淡化模式在滚动后增强模糊底层以保持可读性。')}</p>
       <div className="spec-overview-filter-grid">
         <OverviewFilterSample t={t} />
       </div>

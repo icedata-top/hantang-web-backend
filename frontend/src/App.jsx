@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect } from 'react';
-import { BrowserRouter, Outlet, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter, Outlet, Route, Routes, matchPath, useLocation } from 'react-router-dom';
 import IcedataNavbar from './components/IcedataNavbar.jsx';
 import About from './pages/About/index.jsx';
 import AboutTerm from './pages/About/AboutTerm.jsx';
@@ -21,7 +21,9 @@ const Admin = lazy(() => import('./pages/Admin/index.jsx'));
 
 function AppLayout() {
   const { pathname } = useLocation();
-  const useMesh = pathname === '/' || pathname === '/about' || pathname === '/uniseek' || pathname === '/overview';
+  const isUniSeek = Boolean(matchPath('/uniseek', pathname));
+  const navbarMode = pathname === '/' || isUniSeek ? 'subtle' : 'regular';
+  const useMesh = pathname === '/' || pathname === '/about' || isUniSeek || pathname === '/overview';
 
   useEffect(() => {
     const root = document.documentElement;
@@ -37,7 +39,7 @@ function AppLayout() {
 
   return (
     <>
-      <IcedataNavbar />
+      <IcedataNavbar mode={navbarMode} />
       <Outlet />
     </>
   );

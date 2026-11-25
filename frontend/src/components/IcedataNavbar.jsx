@@ -27,13 +27,14 @@ function useNarrowNav() {
   return isNarrow;
 }
 
-export default function IcedataNavbar() {
+/** @param {{ mode?: 'regular' | 'subtle' }} props */
+export default function IcedataNavbar({ mode = 'regular' }) {
   const { i18n, t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const isHome = location.pathname === '/';
+  const isSubtle = mode === 'subtle';
   const [isDark, setIsDark] = useState(false);
-  const [homeNavScrolled, setHomeNavScrolled] = useState(false);
+  const [navScrolled, setNavScrolled] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
   const isNarrow = useNarrowNav();
@@ -106,12 +107,12 @@ export default function IcedataNavbar() {
   }, []);
 
   useEffect(() => {
-    if (!isHome) return;
-    const syncScrolled = () => setHomeNavScrolled(window.scrollY > 24);
+    if (!isSubtle) { setNavScrolled(false); return undefined; }
+    const syncScrolled = () => setNavScrolled(window.scrollY > 24);
     syncScrolled();
     window.addEventListener('scroll', syncScrolled, { passive: true });
     return () => window.removeEventListener('scroll', syncScrolled);
-  }, [isHome]);
+  }, [isSubtle, location.pathname]);
 
   useEffect(() => {
     if (!isNarrow) setDrawerOpen(false);
@@ -144,10 +145,10 @@ export default function IcedataNavbar() {
   }
 
   return (
-    <header className={`icedata-navbar-wrap${isHome ? ' icedata-navbar-wrap--home' : ''}`}>
+    <header className={`icedata-navbar-wrap${isSubtle ? ' icedata-navbar-wrap--subtle' : ''}`} data-mode={mode}>
       <Card
-        className={`icedata-navbar-card ${isHome ? 'icedata-navbar-card--home' : 'ds-surface'}`}
-        data-scrolled={isHome ? homeNavScrolled : undefined}
+        className={`icedata-navbar-card ${isSubtle ? 'icedata-navbar-card--subtle' : 'ds-surface'}`}
+        data-scrolled={isSubtle ? navScrolled : undefined}
         variant="borderless"
         styles={{ body: { padding: '0 16px' } }}
       >
