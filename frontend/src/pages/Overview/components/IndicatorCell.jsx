@@ -1,7 +1,7 @@
 import { getLanguageSettings } from '../../../locales/languages.js';
 import { useTranslation } from 'react-i18next';
 import { ArrowDownOutlined, ArrowUpOutlined, MinusOutlined } from '@ant-design/icons';
-import { Statistic, Tooltip } from 'antd';
+import { Spin, Statistic, Tooltip } from 'antd';
 import ZhongshuLabel from './ZhongshuLabel.jsx';
 import './IndicatorCell.css';
 
@@ -18,8 +18,9 @@ const INDICATOR_TITLE = {
  * @param {{ name: string, value: number | null, dod?: number | null }} props.data
  * @param {number} [props.precision=1] 环比百分比显示的小数位
  * @param {string} [props.title] 覆盖第一行标题
+ * @param {boolean} [props.loading=false] 保留标题和内容占位，在数值区域显示加载动画
  */
-export default function IndicatorCell({ data, precision = 1, title }) {
+export default function IndicatorCell({ data, precision = 1, title, loading = false }) {
   const { i18n, t } = useTranslation();
   const language = i18n.resolvedLanguage || i18n.language;
 
@@ -28,30 +29,39 @@ export default function IndicatorCell({ data, precision = 1, title }) {
   const isZhongshuMetric = name === 'view' || name === 'favorite';
 
   return (
-    <div className="indicator-cell" lang={getLanguageSettings(language).lang}>
+    <div className="indicator-cell" lang={getLanguageSettings(language).lang} aria-busy={loading}>
       <div className="indicator-cell-title">
         {isZhongshuMetric ? <ZhongshuLabel>{displayTitle}</ZhongshuLabel> : displayTitle}
       </div>
 
-      <div className="indicator-cell-main-row">
-        {value == null ? (
-          <span className="indicator-cell-missing">{t("暂缺")}</span>
-        ) : (
-          <Statistic className="indicator-cell-main" value={value} styles={{ content: { color: 'var(--text-primary)' } }} />
-        )}
-      </div>
+      <div className={`indicator-cell-content${loading ? ' indicator-cell-content--loading' : ''}`}>
+        <div className="indicator-cell-values" aria-hidden={loading || undefined}>
+          <div className="indicator-cell-main-row">
+            {value == null ? (
+              <span className="indicator-cell-missing">{t("暂缺")}</span>
+            ) : (
+              <Statistic className="indicator-cell-main" value={value} styles={{ content: { color: 'var(--text-primary)' } }} />
+            )}
+          </div>
 
-      <div className="indicator-cell-comparison">
-        <Tooltip title={t('overview.periodComparison')} trigger={['hover', 'focus']}>
-          <span className="indicator-cell-label" tabIndex={0} aria-label={t('overview.periodComparison')}>{t("环比")}</span>
-        </Tooltip>
-        <div className="indicator-cell-num">
-          {value != null && dod != null ? (
-            <DeltaRate value={dod} precision={precision} />
-          ) : (
-            <span className="indicator-cell-label">{t("暂缺")}</span>
-          )}
+          <div className="indicator-cell-comparison">
+            <Tooltip title={t('overview.periodComparison')} trigger={['hover', 'focus']}>
+              <span className="indicator-cell-label" tabIndex={loading ? -1 : 0} aria-label={t('overview.periodComparison')}>{t("环比")}</span>
+            </Tooltip>
+            <div className="indicator-cell-num">
+              {value != null && dod != null ? (
+                <DeltaRate value={dod} precision={precision} />
+              ) : (
+                <span className="indicator-cell-label">{t("暂缺")}</span>
+              )}
+            </div>
+          </div>
         </div>
+        {loading && (
+          <div className="indicator-cell-loading" role="status" aria-label={t('加载指标中…')}>
+            <Spin size="small" />
+          </div>
+        )}
       </div>
     </div>
   );

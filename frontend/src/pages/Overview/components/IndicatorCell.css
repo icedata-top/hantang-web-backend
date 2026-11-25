@@ -23,8 +23,33 @@
   min-height: 2.7em;
 }
 
+.indicator-cell-content {
+  position: relative;
+  min-width: 0;
+}
+
+.indicator-cell-values {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: 6px;
+}
+
+/* 隐藏数值但保留原有高度，首次加载和重新查询都不收起卡片。 */
+.indicator-cell-content--loading .indicator-cell-values {
+  visibility: hidden;
+}
+
+.indicator-cell-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .indicator-cell-main-row {
   min-width: 0;
+  min-height: calc(var(--font-size-indicator) * 1.25);
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -62,6 +87,7 @@
   justify-content: space-between;
   gap: 4px 10px;
   min-width: 0;
+  min-height: calc(var(--font-size-label) * var(--line-height-body));
 }
 
 .indicator-cell-label {

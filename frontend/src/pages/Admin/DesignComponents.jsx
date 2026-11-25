@@ -36,6 +36,7 @@ export default function DesignComponents() {
   const [videoPreviewWidth, setVideoPreviewWidth] = useState('360px');
   const [browseCard, setBrowseCard] = useState(false);
   const [indicatorPreviewWidth, setIndicatorPreviewWidth] = useState('800px');
+  const [indicatorPreviewLoading, setIndicatorPreviewLoading] = useState(false);
   const today = Math.floor((now + 8 * HOUR) / DAY) * DAY - 8 * HOUR;
   const modes = [['absolute', t("绝对")], ['relative', t("相对")], ['absolute-diff', t("绝对 + 日期差")]];
   const examples = [
@@ -62,10 +63,14 @@ export default function DesignComponents() {
         <Segmented className="ds-segmented" aria-labelledby="indicator-preview-width-label" value={indicatorPreviewWidth} onChange={setIndicatorPreviewWidth}
           options={['320px', '640px', '800px']} />
       </div>
+      <div className="components-switch-control">
+        <Switch id="indicator-preview-loading" checked={indicatorPreviewLoading} onChange={setIndicatorPreviewLoading} />
+        <label htmlFor="indicator-preview-loading">{t('加载中')}</label>
+      </div>
       <div className="components-indicator-preview" style={{ width: indicatorPreviewWidth }}>
         <div className="overview-indicator-grid">
           {INDICATOR_SAMPLES.map((data) => (
-            <Card key={data.name} className="overview-panel ds-surface overview-indicator-card" variant="borderless"><IndicatorCell data={data} /></Card>
+            <Card key={data.name} className="overview-panel ds-surface overview-indicator-card" variant="borderless"><IndicatorCell data={data} loading={indicatorPreviewLoading} /></Card>
           ))}
         </div>
       </div>

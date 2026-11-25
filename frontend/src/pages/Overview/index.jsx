@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FilterOutlined } from '@ant-design/icons';
-import { Alert, Button, Card, Drawer, Spin, Typography, message } from 'antd';
+import { Alert, Button, Card, Drawer, Typography, message } from 'antd';
 import OverviewFilter, { getDefaultOverviewFilter } from './components/OverviewFilter.jsx';
 import OverviewTrendChart, { TAB_SUBMISSIONS } from './components/OverviewTrendChart.jsx';
 import OverviewViewHistogramChart from './components/OverviewViewHistogramChart.jsx';
@@ -25,6 +25,7 @@ const { Text } = Typography;
 /** 与 CSS 中 @media 一致：小于此宽度视为移动端，筛选走抽屉 */
 const MOBILE_MAX_PX = 767;
 const GATE_CROSSINGS_PAGE_SIZE = 8;
+const INDICATOR_NAMES = ['newVideoCount', 'activeUserCount', 'view', 'favorite'];
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(() =>
@@ -288,21 +289,24 @@ export default function Overview() {
                 title={t('暂无可用的每日数据日期，请手动选择日期范围。')} />
             )}
             <section className="overview-metrics" aria-label={t("指标数值")} aria-live="polite" aria-busy={loading || dateLoading}>
-              <Spin spinning={loading || dateLoading}>
-                {!filter?.startDate || !filter?.endDate ? (
-                  <Text type="secondary">{dateLoading ? t('加载中') : t("请选择日期范围以查看指标。")}</Text>
-                ) : payload?.indicators?.length ? (
-                  <div className="overview-indicator-grid">
-                    {payload.indicators.map((row) => (
-                      <Card key={row.name} className="overview-panel ds-surface overview-indicator-card" variant="borderless">
-                        <IndicatorCell data={row} precision={1} />
-                      </Card>
-                    ))}
-                  </div>
-                ) : (
-                  <Text type="secondary">{loading ? t("加载指标中…") : t("暂无数据")}</Text>
-                )}
-              </Spin>
+              <div className="overview-indicator-grid">
+                {INDICATOR_NAMES.map((name) => (
+                  <Card key={name} className="overview-panel ds-surface overview-indicator-card" variant="borderless">
+                    <IndicatorCell
+                      data={payload.indicators.find((row) => row.name === name) ?? { name, value: null, dod: null }}
+                      precision={1}
+                      loading={loading || dateLoading}
+                    />
+                  </Card>
+                ))}
+              </div>
+              {!loading && !dateLoading && (
+                !filter?.startDate || !filter?.endDate ? (
+                  <Text type="secondary">{t("请选择日期范围以查看指标。")}</Text>
+                ) : !payload.indicators.length ? (
+                  <Text type="secondary">{t("暂无数据")}</Text>
+                ) : null
+              )}
             </section>
 
             <OverviewTrendChart
