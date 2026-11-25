@@ -2,7 +2,7 @@
 /* Bridge Ant Design's CSS-variable mode to the project's live theme. The class
    also appears on portals, so local day/night previews inherit the right colors. */
 html .icedata-antd,
-html .icedata-antd:is(.ant-select-css-var, .ant-input-css-var, .ant-input-number-css-var, .ant-picker-css-var, .ant-form-css-var) {
+html .icedata-antd:is(.ant-select-css-var, .ant-input-css-var, .ant-input-number-css-var, .ant-picker-css-var, .ant-form-css-var, .ant-segmented-css-var) {
   --ant-color-text: var(--text-primary);
   --ant-color-text-secondary: var(--text-secondary);
   --ant-color-text-tertiary: var(--text-secondary);
@@ -43,6 +43,14 @@ html .icedata-antd:is(.ant-select-css-var, .ant-input-css-var, .ant-input-number
   --ant-control-item-bg-active-hover: var(--button-secondary-hover);
   --ant-control-item-bg-hover: var(--surface-hover);
   --ant-control-item-bg-active-disabled: var(--button-disabled-bg);
+  --ant-segmented-track-bg: var(--segmented-track-bg);
+  --ant-segmented-track-padding: var(--segmented-track-padding);
+  --ant-segmented-item-color: var(--segmented-text);
+  --ant-segmented-item-hover-color: var(--segmented-hover-text);
+  --ant-segmented-item-hover-bg: transparent;
+  --ant-segmented-item-active-bg: var(--segmented-active-bg);
+  --ant-segmented-item-selected-bg: var(--segmented-active-bg);
+  --ant-segmented-item-selected-color: var(--segmented-active-text);
   --ant-box-shadow-secondary: var(--shadow-card-hover);
   --ant-form-label-color: var(--text-primary);
   --ant-input-active-bg: var(--surface);
@@ -82,6 +90,8 @@ html .icedata-antd:is(.ant-select-css-var, .ant-input-css-var, .ant-input-number
 }
 
 /* 无边框筛选控件：配合 Ant Design variant="borderless"，以填充反馈交互。 */
+.ds-filter-control--transparent { --filter-control-bg: transparent; }
+
 html .ds-filter-control:is(.ant-input, .ant-input-affix-wrapper, .ant-input-number, .ant-select, .ant-picker) {
   min-height: var(--control-height);
   border: 0;
@@ -158,6 +168,8 @@ html .ds-filter-control.ant-picker .ant-picker-active-bar {
   --button-hover-bg: var(--button-danger-hover);
   --button-text: var(--button-danger-text);
 }
+
+.ds-button.ds-button--transparent { --button-bg: transparent; }
 
 .ds-button:not(:disabled):hover,
 .ds-button[data-preview-state='hover'] {
@@ -481,15 +493,35 @@ html .ant-btn.ds-button[data-variant] {
 .ds-page-button:disabled { background: transparent; color: var(--pagination-disabled-text); cursor: not-allowed; }
 .ds-pagination-gap { color: var(--text-secondary); cursor: default; }
 .ds-page-button .anticon { font-size: var(--font-size-caption); }
-.ds-segmented.ant-segmented { max-width: 100%; border-radius: var(--radius-control); background: var(--canvas); color: var(--text-secondary); font-size: var(--font-size-body); }
+/* 全站 Segmented：以总览播放量直方图为基准，业务页只负责外部布局。 */
+.ds-segmented.ant-segmented {
+  max-width: 100%;
+  padding: var(--segmented-track-padding);
+  border: var(--segmented-border-width) solid var(--segmented-border-color);
+  border-radius: var(--radius-control);
+  background: var(--segmented-track-bg);
+  color: var(--segmented-text);
+  font-size: var(--font-size-body);
+}
+.ds-segmented .ant-segmented-item {
+  color: var(--segmented-text);
+  transition: color 160ms ease, background-color 160ms ease;
+}
 .ds-segmented .ant-segmented-item-selected,
-.ds-segmented .ant-segmented-thumb { background: var(--button-secondary-bg); color: var(--text-primary); }
-.ds-segmented .ant-segmented-item:hover:not(.ant-segmented-item-selected):not(.ant-segmented-item-disabled) { color: var(--text-primary); }
-.ds-segmented.ant-segmented-disabled .ant-segmented-item { color: var(--text-disabled); }
+.ds-segmented .ant-segmented-thumb {
+  background: var(--segmented-active-bg);
+  color: var(--segmented-active-text);
+  font-weight: var(--segmented-active-font-weight);
+  box-shadow: var(--segmented-active-shadow);
+}
+.ds-segmented .ant-segmented-item:not(.ant-segmented-item-selected):not(.ant-segmented-item-disabled):hover { color: var(--segmented-hover-text); }
+.ds-segmented.ant-segmented-disabled .ant-segmented-item,
+.ds-segmented .ant-segmented-item-disabled { color: var(--text-disabled); }
+.ds-segmented.ant-segmented-disabled .ant-segmented-item-selected,
+.ds-segmented .ant-segmented-item-disabled.ant-segmented-item-selected { background: var(--button-disabled-bg); color: var(--text-disabled); box-shadow: none; }
+.ds-segmented.ant-segmented-sm { font-size: var(--font-size-caption); }
+.ds-segmented--wrap .ant-segmented-item-label { white-space: normal; line-height: var(--line-height-body); padding-block: var(--segmented-wrap-padding-block); }
 .ds-pagination-size { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; color: var(--text-secondary); font-size: var(--font-size-caption); }
-.ds-page-size-segmented.ant-segmented { font-size: var(--font-size-caption); }
-.ds-page-size-segmented .ant-segmented-item-selected,
-.ds-page-size-segmented .ant-segmented-thumb { background: var(--pagination-active-bg); color: var(--pagination-active-text); }
 .ds-page-size-select.ant-select { min-width: 108px; max-width: 100%; border-radius: var(--radius-control); background: var(--pagination-active-bg); font-size: var(--font-size-caption); }
 .ds-page-size-select .ant-select-content { color: var(--pagination-active-text); }
 .ds-page-size-select.ant-select-disabled { background: transparent; }
@@ -509,6 +541,7 @@ html .ant-btn.ds-button[data-variant] {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .ds-segmented .ant-segmented-item,
   html .ds-filter-control,
   .ds-button,
   .ds-surface,

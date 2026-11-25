@@ -180,6 +180,8 @@ Ant Design 已提供的基础组件应直接复用，不重复实现，也不使
 
 UI 规范页 `/admin/design/spec` 同步展示这条约定。共用分页器的每页条数选项不超过 4 个时横排，更多时使用 `Select`，修改后仍由调用页面重置到第 1 页。
 
+全站 `Segmented` 添加 `className="ds-segmented"`，统一使用总览播放量直方图的灰色轨道、浮起选中块与蓝色文字。组件外观只在 `src/styles/design-system.css` 定义，参数只在 `theme.css` 调整；业务页面 CSS 仅负责外部布局，不覆盖 `.ant-segmented` 及其内部节点。使用原生 `size` / `vertical` / `block` 调整组合方式，长文本使用共享类 `ds-segmented--wrap`。完整状态预览位于 `/admin/design/spec#spec-segmented`。
+
 ## 配色方案
 
 颜色、字体、字号、字重、圆角、阴影与边框宽度统一在 **`src/styles/theme.css`** 中手动编辑。公共参数同时影响两种主题，白天为 `:root` 或 `[data-theme='light']`，夜间为 `[data-theme='dark']`（与导航栏主题切换一致）。**品牌色在深浅主题下相同**。

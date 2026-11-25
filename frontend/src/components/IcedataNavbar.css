@@ -388,8 +388,3 @@
   color: var(--text-secondary);
   font-size: var(--font-size-caption);
 }
-
-.icedata-language-segmented .ant-segmented-item-label {
-  padding-inline: 8px;
-  white-space: nowrap;
-}

@@ -42,10 +42,10 @@ export default function ProducerVideos({ videos, query, onQueryChange, onPageCha
           { value: 'cards', icon: <AppstoreOutlined aria-hidden="true" />, label: <span className="ds-sr-only">{t("卡片模式")}</span>, tooltip: t("卡片模式") },
         ]} />
       <div className="producer-detail-sort">
-        <div className="producer-detail-sort-field"><span>{t("排序")}</span><Segmented
+        <div className="producer-detail-sort-field"><span>{t("排序")}</span><Segmented className="ds-segmented"
           aria-label={t("排序依据")} value={query.sortBy} onChange={(sortBy) => onQueryChange({ sortBy })}
           options={[{ value: 'pubdate', label: t("投稿时间") }, { value: 'view', label: t("播放量") }]} /></div>
-        <Segmented aria-label={t("排序方向")} value={query.order} onChange={(order) => onQueryChange({ order })}
+        <Segmented className="ds-segmented" aria-label={t("排序方向")} value={query.order} onChange={(order) => onQueryChange({ order })}
           options={[{ value: 'desc', label: t("降序 ↓") }, { value: 'asc', label: t("升序 ↑") }]} />
       </div>
     </div>

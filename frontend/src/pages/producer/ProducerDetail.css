@@ -18,14 +18,8 @@
 .producer-detail-videos { margin-top: 24px; padding: 24px; }
 .producer-detail-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
 .producer-detail-page h2 { margin: 0; font-size: var(--font-size-heading); font-weight: var(--font-weight-semibold); line-height: var(--line-height-heading); }
-.producer-detail-role { display: flex; flex-wrap: wrap; gap: 4px; }
 .producer-detail-sort { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-left: auto; }
 .producer-detail-sort-field { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--text-secondary); font-size: var(--font-size-body); }
-.producer-detail-sort .ant-segmented { background: var(--canvas); color: var(--text-secondary); font-size: var(--font-size-body); border-radius: var(--radius-control); }
-.producer-detail-sort .ant-segmented-item-selected,
-.producer-detail-sort .ant-segmented-thumb { background: var(--button-secondary-bg); color: var(--text-primary); }
-.producer-detail-sort .ant-segmented-item:hover:not(.ant-segmented-item-selected) { color: var(--text-primary); }
-.producer-detail-sort .ant-segmented-item:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 .producer-detail-list-hint { margin: 12px 0 20px; }
 .producer-detail-videos .ds-table { min-width: 740px; }
 .producer-detail-videos .ds-table-cell:has(> .producer-info) { display: flex; align-items: center; }

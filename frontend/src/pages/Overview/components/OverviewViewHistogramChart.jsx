@@ -146,7 +146,7 @@ export default function OverviewViewHistogramChart({ rows, asOfDate, scope = SCO
             <span className="overview-view-histogram-toolbar-hint" aria-hidden />
           )}
           <Segmented
-            className="overview-view-histogram-segmented"
+            className="ds-segmented overview-view-histogram-scope"
             value={scope}
             onChange={(v) => onScopeChange?.(/** @type {HistogramSubmissionScope} */ (v))}
             options={[

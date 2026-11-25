@@ -130,6 +130,8 @@ Primary 用于核心操作，Secondary 用于取消、重置等次要操作，No
 
 实现：`.ds-button` 配合 `data-variant="primary|secondary|normal|danger"`，固定悬停样本使用 `data-preview-state="hover"`。颜色使用 `--button-{类型}-bg/hover/text`，字号和字重使用独立的按钮变量。
 
+需要融入亚克力等底层的 Normal 按钮添加共享修饰类 `.ds-button--transparent`，仅将普通状态填充设为透明，悬停、按下、禁用及键盘焦点仍沿用公共按钮规范，不在业务页复制这些状态。`/admin/design/spec#spec-buttons` 提供三态对照。
+
 Ant Design Button 的状态变量同样由 `.ds-button` 适配，悬停与按下时保持对应用途的文字、底色及无描边状态。规范页按钮样本使用真实 Ant Design Button。
 
 ## 筛选控件
@@ -141,7 +143,15 @@ Ant Design Button 的状态变量同样由 `.ds-button` 适配，悬停与按下
 - 禁用时使用公共禁用底色与文字色，不响应悬停和聚焦，保留组件原有禁用及键盘行为。浮层继续使用标准 Surface 与现有主题配色。
 - 三态背景统一由 `theme.css` 中的 `--filter-control-{bg|hover-bg|active-bg}` 维护，总览已有的 `--overview-filter-control-*` 变量引用同一组值；业务页面直接复用，不重复实现配色。尊重系统减少动态效果设置。
 
+输入需要透出下方底层时添加共享修饰类 `.ds-filter-control--transparent`，仅将普通状态背景设为透明，悬停、聚焦和禁用继续采用上述公共状态；`/admin/design/spec#spec-controls` 提供可交互样例。
+
 歌曲列表的「荣誉」使用竖向 Ant Design `Radio.Group`，配合公共类 `.ds-radio-group-vertical`，完整列出不限、未达殿堂、殿堂、传说和神话五项互斥条件。单选项保留组件原有的主题配色、选中态与键盘焦点；`/admin/design/spec#spec-controls` 提供同款单选样本。
+
+全站 Segmented 以总览页「播放量直方图」为基准，统一灰色轨道、1px 描边、2px 轨道内边距、浮起的选中块、蓝色选中文字及600选中字重。白天选中块为白色，夜间为抬高的灰色；选中文字按日夜主题调整蓝色明度，保持清晰对比。
+
+所有用例直接使用 Ant Design `Segmented` 并添加 `.ds-segmented`。基础外观及交互状态只在 `frontend/src/styles/design-system.css` 定义，颜色、混色比例、字重、描边和间距等参数只在 `theme.css` 调整；不在业务页、组件或规范页 CSS 中另写 `.ant-segmented`、选中项、滑块、悬停、焦点或标签内边距规则。页面只控制外部位置与容器宽度，尺寸、纵向与等宽使用原生 `size`、`vertical`、`block` 属性，长文本使用共享修饰类 `.ds-segmented--wrap`。分页、语言选择、列表视图、总览图表和后台均采用同一套外观。
+
+轨道使用 `--segmented-track-bg`，普通文字使用 `--segmented-text`，选中项使用 `--segmented-active-bg/text/shadow`，描边使用 `--segmented-border-color`。禁用项使用公共禁用填充与文字，保留 Ant Design 键盘操作、焦点外环与滑块动画，减少动态效果时关闭文字和背景过渡。`/admin/design/spec#spec-segmented` 提供普通、小号、图标、整体禁用、纵向及单项禁用的日夜对照样例，并展示实际主题色值。
 
 ## 字体与文字颜色
 
@@ -255,7 +265,7 @@ Ant Design 单段 Alert 的图标、文本与操作区垂直居中；图标不�
 
 所有状态均无边框，由 `--pagination-border-width: 0px` 控制。页码默认 32px、间距 4px、圆角 6px，正文 14px，普通与当前页字重分别引用 `--font-weight-regular`、`--font-weight-semibold`。窄容器中页码缩小到 28px；对应尺寸由 `--pagination-item-size`、`--pagination-gap`、`--pagination-item-size-compact` 控制。
 
-当前页背景和文字直接引用 `--alert-info-bg` / `--alert-info-text`，每页条数控件的选中态也沿用这两个变量；悬停背景将 Info 背景 60% 与 Surface 40% 混合，文字保持 Info 前景色。禁用文字引用 `--text-disabled`。没有另设硬编码业务颜色，日夜自动随 Info Alert 一起变化。每页条数选项不超过 4 个时使用 Ant Design `Segmented` 横排展示，更多时使用无边框的 Ant Design `Select`；不使用原生下拉框。
+当前页背景和文字直接引用 `--alert-info-bg` / `--alert-info-text`；悬停背景将 Info 背景 60% 与 Surface 40% 混合，文字保持 Info 前景色。禁用文字引用 `--text-disabled`。每页条数选项不超过 4 个时使用 Ant Design `Segmented` 横排展示，选中态遵循全局 `--segmented-active-bg/text`；更多时使用无边框的 Ant Design `Select`，选中态沿用 Info 配色。不另设硬编码业务色，不使用原生下拉框。
 
 首尾禁用对应方向按钮，整体禁用时所有控件不可操作；空数据展示总数 0 和禁用的第 1 页。超过 7 页时保留首尾、当前页附近页码和省略号，省略号不进入焦点顺序。当前页通过 `aria-current="page"` 标注，每个分页区域有独立名称。修改每页条数后由页面重置到第 1 页，键盘聚焦显示 2px 外环。
 

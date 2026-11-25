@@ -254,7 +254,7 @@ export default function IcedataNavbar() {
               <div className="icedata-nav-language-control" lang={selectedLanguage.lang}>
                 <span id="icedata-language-label" className="icedata-nav-language-label">{t('语言')}</span>
                 <Segmented
-                  className="ds-segmented icedata-language-segmented"
+                  className="ds-segmented"
                   block
                   aria-labelledby="icedata-language-label"
                   value={selectedLanguage.value}

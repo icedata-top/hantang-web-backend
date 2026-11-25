@@ -156,7 +156,7 @@ export default function OverviewPartitionPieChart({ rows, scope = SCOPE_ALL, onS
         <div className="overview-partition-pie-toolbar">
           <span className="overview-partition-pie-toolbar-hint" aria-hidden />
           <Segmented
-            className="overview-partition-pie-segmented"
+            className="ds-segmented overview-partition-pie-scope"
             value={scope}
             onChange={(v) => onScopeChange?.(/** @type {PartitionSubmissionScope} */ (v))}
             options={[

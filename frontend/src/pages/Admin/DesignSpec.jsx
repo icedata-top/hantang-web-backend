@@ -9,6 +9,8 @@ import {
   CloseCircleOutlined,
   CheckCircleOutlined,
   ClockCircleOutlined,
+  AppstoreOutlined,
+  UnorderedListOutlined,
 } from '@ant-design/icons';
 import './DesignSpec.css';
 import { PaginationSample, TableSample, TabsSample } from './DataDisplaySamples.jsx';
@@ -24,6 +26,9 @@ const TOKEN_NAMES = [
   'navbar-home-bg', 'navbar-home-scrolled-bg',
   'overview-filter-control-bg', 'overview-filter-control-hover-bg', 'overview-filter-control-active-bg',
   'filter-control-bg', 'filter-control-hover-bg', 'filter-control-active-bg',
+  'segmented-track-bg', 'segmented-border-color', 'segmented-text', 'segmented-hover-text',
+  'segmented-active-bg', 'segmented-active-text', 'segmented-active-font-weight',
+  'segmented-border-width', 'segmented-track-padding',
   'text-primary', 'text-secondary', 'text-disabled', 'text-link', 'text-link-hover',
   'button-primary-bg', 'button-primary-hover', 'button-primary-text',
   'button-secondary-bg', 'button-secondary-hover', 'button-secondary-text',
@@ -194,6 +199,7 @@ const BUTTONS = [
   { type: 'primary', name: 'Primary', label: ['保存更改', 'Save'], usage: ['核心操作', 'Main action'] },
   { type: 'secondary', name: 'Secondary', label: ['取消', 'Cancel'], usage: ['次要操作', 'Supporting action'] },
   { type: 'normal', name: 'Normal', label: ['更多', 'More'], usage: ['常规操作', 'Routine action'] },
+  { type: 'normal', name: 'Normal · Transparent', label: ['更多', 'More'], usage: ['透明底', 'Transparent'], transparent: true },
   { type: 'danger', name: 'Danger', label: ['删除记录', 'Delete'], usage: ['破坏性操作', 'Destructive action'] },
 ];
 
@@ -205,20 +211,20 @@ function Buttons({ t }) {
         <span>{t("类型")}</span><span>{t("普通")}</span><span>{t("悬停")}</span><span>{t("禁用")}</span>
       </div>
       <div className="spec-button-rows">
-        {BUTTONS.map(({ type, name, label, usage }) => (
-          <div className="spec-button-row" key={type}>
+        {BUTTONS.map(({ type, name, label, usage, transparent }) => (
+          <div className="spec-button-row" key={name}>
             <div className="spec-button-name"><strong>{name}</strong><span>{t((usage)[0])}</span></div>
             {['default', 'hover', 'disabled'].map((state) => (
               <div className="spec-button-cell" key={state}>
                 <Button
-                  className="ds-button"
+                  className={transparent ? 'ds-button ds-button--transparent' : 'ds-button'}
                   data-variant={type}
                   data-preview-state={state}
                   disabled={state === 'disabled'}
                   aria-label={`${name} · ${t((label)[0])} · ${state}`}
                   onClick={() => setFeedback(t("已体验 {{value0}} 按钮，仅作视觉演示。", { value0: name }))}
                 >{t((label)[0])}</Button>
-                <span className="spec-button-color"><span>{t("底")}</span><Token name={state === 'disabled' ? 'button-disabled-bg' : `button-${type}-${state === 'hover' ? 'hover' : 'bg'}`} /></span>
+                <span className="spec-button-color"><span>{t("底")}</span>{transparent && state === 'default' ? <span className="spec-token">transparent</span> : <Token name={state === 'disabled' ? 'button-disabled-bg' : `button-${type}-${state === 'hover' ? 'hover' : 'bg'}`} />}</span>
                 <span className="spec-button-color"><span>{t("字")}</span><Token name={state === 'disabled' ? 'button-disabled-text' : `button-${type}-text`} /></span>
               </div>
             ))}
@@ -226,6 +232,7 @@ function Buttons({ t }) {
         ))}
       </div>
       <p className="spec-footnote">{t("高度")} <Value name="control-height" /> · {t("字号")} <Value name="font-size-button" /> / <Value name="font-weight-button" /> · {t("圆角")} <Value name="radius-control" /> · {t("描边")} <Value name="button-border-width" />。{t("Tab 聚焦显示 2px 蓝色外环；禁用态不响应操作。")}</p>
+      <p className="spec-footnote">{t('透明底样式只移除普通状态的填充，悬停、聚焦与禁用沿用同一套控件规范。')}</p>
       <p className="spec-demo-feedback" role="status">{feedback || t("点击可用按钮，体验交互反馈。悬停列固定显示 Hover。")}</p>
     </>
   );
@@ -234,8 +241,10 @@ function Buttons({ t }) {
 function FilterControls({ t }) {
   const disabledId = useId();
   const inputId = useId();
+  const transparentInputId = useId();
   const [disabled, setDisabled] = useState(false);
   const [text, setText] = useState('');
+  const [transparentText, setTransparentText] = useState('');
   const [dates, setDates] = useState(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [honor, setHonor] = useState('all');
@@ -250,6 +259,9 @@ function FilterControls({ t }) {
       <div className="spec-control-grid">
         <Form.Item label={t('文本输入')} htmlFor={inputId}>
           <Input className="ds-filter-control" variant="borderless" id={inputId} value={text} onChange={event => setText(event.target.value)} allowClear placeholder={t('请输入文本')} />
+        </Form.Item>
+        <Form.Item label={`${t('文本输入')} · ${t('透明底')}`} htmlFor={transparentInputId}>
+          <Input className="ds-filter-control ds-filter-control--transparent" variant="borderless" id={transparentInputId} value={transparentText} onChange={event => setTransparentText(event.target.value)} allowClear placeholder={t('请输入文本')} />
         </Form.Item>
         <Form.Item label={t('投稿日期（北京时间）')}>
           <DatePicker.RangePicker className="ds-filter-control" variant="borderless" data-open={pickerOpen} onOpenChange={setPickerOpen} aria-label={t('投稿日期（北京时间）')} value={dates} onChange={setDates} placeholder={[t('开始日期'), t('结束日期')]} />
@@ -266,15 +278,58 @@ function FilterControls({ t }) {
         </Form.Item>
       </div>
       <div className="spec-control-actions">
-        <Button className="ds-button" data-variant="secondary" onClick={() => { setText(''); setDates(null); setHonor('all'); setMinView(null); }}>{t('重置')}</Button>
+        <Button className="ds-button" data-variant="secondary" onClick={() => { setText(''); setTransparentText(''); setDates(null); setHonor('all'); setMinView(null); }}>{t('重置')}</Button>
         <Button className="ds-button" data-variant="primary" htmlType="submit">{t('应用筛选')}</Button>
       </div>
     </Form>
     <p className="spec-footnote">{t('输入框、数字输入、Select 和日期范围选择器统一使用无边框设计。普通状态使用 Surface，悬停使用 Canvas，聚焦或展开时使用 Secondary 填充，不显示蓝色边框、外环或底部指示线；禁用状态沿用公共主题。')}</p>
+    <p className="spec-footnote">{t('透明底样式只移除普通状态的填充，悬停、聚焦与禁用沿用同一套控件规范。')}</p>
     <div className="spec-swatch-grid">
       <Swatch name="filter-control-bg" label={t('普通')} />
       <Swatch name="filter-control-hover-bg" label={t('悬停')} />
       <Swatch name="filter-control-active-bg" label={t('激活')} />
+    </div>
+  </>;
+}
+
+function SegmentedSample({ t }) {
+  const [scope, setScope] = useState('all');
+  const [layout, setLayout] = useState('table');
+  const options = [{ value: 'all', label: t('全部投稿') }, { value: 'new', label: t('新投稿') }];
+  const label = variant => `${t('分段选择')} · ${t(variant)}`;
+  return <>
+    <div className="spec-segmented-examples">
+      <div className="spec-segmented-example">
+        <p className="spec-demo-label">{t('普通')}</p>
+        <Segmented className="ds-segmented" aria-label={label('普通')} value={scope} onChange={setScope} options={options} />
+      </div>
+      <div className="spec-segmented-example">
+        <p className="spec-demo-label">{t('小号')}</p>
+        <Segmented className="ds-segmented" size="small" aria-label={label('小号')} value={scope} onChange={setScope} options={options} />
+      </div>
+      <div className="spec-segmented-example">
+        <p className="spec-demo-label">{t('图标选项')}</p>
+        <Segmented className="ds-segmented" aria-label={label('图标选项')} value={layout} onChange={setLayout} options={[
+          { value: 'table', icon: <UnorderedListOutlined aria-hidden="true" />, label: <span className="ds-sr-only">{t('表格模式')}</span>, tooltip: t('表格模式') },
+          { value: 'cards', icon: <AppstoreOutlined aria-hidden="true" />, label: <span className="ds-sr-only">{t('卡片模式')}</span>, tooltip: t('卡片模式') },
+        ]} />
+      </div>
+      <div className="spec-segmented-example">
+        <p className="spec-demo-label">{t('禁用')}</p>
+        <Segmented className="ds-segmented" disabled aria-label={label('禁用')} value="all" options={options} />
+      </div>
+      <div className="spec-segmented-example">
+        <p className="spec-demo-label">{t('纵向')}</p>
+        <Segmented className="ds-segmented ds-segmented--wrap" vertical aria-label={label('纵向')} value={scope} onChange={setScope}
+          options={[...options, { value: 'future', label: t('功能开发中'), disabled: true }]} />
+      </div>
+    </div>
+    <p className="spec-footnote">{t('页面仅调整摆放位置，组件外观在 design-system.css 维护，主题参数在 theme.css 维护。')}</p>
+    <div className="spec-swatch-grid">
+      <Swatch name="segmented-track-bg" label={t('轨道')} />
+      <Swatch name="segmented-active-bg" label={t('选中')} />
+      <Swatch name="segmented-active-text" label={t('文字')} />
+      <Swatch name="segmented-border-color" label={t('描边')} />
     </div>
   </>;
 }
@@ -431,6 +486,7 @@ const SECTIONS = [
   { id: 'surfaces', en: 'Canvas & Surface', zh: '背景与卡片', description: ['从页面底色到内容表面，建立清晰的层级。', 'Build a clear hierarchy from the page canvas to content surfaces.'], Component: Surfaces },
   { id: 'buttons', en: 'Buttons', zh: '按钮', description: ['四种用途，三种状态。每一个状态都可以直接对照。', 'Four purposes, three states. Compare every state directly.'], Component: Buttons },
   { id: 'controls', en: 'Filter controls', zh: '筛选控件', description: ['输入、选择和日期范围控件统一无边框，以底色区分普通、悬停、聚焦和禁用状态。', 'Borderless inputs, selects, and date ranges use background fills for normal, hover, focus, and disabled states.'], Component: FilterControls },
+  { id: 'segmented', en: 'Segmented', zh: '分段选择', description: ['全站沿用播放量直方图的灰色轨道、浮起选中块与蓝色文字。', 'Use the view histogram’s gray track, raised selected item, and blue text throughout the site.'], Component: SegmentedSample },
   { id: 'typography', en: 'Typography', zh: '文字', description: ['用字号、字重和颜色表达内容的重要程度。', 'Express content hierarchy through size, weight, and color.'], Component: Typography },
   { id: 'chips', en: 'Tag / Chip', zh: '标签', description: ['分类、认证与播放荣誉，使用共享主题变量。', 'Categories, verification, and view honors use shared theme tokens.'], Component: Chips },
   { id: 'tooltips', en: 'Tooltip', zh: '悬停提示', description: ['沿用当前主题的 Surface 配色，支持文字和组件内容。', 'Use the current Surface colors for text and embedded components.'], Component: Tooltips },

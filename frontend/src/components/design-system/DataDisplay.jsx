@@ -90,7 +90,7 @@ export function DsPagination({ current, pageSize, total, onChange, disabled = fa
         <div className="ds-pagination-size">
           <span id={sizeLabelId}>{t("每页条数")}</span>
           {sizeOptions.length <= 4
-            ? <Segmented className="ds-segmented ds-page-size-segmented" size="small" aria-labelledby={sizeLabelId} value={pageSize} disabled={inactive}
+            ? <Segmented className="ds-segmented" size="small" aria-labelledby={sizeLabelId} value={pageSize} disabled={inactive}
               onChange={onPageSizeChange} options={sizeOptions.map(({ value }) => ({ value, label: String(value) }))} />
             : <Select className="ds-page-size-select" size="small" variant="borderless" aria-labelledby={sizeLabelId} value={pageSize} disabled={inactive}
               onChange={onPageSizeChange} options={sizeOptions} popupMatchSelectWidth={false}

@@ -73,6 +73,10 @@
   --pagination-item-size-compact: 28px;
   --pagination-gap: 4px;
   --pagination-border-width: 0px;
+  --segmented-border-width: 1px;
+  --segmented-track-padding: 2px;
+  --segmented-active-font-weight: 600;
+  --segmented-wrap-padding-block: 6px;
 
   /* 基础明暗端点与品牌色 */
   --color-white: #ffffff;
@@ -134,6 +138,13 @@
   --danger-hover-strength: 78%;
   --secondary-fill-strength: 8%;
   --secondary-hover-strength: 14%;
+  --segmented-track-anchor: var(--color-black);
+  --segmented-track-strength: 6%;
+  --segmented-fill-anchor: var(--color-white);
+  --segmented-fill-strength: 100%;
+  --segmented-border-strength: 12%;
+  --segmented-text-anchor: var(--color-black);
+  --segmented-text-strength: 80%;
   --disabled-fill-strength: 6%;
   --chip-orange-text-strength: 55%;
   --entity-tag-text-strength: 45%;
@@ -188,6 +199,13 @@
   --danger-hover-strength: 60%;
   --secondary-fill-strength: 18%;
   --secondary-hover-strength: 28%;
+  --segmented-track-anchor: var(--text);
+  --segmented-track-strength: 1.5%;
+  --segmented-fill-anchor: var(--text);
+  --segmented-fill-strength: 10%;
+  --segmented-border-strength: 10%;
+  --segmented-text-anchor: var(--color-white);
+  --segmented-text-strength: 70%;
   --disabled-fill-strength: 8%;
   --chip-orange-text-strength: 85%;
   --entity-tag-text-strength: 85%;
@@ -276,6 +294,13 @@
   --button-secondary-bg: color-mix(in srgb, var(--theme-primary) var(--secondary-fill-strength), var(--surface));
   --button-secondary-hover: color-mix(in srgb, var(--theme-primary) var(--secondary-hover-strength), var(--surface));
   --button-secondary-text: var(--text-link);
+  --segmented-track-bg: color-mix(in srgb, var(--segmented-track-anchor) var(--segmented-track-strength), var(--surface));
+  --segmented-text: var(--text-secondary);
+  --segmented-hover-text: var(--text-primary);
+  --segmented-border-color: color-mix(in srgb, var(--text) var(--segmented-border-strength), var(--surface));
+  --segmented-active-bg: color-mix(in srgb, var(--segmented-fill-anchor) var(--segmented-fill-strength), var(--surface));
+  --segmented-active-text: color-mix(in srgb, var(--theme-primary) var(--segmented-text-strength), var(--segmented-text-anchor));
+  --segmented-active-shadow: 0 1px 3px color-mix(in srgb, var(--color-black) var(--shadow-strength), transparent);
   --button-normal-bg: var(--surface);
   --button-normal-hover: var(--surface-hover);
   --button-normal-text: var(--text-primary);
