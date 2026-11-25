@@ -13,6 +13,15 @@ import java.util.Map;
 import java.util.function.BiFunction;
 
 public class UniSeekDao {
+    static final String VIRTUAL_SONG_FILTER = "EXISTS (SELECT 1 FROM hantang_dynamic.video_content_labels l WHERE l.aid = p.aid AND l.is_virtual_singer_song)";
+    static final String CHINESE_VIRTUAL_SONG_FILTER = "EXISTS (SELECT 1 FROM hantang_dynamic.video_content_labels l WHERE l.aid = p.aid AND l.is_chinese_virtual_singer_song)";
+    static String scopePredicate(String scope) {
+        return switch (UniSeekRequest.validateContentScope(scope)) {
+            case "all" -> "true";
+            case "virtual_song" -> VIRTUAL_SONG_FILTER;
+            default -> CHINESE_VIRTUAL_SONG_FILTER;
+        };
+    }
     private final BiFunction<String, List<Object>, List<Map<String, Object>>> query;
     private final Clock clock;
 
@@ -35,16 +44,21 @@ public class UniSeekDao {
 
     public List<Map<String, Object>> videos(UniSeekRequest request) {
         if (request.offset() >= UniSeekRequest.VIDEO_LIMIT) return List.of();
-        // A cheap read of the published table invalidates cache entries even for same-day rebuilds.
-        var batches = query.apply("SELECT batch_id::text AS batch_id FROM hantang_dynamic.adm_uniseek_videos LIMIT 1", List.of());
-        if (batches.isEmpty()) {
-            synchronized (videoCache) { videoCache.clear(); }
-            return List.of();
-        }
-        var cacheKey = new VideoCacheKey(request.keyword(), batchId(batches.getFirst()));
-        synchronized (videoCache) {
-            var cached = videoCache.get(cacheKey);
-            if (cached != null && clock.instant().isBefore(cached.expiresAt())) return page(cached.rows(), request);
+        // Label-filtered searches read committed labels on every page. Only the all-video
+        // scope uses this ADM-only cache, so writes from another labeling process cannot
+        // leave the default scope stale while the ADM batch remains unchanged.
+        boolean cacheable = "all".equals(UniSeekRequest.validateContentScope(request.contentScope()));
+        if (cacheable) {
+            var batches = query.apply("SELECT batch_id::text AS batch_id FROM hantang_dynamic.adm_uniseek_videos LIMIT 1", List.of());
+            if (batches.isEmpty()) {
+                synchronized (videoCache) { videoCache.clear(); }
+                return List.of();
+            }
+            var cacheKey = new VideoCacheKey(request.keyword(), batchId(batches.getFirst()));
+            synchronized (videoCache) {
+                var cached = videoCache.get(cacheKey);
+                if (cached != null && clock.instant().isBefore(cached.expiresAt())) return page(cached.rows(), request);
+            }
         }
         var params = new ArrayList<Object>();
         params.add(request.keyword());
@@ -79,10 +93,10 @@ public class UniSeekDao {
                                + greatest(coalesce(p.view, 0), 0)::double precision / 100.0)
                                / ln(10000001.0::double precision / 100.0)) AS score
                     FROM hantang_dynamic.adm_uniseek_videos p CROSS JOIN input i
-                    WHERE (%s)
+                    WHERE (%s) AND %s
                 )
                 SELECT * FROM ranked ORDER BY score DESC, aid DESC LIMIT ?
-                """.formatted(String.join(" AND ", predicates));
+                """.formatted(String.join(" AND ", predicates), scopePredicate(request.contentScope()));
         var rows = query.apply(sql, params);
         if (!rows.isEmpty()) {
             // Publication may have committed since the cheap batch read. Cache under the batch
@@ -91,10 +105,12 @@ public class UniSeekDao {
             if (rows.stream().anyMatch(row -> !resultBatch.equals(batchId(row)))) {
                 throw new IllegalStateException("Mixed UniSeek publication batches");
             }
-            synchronized (videoCache) {
-                videoCache.put(new VideoCacheKey(request.keyword(), resultBatch),
-                        new VideoResults(List.copyOf(rows), clock.instant().plusSeconds(60)));
-                while (videoCache.size() > 16) videoCache.remove(videoCache.keySet().iterator().next());
+            if (cacheable) {
+                synchronized (videoCache) {
+                    videoCache.put(new VideoCacheKey(request.keyword(), resultBatch),
+                            new VideoResults(List.copyOf(rows), clock.instant().plusSeconds(60)));
+                    while (videoCache.size() > 16) videoCache.remove(videoCache.keySet().iterator().next());
+                }
             }
         }
         return page(rows, request);
@@ -117,13 +133,16 @@ public class UniSeekDao {
     }
 
     public List<Map<String, Object>> videoById(long aid) {
+        return videoById(aid, UniSeekRequest.DEFAULT_CONTENT_SCOPE);
+    }
+    public List<Map<String, Object>> videoById(long aid, String contentScope) {
         return query.apply("""
                 SELECT p.aid, p.bvid, p.title, p.pic, p.pubdate, p.user_id,
                        p.view, p.favorite, p."like", p.coin, p.record_date::text, p.batch_id::text
                 FROM hantang_dynamic.adm_uniseek_videos p
-                WHERE p.aid = ?
+                WHERE p.aid = ? AND %s
                 LIMIT 1
-                """, List.of(aid));
+                """.formatted(scopePredicate(contentScope)), List.of(aid));
     }
 
     public List<Map<String, Object>> producerById(long userId) {

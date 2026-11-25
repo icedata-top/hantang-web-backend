@@ -18,6 +18,8 @@
 
 输入框直接使用 Ant Design 输入框本体，不再额外包一层相同外观的圆角矩形。图标优先复用 `@ant-design/icons`；装饰图标跟随文字色，纯图标操作提供可访问的名称。
 
+UniSeek 搜索栏默认仅一行：同高的圆角亚克力底层承托输入框及两个图标按钮，不留外围内边距或控件间隙，外阴影和半透明底层常驻，滚动继续增强背景模糊。无边框输入复用 `.ds-filter-control.ds-filter-control--transparent`；搜索及展开按钮均使用 `.ds-button.ds-button--transparent` 的 Normal 样式，普通状态透明、悬停及按下沿用 Normal，不使用 Primary 或展开后的 Secondary 填充。输入悬停使用 Canvas、聚焦使用 Secondary 填充；不叠加边框、输入焦点阴影或覆盖按钮的图层。保留 Tooltip、可访问名称及展开状态。超过三个字符的完整 AV / BV 编号或纯数字 aid 使用 Ant Design `AutoComplete` 提供直达歌曲详情候选，支持鼠标、方向键和回车；未选候选时仍可正常搜索。候选文案支持中、英、日，浮层沿用公共主题。
+
 筛选用的 `Input`、`Input.TextArea`、`InputNumber`、`Select`、`DatePicker` / `DatePicker.RangePicker` 等统一使用 `variant="borderless"`，配合公共类 `.ds-filter-control`，不添加描边或额外外框。普通、悬停、聚焦 / 展开和禁用状态遵循下文的筛选控件规范。
 
 项目已有的 `ProducerInfo`、`VideoInfo`、`VideoCard`、`RelativeTime`、`VideoHonor` 和 `DsTabs` / `DsTable` / `DsPagination` 按适用场景直接复用，业务页面不复制其请求、弹层或分页交互。`ds-*` 是已有的共享样式与兼容层，新增基础控件仍优先使用 Ant Design；语义化 HTML 可用于组织页面内容。
@@ -195,7 +197,9 @@ Ant Design Button 的状态变量同样由 `.ds-button` 适配，悬停与按下
 
 实体类型 Tag 固定为虚拟歌手紫、创作者橙、歌曲绿，文字与底色引用 `--entity-{vocal|producer|video}-tag-{text|bg}`，由现有 highlight 色在 `theme.css` 派生；不使用品牌蓝区分实体类型。UniSeek 虚拟歌手卡片不展示内部 ID，创作者展示 UID，歌曲展示 av 号。
 
-UniSeek 结果以优先缓冲队列每 90ms 逐项呈现，新卡片采用 270ms 的 4px 高斯模糊与淡入；不为既有卡片重复入场，不常驻 will-change。结果数量旁使用 Ant Design Switch 控制「结果入场动画」，偏好保存在本地；关闭动画不改变交错释放规则。系统减少动态效果时禁用动画。
+UniSeek 搜索区域默认只显示搜索横栏；搜索按钮右侧提供带上下箭头的 Ant Design 图标 Button 展开或收起选项，包含中英日可访问名称、`aria-expanded` 和 `aria-controls`。展开后在下方用 Segmented 选择「全部视频 / 虚拟歌手歌曲 / 虚拟歌手中文曲」，默认第三项；收起时保留选择。中英日文案使用本地化资源，窄屏纵向排列以保留完整文本，日夜配色复用 `.ds-segmented`。选择值写入URL，切换范围重新开始搜索并取消旧请求。
+
+UniSeek 结果以优先缓冲队列每 90ms 逐项呈现，新卡片采用 270ms 的 4px 高斯模糊与淡入；不为既有卡片重复入场，不常驻 will-change。结果区不展示「已加载多少条」，顶部标明相关性排序，悬停、聚焦或点击可查看排序说明；同一行使用 Ant Design Switch 控制「结果入场动画」，偏好保存在本地；关闭动画不改变交错释放规则。系统减少动态效果时禁用动画。
 
 播放荣誉复用 Ant Design `Tag variant="filled"`，统一使用 `TrophyOutlined` 奖杯图标，无边框。殿堂（≥10万）、传说（≥100万）、神话（≥1000万）分别从 `--highlight-blue`、`--highlight-orange`、`--highlight-violet` 派生颜色；背景和文字使用 `--honor-{hall|legend|myth}-bg/text`，不硬编码颜色。视频详情标题下只显示最高荣誉；本页三个日夜样本各自对应独立播放量。完整数据口径见[视频播放荣誉](video-view-honors.md)。
 

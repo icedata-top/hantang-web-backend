@@ -28,6 +28,7 @@ class UniSeekControllerTest {
             var client = HttpClient.newHttpClient();
             for (String path : List.of("/uniseek/videos", "/uniseek/producers", "/uniseek/videos?keyword=x&page=0",
                     "/uniseek/videos?keyword=x&pageSize=51", "/uniseek/videos?keyword=x&page=1.5",
+                    "/uniseek/videos?keyword=x&contentScope=wrong", "/uniseek/videos/123?contentScope=wrong",
                     "/uniseek/producers?keyword=" + "x".repeat(101), "/uniseek/videos/0", "/uniseek/videos/9223372036854775808",
                     "/uniseek/producers/01", "/uniseek/producers/nope")) {
                 assertEquals(400, get(client, app.port(), path).statusCode(), path);
@@ -71,6 +72,27 @@ class UniSeekControllerTest {
                 releaseVideo.countDown(); assertEquals(200, videoResponse.get(3, TimeUnit.SECONDS).statusCode());
             } finally { releaseVideo.countDown(); app.stop(); }
         }
+    }
+    @Test void textAndExactIdEndpointsDefaultToChineseAndAcceptAllThreeScopes() throws Exception {
+        var observed = new ArrayList<String>();
+        var service = new UniSeekService(new UniSeekDao((sql, params) -> {
+            if (sql.startsWith("SELECT batch_id::text")) return List.of(Map.of("batch_id", "a"));
+            observed.add(sql); return List.of();
+        }), Runnable::run);
+        var app = Javalin.create(); new UniSeekController(service).registerRoutes(app); app.start(0);
+        try (var client = HttpClient.newHttpClient()) {
+            for (String scope : List.of("", "all", "virtual_song", "chinese_virtual_song")) {
+                String suffix = scope.isEmpty() ? "" : "&contentScope=" + scope;
+                observed.clear();
+                assertEquals(200, get(client, app.port(), "/uniseek/videos?keyword=scope" + suffix).statusCode());
+                assertEquals(200, get(client, app.port(), "/uniseek/videos/123?ignored=1" + suffix).statusCode());
+                assertEquals(2, observed.size());
+                for (String sql : observed) {
+                    if (scope.equals("all")) assertFalse(sql.contains("video_content_labels"));
+                    else assertTrue(sql.contains(scope.equals("virtual_song") ? "l.is_virtual_singer_song)" : "l.is_chinese_virtual_singer_song)"));
+                }
+            }
+        } finally { app.stop(); }
     }
     private HttpRequest request(int port, String path) {
         return HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + port + path)).timeout(Duration.ofSeconds(3)).GET().build();

@@ -19,7 +19,7 @@ public class UniSeekController extends BaseController {
     @Override public void registerRoutes(Javalin app) {
         app.get("/uniseek/videos", context -> {
             UniSeekRequest request;
-            try { request = UniSeekRequest.from(context.queryParam("keyword"), context.queryParam("page"), context.queryParam("pageSize")); }
+            try { request = UniSeekRequest.from(context.queryParam("keyword"), context.queryParam("page"), context.queryParam("pageSize"), context.queryParam("contentScope")); }
             catch (IllegalArgumentException e) { badRequest(context, e); return; }
             respond(context, () -> service.searchVideos(request));
         });
@@ -31,9 +31,10 @@ public class UniSeekController extends BaseController {
         });
         app.get("/uniseek/videos/{aid}", context -> {
             long aid;
-            try { aid = positiveId(context.pathParam("aid")); }
+            String scope;
+            try { aid = positiveId(context.pathParam("aid")); scope = UniSeekRequest.validateContentScope(context.queryParam("contentScope")); }
             catch (IllegalArgumentException e) { badRequest(context, e); return; }
-            respond(context, () -> service.searchVideoById(aid));
+            respond(context, () -> service.searchVideoById(aid, scope));
         });
         app.get("/uniseek/producers/{userId}", context -> {
             long userId;

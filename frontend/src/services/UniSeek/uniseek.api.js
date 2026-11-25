@@ -2,6 +2,7 @@ import { isMockEnv } from '../../config/runtimeEnv.js';
 import { getJson } from '../http/client.js';
 import catalog from '../../constants/vocal/vocal-search-info.json';
 import { matchVocals } from './uniseekLocal.js';
+import { DEFAULT_CONTENT_SCOPE, normalizeContentScope } from './uniseekScope.js';
 
 /**
  * @typedef {{ type: 'video'|'vocal'|'producer', id: string, title: string,
@@ -78,16 +79,23 @@ const MOCK_PRODUCERS = [
   },
 ];
 
+// Explicit mock fixtures for the three scopes; these are not inferred from titles.
+const MOCK_NON_SONG_IDS = new Set(['113139018439424']);
+const MOCK_NON_CHINESE_IDS = new Set(['114550502396425']);
+const mockMatchesScope = (id, scope) => scope === 'all'
+  || !MOCK_NON_SONG_IDS.has(id) && (scope === 'virtual_song' || !MOCK_NON_CHINESE_IDS.has(id));
+
 export function searchVocals(keyword) { return matchVocals(keyword, catalog); }
 
 /** Each request can resolve independently. Only videos have subsequent pages. */
-export async function searchVideos({ keyword, page = 1, pageSize = 30 }, options) {
+export async function searchVideos({ keyword, page = 1, pageSize = 30, contentScope = DEFAULT_CONTENT_SCOPE }, options) {
   if (!isMockEnv()) {
-    const query = new URLSearchParams({ keyword, page, pageSize });
+    const query = new URLSearchParams({ keyword, page, pageSize, contentScope: normalizeContentScope(contentScope) });
     return getJson(`/uniseek/videos?${query}`, options);
   }
   const q = keyword.trim().toLowerCase();
-  const matches = MOCK_VIDEO_ROWS.filter(([, title]) => title.toLowerCase().includes(q));
+  const scope = normalizeContentScope(contentScope);
+  const matches = MOCK_VIDEO_ROWS.filter(([id, title]) => title.toLowerCase().includes(q) && mockMatchesScope(id, scope));
   const start = (page - 1) * pageSize;
   const hasMore = start + pageSize < matches.length;
   return { keyword, page, pageSize, hasMore, nextPage: hasMore ? page + 1 : null, videoLimit: 1000,
@@ -105,9 +113,9 @@ export async function searchProducers(keyword, options) {
 }
 
 export function searchVideoById(aid, options) {
-  if (!isMockEnv()) return getJson(`/uniseek/videos/${encodeURIComponent(aid)}`, options);
+  if (!isMockEnv()) return getJson(`/uniseek/videos/${encodeURIComponent(aid)}?${new URLSearchParams({ contentScope: normalizeContentScope(options?.contentScope) })}`, options);
   const mock = isMockEnv() ? MOCK_VIDEO_ROWS.find(([id]) => id === aid) : null;
-  if (mock) return Promise.resolve({ list: [{ type: 'video', id: aid, title: mock[1],
+  if (mock && mockMatchesScope(aid, normalizeContentScope(options?.contentScope))) return Promise.resolve({ list: [{ type: 'video', id: aid, title: mock[1],
     jumpUrl: `/videos/${aid}`, payload: { play: mock[2] } }] });
   return Promise.resolve({ list: [] });
 }

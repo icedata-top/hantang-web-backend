@@ -3,7 +3,8 @@ import test from 'node:test';
 import { readFileSync } from 'node:fs';
 import { setImmediate as flush } from 'node:timers/promises';
 import { createUniSeekSession } from '../src/services/UniSeek/uniseekSession.js';
-import { matchVocals, searchTargets } from '../src/services/UniSeek/uniseekLocal.js';
+import { matchVocals, searchTargets, videoDetailSuggestion } from '../src/services/UniSeek/uniseekLocal.js';
+import { normalizeContentScope, uniSeekSearchParams } from '../src/services/UniSeek/uniseekScope.js';
 
 const catalog = JSON.parse(readFileSync(new URL('../src/constants/vocal/vocal-search-info.json', import.meta.url)));
 const item = (type, id, payload = {}) => ({ type, id, title: id, payload });
@@ -22,7 +23,7 @@ const defaults = overrides => ({
   ...overrides,
 });
 
-function setup(keyword, overrides) {
+function setup(keyword, overrides, contentScope) {
   let state, timerId = 0;
   const timers = new Map();
   const scheduler = {
@@ -35,12 +36,56 @@ function setup(keyword, overrides) {
     timers.delete(entry[0]); entry[1](); return true;
   };
   const drain = () => { let ticks = 0; while (tick()) assert.ok(++ticks < 2000); };
-  const session = createUniSeekSession(keyword, defaults(overrides), next => { state = next; }, scheduler);
+  const session = createUniSeekSession(keyword, defaults(overrides), next => { state = next; }, { scheduler, contentScope });
   session.start();
   return { session, state: () => state, tick, drain, timers };
 }
 
 async function settle(h) { await flush(); h.drain(); }
+
+test('scope defaults to Chinese virtual songs and URL changes retain the selected scope', () => {
+  for (const raw of [null, undefined, '', 'wrong']) assert.equal(normalizeContentScope(raw), 'chinese_virtual_song');
+  for (const scope of ['all', 'virtual_song', 'chinese_virtual_song']) {
+    const params = uniSeekSearchParams(' 新关键词 ', scope);
+    assert.equal(params.get('keyword'), '新关键词');
+    assert.equal(params.get('contentScope'), scope);
+    assert.equal(uniSeekSearchParams('', scope).has('keyword'), false);
+  }
+});
+
+test('keyword pages and exact video IDs all carry the same selected scope', async () => {
+  for (const scope of ['all', 'virtual_song', 'chinese_virtual_song']) {
+    const requests = [], exactOptions = [];
+    const h = setup('123456', {
+      searchVideoById: async (_, options) => { exactOptions.push(options); return { list: [] }; },
+      searchVideos: async request => {
+        requests.push(request);
+        return { list: [item('video', String(request.page))], hasMore: request.page === 1, nextPage: 2 };
+      },
+    }, scope);
+    await settle(h);
+    await h.session.loadMore(); await settle(h);
+    assert.deepEqual(requests.map(request => [request.page, request.contentScope]), [[1, scope], [2, scope]]);
+    assert.equal(exactOptions[0].contentScope, scope);
+    h.session.dispose();
+  }
+});
+
+test('switching scope cancels the old session and prevents late unfiltered results from returning', async () => {
+  const late = deferred(); let previousSignal;
+  const old = setup('song', {
+    searchVideos: (_, options) => { previousSignal = options.signal; return late.promise; },
+  }, 'all');
+  await flush(); old.session.dispose();
+  const current = setup('song', { searchVideos: async () => ({ list: [item('video', 'Chinese')], hasMore: false }) }, 'chinese_virtual_song');
+  await settle(current);
+  late.resolve({ list: [item('video', 'unfiltered')], hasMore: false });
+  await settle(old);
+  assert.equal(previousSignal.aborted, true);
+  assert.deepEqual(ids(current.state()), ['video-Chinese']);
+  assert.deepEqual(ids(old.state()), []);
+  current.session.dispose();
+});
 
 test('local partial names and aliases include 初音→初音未来 and 天依→洛天依 without network', () => {
   assert.equal(catalog.length, 18);
@@ -59,6 +104,29 @@ test('numeric text additionally targets AV and UID; explicit AV/BV target only v
   for (const q of ['天依', '123abc', '0', '00123', '9223372036854775808', 'BV1Qs411k7Q0']) {
     assert.deepEqual(searchTargets(q), { aid: null, userId: null, searchVideos: true }, q);
   }
+});
+
+test('detail suggestions normalize complete AV/BV IDs and preserve large numeric IDs without fetching', () => {
+  for (const [keyword, aid, identifier] of [
+    ['1234', '1234', 'av1234'],
+    ['av12', '12', 'av12'],
+    ['  AV6009789  ', '6009789', 'av6009789'],
+    ['bv1Qs411k7Qv', '6009789', 'BV1Qs411k7Qv'],
+    ['BV1XfKAzwEi3', '114714449413822', 'BV1XfKAzwEi3'],
+    ['9007199254740993', '9007199254740993', 'av9007199254740993'],
+    ['9223372036854775807', '9223372036854775807', 'av9223372036854775807'],
+  ]) {
+    assert.deepEqual(videoDetailSuggestion(keyword), { aid, identifier, jumpUrl: `/videos/${aid}` });
+  }
+});
+
+test('detail suggestions stay absent for short, incomplete, malformed and out-of-range identifiers', () => {
+  for (const keyword of [
+    undefined, null, '', '123', ' 123 ', 'av1', 'AV0', '00123', 'av0123', 'BV1Qs411k7Q',
+    'BV1Qs411k7Q0', 'BV1Qs411k7Qvv', 'BV1xx411c7mX', '9223372036854775808',
+    'av9223372036854775808', 'avBV1Qs411k7Qv', 'uid1234', '123abc', '霜雪千年',
+    'https://www.bilibili.com/video/BV1Qs411k7Qv', 'av6009789 标题',
+  ]) assert.equal(videoDetailSuggestion(keyword), null, String(keyword));
 });
 
 test('filtered exact-ID results can be empty while numeric keyword searches continue', async () => {

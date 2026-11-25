@@ -12,20 +12,23 @@ const batchB = '00000000-0000-0000-0000-000000000002';
 const pattern = (value) => `%${value.replaceAll('\\', '\\\\').replaceAll('%', '\\%').replaceAll('_', '\\_')}%`;
 const vocals = JSON.parse(await readFile(new URL('../../frontend/src/constants/vocal/vocal-search-info.json', import.meta.url), 'utf8'));
 const vocalNames = new Set(vocals.flatMap(vocal => [vocal.name, ...vocal.aliases]).map(name => name.toLowerCase()));
-async function ranked(keyword) {
+const scopeFilters = Object.fromEntries(['VIRTUAL_SONG_FILTER', 'CHINESE_VIRTUAL_SONG_FILTER'].map(name =>
+  [name, source.match(new RegExp(`String ${name} = "([^"]+)";`))[1]]));
+const scopeFilter = scope => scope === 'all' ? 'true' : scopeFilters[scope === 'virtual_song' ? 'VIRTUAL_SONG_FILTER' : 'CHINESE_VIRTUAL_SONG_FILTER'];
+async function ranked(keyword, scope = 'all') {
   const parameters = [keyword, pattern(keyword), vocalNames.has(keyword.trim().toLowerCase()) ? 10 : 1];
   const predicates = keyword.split(/\s+/).map((token) => {
     parameters.push(pattern(token), token, token, token);
     return "(p.title ILIKE ? ESCAPE '\\' OR p.tag_new @> ARRAY[?]::varchar[] OR p.participle @> ARRAY[?]::varchar[] OR p.label_singers @> ARRAY[?]::text[])";
   });
   parameters.push(1000);
-  return (await db.query(bind(template.replace('%s', predicates.join(' AND '))), parameters)).rows;
+  return (await db.query(bind(template.replace('%s', predicates.join(' AND ')).replace('%s', scopeFilter(scope))), parameters)).rows;
 }
 async function search(keyword, { page = 1, pageSize = 2 } = {}) {
   const rows = (await ranked(keyword)).slice((page - 1) * pageSize, page * pageSize + 1);
   return { hasMore: rows.length > pageSize, rows: rows.slice(0, pageSize) };
 }
-async function exactVideo(aid) { return (await db.query(bind(blocks[2]), [aid])).rows; }
+async function exactVideo(aid, scope = 'all') { return (await db.query(bind(blocks[2].replace('%s', scopeFilter(scope))), [aid])).rows; }
 async function producers(keyword) { return (await db.query(bind(blocks[1]), [keyword, pattern(keyword)])).rows; }
 async function exactProducer(uid) { return (await db.query(bind(blocks[3]), [uid])).rows; }
 const ids = (result) => result.rows.map((row) => Number(row.aid));
@@ -34,6 +37,7 @@ const test = async (name, run) => { await run(); passed += 1; console.log(`PASS 
 try {
   await db.exec('CREATE SCHEMA hantang_dynamic');
   await db.exec(await readFile(new URL('../adm_uniseek_videos.sql', import.meta.url), 'utf8'));
+  await db.exec(await readFile(new URL('../video_content_labels.sql', import.meta.url), 'utf8'));
   await db.exec(`INSERT INTO hantang_dynamic.adm_uniseek_videos
     (aid,bvid,title,pubdate,user_id,tag_new,view,favorite,"like",coin,record_date,batch_id,refreshed_at) VALUES
     (1,'BV1Ts411S7SM','世末歌者',100,1,NULL,0,101,0,0,'2026-10-20','${batchA}',now()),
@@ -141,6 +145,36 @@ try {
     assert.equal(Number(rows[0].aid), 2000, 'high-view match must not be lost by an earlier text-only cutoff');
     assert.equal(rows.some((row) => Number(row.aid) === 2001), false);
     assert.equal((await search('limit test', { page: 20, pageSize: 50 })).hasMore, false);
+    await db.query(`INSERT INTO hantang_dynamic.video_content_labels(aid,is_song,is_virtual_singer,languages,label_source,input_sha256)
+      VALUES (2001,'是','是',ARRAY['汉语'],'manual',$1)`, ['a'.repeat(64)]);
+    assert.deepEqual((await ranked('limit test', 'chinese_virtual_song')).map(row => Number(row.aid)), [2001],
+      'scope filtering must happen before the 1000-result limit, even when a matching song ranked outside the all-video cutoff');
+  });
+  await test('all, virtual and Chinese scopes include mixed vocals and preserve unmarked videos only in all', async () => {
+    await db.exec(`INSERT INTO hantang_dynamic.adm_uniseek_videos(aid,bvid,title,view,favorite,record_date,batch_id,refreshed_at)
+      SELECT i,'BV'||i,'scope test',100,101,'2026-10-20','${batchA}',now() FROM generate_series(4100,4106) i`);
+    const labels = [
+      [4100,'是','是',['汉语']], [4101,'是','混合',['日语','汉语']], [4102,'是','是',['日语']],
+      [4103,'是','否',['汉语']], [4104,'否','否',['无语言']], [4105,'不确定','不确定',['未知语言']],
+      [4107,'是','是',['汉语']], // A historical label outside the current candidate set.
+    ];
+    const write = row => db.query(`INSERT INTO hantang_dynamic.video_content_labels
+      (aid,is_song,is_virtual_singer,languages,label_source,input_sha256) VALUES ($1,$2,$3,$4::text[],'manual',$5)`, [...row,'a'.repeat(64)]);
+    for (const row of labels) await write(row);
+    const aids = async scope => (await ranked('scope test', scope)).map(row => Number(row.aid)).sort((a,b) => a-b);
+    assert.deepEqual(await aids('all'), [4100,4101,4102,4103,4104,4105,4106]);
+    assert.deepEqual(await aids('virtual_song'), [4100,4101,4102]);
+    assert.deepEqual(await aids('chinese_virtual_song'), [4100,4101]);
+    assert.equal((await exactVideo(4106, 'all')).length, 1);
+    assert.deepEqual(await exactVideo(4106, 'virtual_song'), []);
+    assert.deepEqual(await exactVideo(4102, 'chinese_virtual_song'), []);
+    assert.equal((await exactVideo(4102, 'virtual_song')).length, 1);
+    assert.deepEqual(await exactVideo(4107, 'all'), []);
+    await write([4106,'是','是',['汉语']]);
+    assert.deepEqual(await aids('chinese_virtual_song'), [4100,4101,4106]);
+    await db.exec('DELETE FROM hantang_dynamic.video_content_labels');
+    assert.deepEqual(await aids('chinese_virtual_song'), []);
+    assert.equal((await aids('all')).length, 7);
   });
   await test('same-day publication markers and empty tables come directly from ADM', async () => {
     await db.exec(`UPDATE hantang_dynamic.adm_uniseek_videos SET batch_id='${batchB}'`);

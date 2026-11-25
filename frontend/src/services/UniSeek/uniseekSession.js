@@ -1,9 +1,11 @@
 import { searchTargets } from './uniseekLocal.js';
+import { DEFAULT_CONTENT_SCOPE, normalizeContentScope } from './uniseekScope.js';
 
 /** Own one keyword's concurrent requests. Disposing prevents stale responses and cancels fetches. */
-export function createUniSeekSession(keyword, api, onChange, scheduler = globalThis) {
+export function createUniSeekSession(keyword, api, onChange, { scheduler = globalThis, contentScope = DEFAULT_CONTENT_SCOPE } = {}) {
   const controller = new AbortController();
-  const options = { signal: controller.signal };
+  const scope = normalizeContentScope(contentScope);
+  const options = { signal: controller.signal, contentScope: scope };
   const items = new Map();
   const buffer = new Map();
   const released = { video: 0, producer: 0 };
@@ -98,7 +100,7 @@ export function createUniSeekSession(keyword, api, onChange, scheduler = globalT
       if (targets.aid) jobs.set('videoId', { fetch: () => api.searchVideoById(targets.aid, options), receive: data => append(data.list, true) });
       if (targets.userId) jobs.set('producerId', { fetch: () => api.searchProducerById(targets.userId, options), receive: data => append(data.list, true) });
       jobs.set('producers', { fetch: () => api.searchProducers(keyword, options), receive: data => append(data.list) });
-      if (targets.searchVideos) jobs.set('videos', { fetch: () => api.searchVideos({ keyword, page: 1, pageSize: 30 }, options), receive: videosArrived });
+      if (targets.searchVideos) jobs.set('videos', { fetch: () => api.searchVideos({ keyword, page: 1, pageSize: 30, contentScope: scope }, options), receive: videosArrived });
       for (const name of jobs.keys()) run(name);
     },
     retry: run,
@@ -108,7 +110,7 @@ export function createUniSeekSession(keyword, api, onChange, scheduler = globalT
       moreError = null;
       emit();
       try {
-        const data = await api.searchVideos({ keyword, page: nextPage, pageSize: 30 }, options);
+        const data = await api.searchVideos({ keyword, page: nextPage, pageSize: 30, contentScope: scope }, options);
         if (active) videosArrived(data);
       } catch (error) { if (active) moreError = error; }
       finally {

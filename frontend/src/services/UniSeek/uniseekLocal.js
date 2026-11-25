@@ -1,6 +1,8 @@
 import { parseVideoIdentifier } from '../../pages/video/videoIdentifier.js';
 
 const normalized = value => String(value ?? '').normalize('NFKC').toLowerCase().trim();
+const EXPLICIT_VIDEO_ID_PATTERN = /^(?:av[1-9][0-9]*|bv1[1-9A-HJ-NP-Za-km-z]{9})$/i;
+const NUMERIC_ID_PATTERN = /^[1-9][0-9]*$/;
 
 /** The 18-entry catalog is bundled with the app, so this never waits for a network request. */
 export function matchVocals(keyword, catalog) {
@@ -21,9 +23,18 @@ export function matchVocals(keyword, catalog) {
 /** Bare numbers are both text and possible IDs; explicit AV/BV input needs only the exact video. */
 export function searchTargets(keyword) {
   const q = String(keyword ?? '').trim();
-  const explicit = /^(?:av[1-9][0-9]*|bv1[1-9A-HJ-NP-Za-km-z]{9})$/i.test(q);
+  const explicit = EXPLICIT_VIDEO_ID_PATTERN.test(q);
   const candidate = /^av/i.test(q) ? q.slice(2) : /^bv/i.test(q) ? `BV${q.slice(2)}` : q;
   const parsed = parseVideoIdentifier(candidate);
   if (parsed.status !== 'valid') return { aid: null, userId: null, searchVideos: true };
-  return { aid: parsed.aid, userId: /^[1-9][0-9]*$/.test(q) ? parsed.aid : null, searchVideos: !explicit };
+  return { aid: parsed.aid, userId: NUMERIC_ID_PATTERN.test(q) ? parsed.aid : null, searchVideos: !explicit };
+}
+
+/** A local shortcut, not proof that the video exists; ordinary search stays available. */
+export function videoDetailSuggestion(keyword) {
+  const q = String(keyword ?? '').trim();
+  if (q.length <= 3 || !(EXPLICIT_VIDEO_ID_PATTERN.test(q) || NUMERIC_ID_PATTERN.test(q))) return null;
+  const { aid } = searchTargets(q);
+  if (!aid) return null;
+  return { aid, identifier: /^bv/i.test(q) ? `BV${q.slice(2)}` : `av${aid}`, jumpUrl: `/videos/${aid}` };
 }

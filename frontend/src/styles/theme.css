@@ -51,6 +51,8 @@
   --radius-card: 8px;
   --radius-control: 6px;
   --control-height: 36px;
+  --uniseek-search-fill-strength: 85%;
+  --uniseek-search-backdrop-blur: 14px;
   --button-border-width: 0px;
   --surface-border-width: 0px;
   --alert-border-width: 0px;
@@ -252,6 +254,7 @@
   --filter-control-bg: var(--surface);
   --filter-control-hover-bg: var(--canvas);
   --filter-control-active-bg: var(--button-secondary-bg);
+  --uniseek-search-bg: color-mix(in srgb, var(--surface) var(--uniseek-search-fill-strength), transparent);
   --overview-filter-control-bg: var(--filter-control-bg);
   --overview-filter-control-hover-bg: var(--filter-control-hover-bg);
   --overview-filter-control-active-bg: var(--filter-control-active-bg);

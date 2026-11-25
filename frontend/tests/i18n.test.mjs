@@ -51,15 +51,12 @@ test('regional languages normalize, the document language updates, and fixed tra
   }
 });
 
-test('rich text keeps emphasis and links while translating whole sentences and English plurals', () => {
-  const render = (language, count) => renderToStaticMarkup(createElement(Trans, {
-    t: getTranslator(language), i18nKey: 'search.loaded', count,
-    components: { count: createElement('em') },
-  }));
-  assert.equal(render('zh', 2), '已加载 <em>2</em> 条结果');
-  assert.equal(render('en', 1), 'Loaded <em>1</em> result');
-  assert.equal(render('en', 2), 'Loaded <em>2</em> results');
-  assert.equal(render('ja', 2), '<em>2</em> 件の結果を読み込みました');
+test('UniSeek scopes have user-facing labels in all languages and rich notices retain links', () => {
+  assert.equal(getTranslator('zh')('search.scope.all'), '全部视频');
+  assert.equal(getTranslator('zh')('search.scope.virtual_song'), '虚拟歌手歌曲');
+  assert.equal(getTranslator('zh')('search.scope.chinese_virtual_song'), '虚拟歌手中文曲');
+  assert.equal(getTranslator('en')('search.scope.chinese_virtual_song'), 'Chinese virtual singer songs');
+  assert.equal(getTranslator('ja')('search.scope.chinese_virtual_song'), 'バーチャルシンガー中国語曲');
   const notice = renderToStaticMarkup(createElement(Trans, {
     t: getTranslator('ja'), i18nKey: 'vocal.catalogNotice',
     components: { about: createElement('a', { href: '/about' }) },

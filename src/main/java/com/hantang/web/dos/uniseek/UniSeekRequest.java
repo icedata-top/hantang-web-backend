@@ -1,10 +1,20 @@
 package com.hantang.web.dos.uniseek;
 
 import java.util.List;
+import java.util.Set;
 
 /** Keyword search only. Exact AV/BV/UID lookups use dedicated search endpoints. */
-public record UniSeekRequest(String keyword, Integer page, Integer pageSize) {
+public record UniSeekRequest(String keyword, Integer page, Integer pageSize, String contentScope) {
     public static final int VIDEO_LIMIT = 1000;
+    public static final String DEFAULT_CONTENT_SCOPE = "chinese_virtual_song";
+    public UniSeekRequest(String keyword, Integer page, Integer pageSize) { this(keyword, page, pageSize, null); }
+
+    public static String validateContentScope(String scope) {
+        if (scope == null) return DEFAULT_CONTENT_SCOPE;
+        if (!Set.of("all", "virtual_song", "chinese_virtual_song").contains(scope))
+            throw new IllegalArgumentException("Invalid contentScope");
+        return scope;
+    }
 
     public UniSeekRequest validated() {
         String q = keyword == null ? "" : keyword.strip();
@@ -14,11 +24,14 @@ public record UniSeekRequest(String keyword, Integer page, Integer pageSize) {
         if (p < 1 || p > VIDEO_LIMIT || size < 1 || size > 50) {
             throw new IllegalArgumentException("page must be 1–1000 and pageSize must be 1–50");
         }
-        return new UniSeekRequest(q, p, size);
+        return new UniSeekRequest(q, p, size, validateContentScope(contentScope));
     }
 
     public static UniSeekRequest from(String keyword, String page, String pageSize) {
-        return new UniSeekRequest(keyword, positiveInteger(page), positiveInteger(pageSize)).validated();
+        return from(keyword, page, pageSize, null);
+    }
+    public static UniSeekRequest from(String keyword, String page, String pageSize, String scope) {
+        return new UniSeekRequest(keyword, positiveInteger(page), positiveInteger(pageSize), scope).validated();
     }
     private static Integer positiveInteger(String value) {
         if (value == null) return null;

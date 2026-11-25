@@ -1,19 +1,20 @@
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
-import { Button, Empty, Masonry, Spin, Switch } from 'antd';
-import { Trans, useTranslation } from 'react-i18next';
+import { Button, Empty, Masonry, Spin, Switch, Tooltip } from 'antd';
+import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { useMeshParallax } from '../../hooks/useMeshParallax.js';
 import * as searchApi from '../../services/UniSeek/uniseek.api.js';
 import { createUniSeekSession } from '../../services/UniSeek/uniseekSession.js';
+import { normalizeContentScope, uniSeekSearchParams } from '../../services/UniSeek/uniseekScope.js';
 import UniSeekFilter from './components/UniSeekFilter.jsx';
 import UniSeekItem from './components/UniSeekItem.jsx';
 import './UniSeek.css';
 
-/** 滚动多少像素后毛玻璃卡片完全显现 */
+/** 滚动多少像素后搜索栏达到完整的毛玻璃模糊强度 */
 const FILTER_GLASS_SCROLL_RANGE = 88;
 
 /**
- * 将页面滚动映射为搜索条毛玻璃显现进度 [0, 1]，写入 CSS 变量避免逐帧 setState。
+ * 将页面滚动映射为搜索条毛玻璃模糊进度 [0, 1]，写入 CSS 变量避免逐帧 setState。
  * @param {React.RefObject<HTMLElement | null>} targetRef
  */
 function useFilterGlassOnScroll(targetRef) {
@@ -26,7 +27,7 @@ function useFilterGlassOnScroll(targetRef) {
     const apply = () => {
       const y = window.scrollY || document.documentElement.scrollTop || 0;
       const t = Math.min(1, Math.max(0, y / FILTER_GLASS_SCROLL_RANGE));
-      // ease-out：前段更快露出一点轮廓，后段收缓到满不透明
+      // ease-out：前段更快增加模糊，后段收缓到完整强度
       const glass = 1 - (1 - t) ** 2.15;
       el.style.setProperty('--uniseek-glass', glass.toFixed(4));
     };
@@ -80,6 +81,7 @@ export default function UniSeek() {
   const searchRef = useRef(null);
   const sentinelRef = useRef(null);
   const activeKeyword = (searchParams.get('keyword') ?? '').trim();
+  const contentScope = normalizeContentScope(searchParams.get('contentScope'));
   const hasSearched = Boolean(activeKeyword);
   const filterShellRef = useRef(null);
 
@@ -89,21 +91,21 @@ export default function UniSeek() {
   const items = useMemo(
     () =>
       list.map((item) => ({
-        key: `${activeKeyword}-${retry}-${item.type}-${item.id}`,
+        key: `${activeKeyword}-${contentScope}-${retry}-${item.type}-${item.id}`,
         data: item,
       })),
-    [list, activeKeyword, retry],
+    [list, activeKeyword, contentScope, retry],
   );
 
+  useEffect(() => { setKeyword(activeKeyword); }, [activeKeyword]);
   useEffect(() => {
-    setKeyword(activeKeyword);
     setResults(emptyResults());
     if (!activeKeyword) { searchRef.current = null; return undefined; }
-    const session = createUniSeekSession(activeKeyword, searchApi, setResults);
+    const session = createUniSeekSession(activeKeyword, searchApi, setResults, { contentScope });
     searchRef.current = session;
     session.start();
     return () => { session.dispose(); if (searchRef.current === session) searchRef.current = null; };
-  }, [activeKeyword, retry]);
+  }, [activeKeyword, contentScope, retry]);
 
   const waitingForVideos = pending.includes('videos');
   useEffect(() => {
@@ -125,7 +127,7 @@ export default function UniSeek() {
     const keywordTrimmed = (nextKeyword ?? '').trim();
     setKeyword(keywordTrimmed);
     if (keywordTrimmed === activeKeyword) setRetry((value) => value + 1);
-    else setSearchParams(keywordTrimmed ? { keyword: keywordTrimmed } : {});
+    else setSearchParams(uniSeekSearchParams(keywordTrimmed, contentScope));
   };
 
   return (
@@ -135,6 +137,8 @@ export default function UniSeek() {
           <UniSeekFilter
             keyword={keyword}
             loading={loading}
+            contentScope={contentScope}
+            onScopeChange={scope => setSearchParams(uniSeekSearchParams(activeKeyword, scope))}
             onKeywordChange={setKeyword}
             onSearch={handleSearch}
           />
@@ -144,15 +148,14 @@ export default function UniSeek() {
       <div className="uniseek-result-wrap">
         {hasSearched ? (
           <div className="uniseek-result-meta" aria-live="polite">
-            {items.length ? (
-              <p className="uniseek-result-count">
-                <Trans i18nKey="search.loaded" count={items.length} components={{ count: <em /> }} />
-              </p>
-            ) : (
-              <p className="uniseek-result-count uniseek-result-count--empty">
+            <div className="uniseek-result-status">
+              <Tooltip trigger={['hover', 'focus', 'click']} title={t('search.orderHint')}>
+                <span className="uniseek-sort-hint" tabIndex={0}>{t('search.order')}</span>
+              </Tooltip>
+              {!items.length && <p className="uniseek-result-status-text">
                 {loading ? t("正在搜索…") : hasErrors ? t("部分结果暂未加载，请重试") : t("未找到匹配结果")}
-              </p>
-            )}
+              </p>}
+            </div>
             <div className="uniseek-animation-control">
               <label htmlFor="uniseek-result-animation">{t('结果入场动画')}</label>
               <Switch id="uniseek-result-animation" size="small" checked={animateResults} onChange={changeAnimation} />

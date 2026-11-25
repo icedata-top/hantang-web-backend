@@ -37,7 +37,11 @@ public class UniSeekService {
     }
 
     public UniSeekResponse.Matches searchVideoById(long aid) {
-        var rows = CompletableFuture.supplyAsync(() -> dao.videoById(aid), executor).join();
+        return searchVideoById(aid, UniSeekRequest.DEFAULT_CONTENT_SCOPE);
+    }
+    public UniSeekResponse.Matches searchVideoById(long aid, String contentScope) {
+        String scope = UniSeekRequest.validateContentScope(contentScope);
+        var rows = CompletableFuture.supplyAsync(() -> dao.videoById(aid, scope), executor).join();
         return new UniSeekResponse.Matches(rows.stream().map(this::video).toList());
     }
     public UniSeekResponse.Matches searchProducerById(long userId) {

@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class UniSeekDaoTest {
-    private UniSeekRequest request(String q) { return new UniSeekRequest(q, null, null).validated(); }
+    private UniSeekRequest request(String q) { return new UniSeekRequest(q, null, null, "all").validated(); }
     private boolean batchQuery(String sql) { return sql.startsWith("SELECT batch_id::text"); }
     private List<Map<String, Object>> batch(String id) { return List.of(Map.of("batch_id", id)); }
     private Map<String, Object> video(Object aid, String batch) { return Map.of("aid", aid, "batch_id", batch); }
@@ -106,9 +106,9 @@ class UniSeekDaoTest {
             return java.util.stream.IntStream.range(0, 65).mapToObj(i -> video(i, "a")).toList();
         });
         assertEquals(31, dao.videos(request("洛天依")).size());
-        var next = dao.videos(new UniSeekRequest("洛天依", 2, 30).validated());
+        var next = dao.videos(new UniSeekRequest("洛天依", 2, 30, "all").validated());
         assertEquals(30, next.getFirst().get("aid")); assertEquals(31, next.size());
-        assertEquals(5, dao.videos(new UniSeekRequest("洛天依", 3, 30).validated()).size());
+        assertEquals(5, dao.videos(new UniSeekRequest("洛天依", 3, 30, "all").validated()).size());
         assertEquals(1, rankedQueries.get()); assertEquals(3, batchQueries.get());
     }
     @Test void aSameDayPublicationBypassesCachedResultsImmediately() {
@@ -159,5 +159,48 @@ class UniSeekDaoTest {
         var dao = new UniSeekDao((sql, params) -> batchQuery(sql) ? batch("a")
                 : List.of(video(1, "a"), video(2, "b")));
         assertThrows(IllegalStateException.class, () -> dao.videos(request("洛天依")));
+    }
+    @Test void defaultScopeIsChineseAndInvalidScopesAreRejected() {
+        assertEquals("chinese_virtual_song", new UniSeekRequest("song", null, null).validated().contentScope());
+        for (String scope : List.of("", "chinese", "all OR true", "ALL")) {
+            assertThrows(IllegalArgumentException.class, () -> new UniSeekRequest("song", 1, 30, scope).validated());
+            assertThrows(IllegalArgumentException.class, () -> UniSeekDao.scopePredicate(scope));
+        }
+    }
+    @Test void textAndExactIdsUseTheSameScopeAndAllDoesNotRequireTheLabelTable() {
+        for (String scope : List.of("all", "virtual_song", "chinese_virtual_song")) {
+            var queries = new AtomicInteger();
+            var dao = new UniSeekDao((sql, params) -> {
+                if (batchQuery(sql)) return batch("a");
+                queries.incrementAndGet();
+                if (scope.equals("all")) assertFalse(sql.contains("video_content_labels"));
+                else assertTrue(sql.contains(scope.equals("virtual_song") ? "l.is_virtual_singer_song)" : "l.is_chinese_virtual_singer_song)"));
+                return List.of(video(1, "a"));
+            });
+            dao.videos(new UniSeekRequest("song", 1, 30, scope).validated());
+            dao.videoById(1, scope);
+            assertEquals(2, queries.get());
+        }
+    }
+    @Test void newlyCommittedLabelsAreVisibleWithoutAnAdmPublicationOrCrossProcessCacheSignal() {
+        var changed = new AtomicBoolean();
+        var reads = new AtomicInteger();
+        var dao = new UniSeekDao((sql, params) -> {
+            if (batchQuery(sql)) return batch("a");
+            reads.incrementAndGet();
+            if (!sql.contains("video_content_labels")) return List.of(video(99, "a"));
+            return List.of(video(changed.get() ? 2 : 1, "a"));
+        });
+        dao.videos(request("song")); // Warm the all-video cache with the same keyword and batch.
+        for (String scope : List.of("virtual_song", "chinese_virtual_song")) {
+            changed.set(false);
+            var request = new UniSeekRequest("song", 1, 30, scope).validated();
+            assertEquals(1, dao.videos(request).getFirst().get("aid"));
+            changed.set(true);
+            assertEquals(2, dao.videos(request).getFirst().get("aid"));
+        }
+        assertEquals(5, reads.get());
+        assertEquals(99, dao.videos(request("song")).getFirst().get("aid"));
+        assertEquals(5, reads.get());
     }
 }
